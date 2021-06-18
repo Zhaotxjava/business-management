@@ -1,15 +1,221 @@
 <!doctype html>
-
-<!--注意：引入thymeleaf的名称空间-->
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{head}"></head>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
+    <title>医保定点机构基本信息</title>
+    <link rel="stylesheet" href="../css/bootstrap.min.css" th:href="@{/css/bootstrap.min.css}">
+    <link rel="stylesheet" href="../css/index.css" th:href="@{/css/index.css}">
 </head>
 <body>
-<p th:text="'hello SpringBoot'">hello thymeleaf</p>
+<div class="content">
+    <p class="table-title">医保定点机构基本信息列表</p>
+    <div class="tableArea">
+        <table class="table table-striped" id="table">
+            <!--在此处填充表格数据-->
+            <thead>
+            <tr>
+                <th>序号</th>
+                <th>机构编码</th>
+                <th>机构名称</th>
+                <th>组织机构代码</th>
+                <th>法人姓名</th>
+                <th>联系人</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+        </table>
+    </div>
+    <div class="popup-container" id="popupCon" onclick="cancel()">
+        <div class="popup" id="popup">
+            <div class="form-horizontal" role="form">
+                <div class="form-group">
+                    <label for="org" class="col-sm-3 control-label">机构编码</label>
+                    <div class="col-sm-9">
+                        <input type="text" class="form-control" id="org" placeholder="请输入">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="orgInstitutionName" class="col-sm-3 control-label">机构名称</label>
+                    <div class="col-sm-9">
+                        <input type="text" class="form-control" id="orgInstitutionName" placeholder="">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="orgInstitutionCode" class="col-sm-3 control-label">组织机构代码</label>
+                    <div class="col-sm-9">
+                        <input type="text" class="form-control" id="orgInstitutionCode" placeholder="">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="legalRepresentName" class="col-sm-3 control-label">法人姓名<span
+                            class="required">*</span></label>
+                    <div class="col-sm-9">
+                        <input type="text" class="form-control" id="legalRepresentName" placeholder="">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="legalRepresentName" class="col-sm-3 control-label">法人身份证<span class="required">*</span></label>
+                    <div class="col-sm-9">
+                        <input type="text" class="form-control" id="legalRepresentName" placeholder="">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="contactName" class="col-sm-3 control-label">联系人姓名<span class="required">*</span></label>
+                    <div class="col-sm-9">
+                        <input type="text" class="form-control" id="contactName" placeholder="">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="contactName" class="col-sm-3 control-label">联系人身份证<span
+                            class="required">*</span></label>
+                    <div class="col-sm-9">
+                        <input type="text" class="form-control" id="contactName" placeholder="">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="contactPhone" class="col-sm-3 control-label">联系人手机号<span
+                            class="required">*</span></label>
+                    <div class="col-sm-9">
+                        <input type="text" class="form-control" id="contactPhone" placeholder="">
+                    </div>
+                </div>
+                <div class="col-sm-offset-5 col-sm-6">
+                    <button id="submit" class="btn btn-primary" onclick="undataInfo();">提交</button>
+                    <button id="cancle" class="btn btn-default" onclick="cancel();">取消</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 </body>
+<script>
+    $(document).ready(function () {
+        $('#popupCon').hide()
+        getListData();
+    });
+
+    function getListData() {
+        //获取参数
+        $.ajax({
+            url: baseurl + "/hfi/getInstitutionInfoByNumber",
+            type: "post",
+            data: {number: 2},
+            dataType: "json",
+            async: true,
+            success: function (data) {
+                console.log(JSON.stringify(data));
+                $("#tbody").html(createTableHtml(data));
+            }
+        });
+        var data = [{
+            "clinicName": "string",
+            "contactName": "string",
+            "contactPhone": "string",
+            "legalRepresentName": "string",
+            "number": "string",
+            "orgInstitutionCode": "string"
+        }, {
+            "clinicName": "string1",
+            "contactName": "string1",
+            "contactPhone": "string1",
+            "legalRepresentName": "string1",
+            "number": "string1",
+            "orgInstitutionCode": "string1"
+        }, {
+            "clinicName": "string2",
+            "contactName": "string2",
+            "contactPhone": "string2",
+            "legalRepresentName": "string2",
+            "number": "string2",
+            "orgInstitutionCode": "string2"
+        }];
+        $("#tbody").html(createTableHtml(data));
+    }
+
+    function createTableHtml(list) {
+        var html = "";
+        for (var i = 0; i < list.length; i++) {
+            var rowData = list[i];
+            console.log(rowData)
+            var transData = {
+                clinicName: rowData.clinicName,
+                contactName: rowData.contactName,
+                contactPhone: rowData.contactPhone,
+                legalRepresentName: rowData.legalRepresentName,
+                orgInstitutionCode: rowData.orgInstitutionCode,
+            };
+            var rowHtml = '';
+            for (const rowDataKey in rowData) {
+                var valueCol = rowData[rowDataKey];
+                rowHtml += '<td>' + valueCol + '</td>'
+            }
+            if (rowData.clinicName == null || rowData.orgInstitutionCode == null ||
+                rowData.contactName == null || rowData.legalRepresentName == null ||
+                rowData.contactPhone == null) {
+                rowHtml += '<td>' +
+                    '<button class=\'btn btn-primary\'onclick= "showMyPopup(' + JSON.stringify(transData).replace(/\"/g, "'") + ')">' +
+                    '信息补充' +
+                    "</button>" +
+                    "</td>"
+            } else {
+                rowHtml += '<td>' +
+                    '<button class=\'btn btn-primary\'onclick= "showMyPopup(' + JSON.stringify(transData).replace(/\"/g, "'") + ')">' +
+                    '信息更新' +
+                    "</button>" +
+                    "</td>"
+            }
+            html += '<tr value=\'rowData\'>' + rowHtml + "</tr>"
+        }
+        return html;
+    }
+
+    function undataInfo() {
+        var clinicName = $("#clinicName").val();
+        var contactName = $("#contactName").val();
+        var orgInstitutionCode = $("#orgInstitutionCode").val();
+        var contactPhone = $("#contactPhone").val();
+        var legalRepresentName = $("#legalRepresentName").val();
+        const params = {
+            clinicName,
+            contactName,
+            orgInstitutionCode,
+            contactPhone,
+            legalRepresentName,
+        }
+        $.ajax({
+            url: "/getClinicInfoByNumber",
+            type: "post",
+            data: params,
+            dataType: "json",
+            async: true,
+            success: function (data) {
+                console.log(JSON.stringify(data));
+                $('#popupCon').hide()
+                getListData()
+            }
+        });
+    }
+
+    function showMyPopup(rowData) {
+        console.log(rowData)
+        $("input").attr("value", "");
+        $("#contactPhone").val(rowData.clinicName);
+        $("#contactPhone").val(rowData.contactName);
+        $("#orgInstitutionCode").val(rowData.orgInstitutionCode);
+        $("#contactName").val(rowData.contactPhone);
+        $("#contactPhone").val(rowData.legalRepresentName);
+        $('#popupCon').show()
+    }
+
+    function cancel() {
+        $("input").attr("value", "");
+        $('#popupCon').hide()
+    }
+
+</script>
 </html>

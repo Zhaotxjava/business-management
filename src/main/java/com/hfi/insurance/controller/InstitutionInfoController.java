@@ -23,33 +23,28 @@ public class InstitutionInfoController {
     @Resource
     private InstitutionInfoService institutionInfoService;
 
-    /**
-     * 首页
-     *
-     * @return
-     */
     @GetMapping("home")
     public String index() {
         return "index";
     }
 
     @GetMapping("getInstitutionInfoList")
-    public ApiResponse getInstitutionInfoList(){
+    public ApiResponse getInstitutionInfoList() {
         return institutionInfoService.getInstitutionList();
     }
 
     @PostMapping("getInstitutionInfoByNumber")
-    public ApiResponse getClinicInfoByNumber(@RequestParam(value = "number") String number){
+    public ApiResponse getClinicInfoByNumber(@RequestParam(value = "number") String number) {
         return institutionInfoService.getInstitutionInfoByNumber(number);
     }
 
     @PostMapping("appendInstitutionInfo")
-    public ApiResponse appendInstitutionInfo(@RequestBody InstitutionInfoAddReq req){
+    public ApiResponse appendInstitutionInfo(@RequestBody InstitutionInfoAddReq req) {
         return institutionInfoService.appendInstitutionInfo(req);
     }
 
     @PostMapping("downloadExcel")
-    public ApiResponse downloadExcel(){
+    public ApiResponse downloadExcel() {
         return institutionInfoService.downloadExcel();
     }
 

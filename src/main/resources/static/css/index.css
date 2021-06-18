@@ -1,0 +1,33 @@
+.content{
+    padding: 20px 40px;
+}
+.table-title{
+    font-size: 16px;
+    font-weight: bold;
+}
+table > thead{
+    background: #999999;
+}
+.popup-container{
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    background: rgb(0,0,0,0.75);
+}
+.popup{
+    width: 600px;
+    background: #fff;
+    padding: 20px 40px 20px 20px;
+    position: absolute;
+    z-index: 9999;
+    left: 50%;
+    top: 15%;
+    transform: translateX(-50%);
+    border-radius: 4px;
+}
+.required{
+    color: red;
+}

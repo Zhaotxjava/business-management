@@ -1,0 +1,10 @@
+<script th:src="@{/js/jquery-3.4.0.min.js}"></script>
+<script type="text/javascript" th:inline="javascript">
+    /*<![CDATA[*/
+    var baseurl = /*[[@{/}]]*/ '';
+    baseurl = baseurl.split(";")[0];
+    if (baseurl.charAt(baseurl.length - 1) == "/") {
+        baseurl = baseurl.substring(0, baseurl.length - 1);
+    }
+    /*]]>*/
+</script>
