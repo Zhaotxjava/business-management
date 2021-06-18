@@ -1,0 +1,15 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /hfi
+spring:
+  thymeleaf:
+    enabled: true  #开启thymeleaf视图解析
+    encoding: utf-8  #编码
+    prefix: classpath:/templates/  #前缀
+    cache: false  #是否使用缓存
+    mode: HTML  #严格的HTML语法模式
+    suffix: .html  #后缀名
+# Swagger API文档（是否开启）
+swagger:
+  enable: true
