@@ -71,7 +71,10 @@ public class InstitutionInfoServiceImpl implements InstitutionInfoService {
             dataList.forEach(valueList -> {
                 InstitutionInfo institutionInfo = new InstitutionInfo();
                 for (int i = 1; i < valueList.size(); i++) {
-                    String value = String.valueOf(valueList.get(i));
+                    String value = "";
+                    if (valueList.get(i) != null){
+                        value = String.valueOf(valueList.get(i)).trim();
+                    }
                     switch (i) {
                         case 2:
                             institutionInfo.setNumber(value);
@@ -161,12 +164,15 @@ public class InstitutionInfoServiceImpl implements InstitutionInfoService {
                 }
             });
             data = MapperUtils.obj2json(list);
+            //删除缓存
+            caffeineCache.invalidateAll();
+            //重新添加缓存
             caffeineCache.put("data", data);
         } catch (Exception e) {
             log.error("机构信息填充失败,{}", e.getMessage());
             return new ApiResponse(ErrorCodeEnum.SYSTEM_ERROR.getCode(), e.getMessage());
         }
-        return new ApiResponse(ErrorCodeEnum.SUCCESS);
+        return new ApiResponse(list);
     }
 
     @Override

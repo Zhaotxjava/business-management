@@ -306,10 +306,11 @@ public class ImportExcelUtil {
 
     private static void createHeader(Sheet sheet, ExcelSheetPO excelSheetPO, Workbook wb, ExcelVersion version) {
         String[] headers = excelSheetPO.getHeaders();
-        Row row = sheet.createRow(1);
+        Row row = sheet.createRow(0);
         for (int i = 0; i < headers.length && i < version.getMaxColumn(); i++) {
             Cell cellHeader = row.createCell(i);
-            cellHeader.setCellStyle(getStyle(STYLE_HEADER, wb));
+            cellHeader.getCellStyle().cloneStyleFrom(getStyle(STYLE_HEADER, wb));
+//            cellHeader.setCellStyle(getStyle(STYLE_HEADER, wb));
             cellHeader.setCellValue(headers[i]);
         }
 
