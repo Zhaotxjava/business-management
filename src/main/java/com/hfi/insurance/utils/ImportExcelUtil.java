@@ -4,6 +4,7 @@ package com.hfi.insurance.utils;
 import com.hfi.insurance.enums.ExcelVersion;
 import com.hfi.insurance.model.ExcelSheetPO;
 //import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
@@ -18,9 +19,9 @@ import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.WorkbookUtil;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -236,7 +237,8 @@ public class ImportExcelUtil {
      */
     public static void createWorkbookAtDisk(ExcelVersion version, List<ExcelSheetPO> excelSheets, String filePath)
             throws IOException {
-        FileOutputStream fileOut = new FileOutputStream(filePath);
+        File file = new File(filePath,System.currentTimeMillis() + ".xlsx");
+        FileOutputStream fileOut = new FileOutputStream(file);
         createWorkbookAtOutStream(version, excelSheets, fileOut, true);
     }
 
@@ -255,7 +257,7 @@ public class ImportExcelUtil {
      */
     public static void createWorkbookAtOutStream(ExcelVersion version, List<ExcelSheetPO> excelSheets,
                                                  OutputStream outStream, boolean closeStream) throws IOException {
-        if (!CollectionUtils.isEmpty(excelSheets)) {
+        if (CollectionUtils.isNotEmpty(excelSheets)) {
             Workbook wb = createWorkBook(version, excelSheets);
             wb.write(outStream);
             if (closeStream) {
@@ -281,20 +283,22 @@ public class ImportExcelUtil {
     private static void buildSheetData(Workbook wb, Sheet sheet, ExcelSheetPO excelSheetPO, ExcelVersion version) {
         sheet.setDefaultRowHeight((short) 400);
         sheet.setDefaultColumnWidth((short) 10);
-        createTitle(sheet, excelSheetPO, wb, version);
+        //createTitle(sheet, excelSheetPO, wb, version);
         createHeader(sheet, excelSheetPO, wb, version);
         createBody(sheet, excelSheetPO, wb, version);
     }
 
     private static void createBody(Sheet sheet, ExcelSheetPO excelSheetPO, Workbook wb, ExcelVersion version) {
         List<List<Object>> dataList = excelSheetPO.getDataList();
-        for (int i = 0; i < dataList.size() && i < version.getMaxRow(); i++) {
+        for (int i = 0; i < dataList.size(); i++) {
             List<Object> values = dataList.get(i);
             Row row = sheet.createRow(2 + i);
-            for (int j = 0; j < values.size() && j < version.getMaxColumn(); j++) {
+            for (int j = 0; j < values.size(); j++) {
                 Cell cell = row.createCell(j);
                 cell.setCellStyle(getStyle(STYLE_DATA, wb));
-                cell.setCellValue(values.get(j).toString());
+                if (values.get(j) != null){
+                    cell.setCellValue(values.get(j).toString());
+                }
             }
         }
 

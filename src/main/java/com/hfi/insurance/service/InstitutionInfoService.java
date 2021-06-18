@@ -1,7 +1,9 @@
 package com.hfi.insurance.service;
 
 
+import com.hfi.insurance.common.ApiResponse;
 import com.hfi.insurance.model.InstitutionInfo;
+import com.hfi.insurance.model.dto.InstitutionInfoAddReq;
 
 import java.io.IOException;
 import java.util.List;
@@ -14,5 +16,11 @@ import java.util.List;
 public interface InstitutionInfoService {
     List<InstitutionInfo> parseExcel() throws IOException;
 
-    InstitutionInfo getInstitutionInfoByNumber(String number);
+    ApiResponse getInstitutionInfoByNumber(String number);
+
+    ApiResponse getInstitutionList();
+
+    ApiResponse appendInstitutionInfo(InstitutionInfoAddReq req);
+
+    ApiResponse downloadExcel();
 }

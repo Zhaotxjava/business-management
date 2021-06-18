@@ -2,39 +2,53 @@ package com.hfi.insurance.service.Impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.type.CollectionType;
 import com.github.benmanes.caffeine.cache.Cache;
+import com.hfi.insurance.common.ApiResponse;
+import com.hfi.insurance.enums.ErrorCodeEnum;
 import com.hfi.insurance.enums.ExcelVersion;
 import com.hfi.insurance.model.ExcelSheetPO;
 import com.hfi.insurance.model.InstitutionInfo;
+import com.hfi.insurance.model.dto.InstitutionInfoAddReq;
 import com.hfi.insurance.service.InstitutionInfoService;
 import com.hfi.insurance.utils.ImportExcelUtil;
+import com.hfi.insurance.utils.MapperUtils;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * @Author ChenZX
  * @Date 2021/6/16 15:14
  * @Description:
  */
+@Slf4j
 @Service
 public class InstitutionInfoServiceImpl implements InstitutionInfoService {
 
     @Resource
     private Cache<String, String> caffeineCache;
 
-    @Value("file.path")
+    @Value("${file.path}")
     private String filePath;
 
-    private ObjectMapper objectMapper = new ObjectMapper();
+    @Value("${file.down.url}")
+    private String fileUrl;
 
     @Override
     public List<InstitutionInfo> parseExcel() throws IOException {
@@ -63,7 +77,7 @@ public class InstitutionInfoServiceImpl implements InstitutionInfoService {
                             institutionInfo.setNumber(value);
                             break;
                         case 3:
-                            institutionInfo.setClinicName(value);
+                            institutionInfo.setInstitutionName(value);
                             break;
                         case 4:
                             institutionInfo.setOrgInstitutionCode(value);
@@ -84,25 +98,115 @@ public class InstitutionInfoServiceImpl implements InstitutionInfoService {
                 list.add(institutionInfo);
             });
         });
-        String data = objectMapper.writeValueAsString(list);
+        String data = null;
+        try {
+            data = MapperUtils.obj2json(list);
+        } catch (Exception e) {
+            log.error("集合转json失败");
+        }
         caffeineCache.put("data", data);
         return list;
     }
 
     @Override
-    public InstitutionInfo getInstitutionInfoByNumber(String number) {
+    public ApiResponse getInstitutionInfoByNumber(String number) {
         InstitutionInfo institutionInfo = new InstitutionInfo();
         String data = caffeineCache.asMap().get("data");
-        CollectionType listType = objectMapper.getTypeFactory().constructCollectionType(ArrayList.class, InstitutionInfo.class);
         try {
-            List<InstitutionInfo> list = objectMapper.readValue(data, listType);
+            List<InstitutionInfo> list = MapperUtils.json2list(data, InstitutionInfo.class);
             Optional<InstitutionInfo> any = list.stream().filter(clinic -> clinic.getNumber().equals(number)).findAny();
             if (any.isPresent()) {
                 institutionInfo = any.get();
             }
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            log.error("json解析失败");
+            return new ApiResponse(ErrorCodeEnum.SYSTEM_ERROR.getCode(), e.getMessage());
         }
-        return institutionInfo;
+        return new ApiResponse(institutionInfo);
+    }
+
+    @Override
+    public ApiResponse getInstitutionList() {
+        List<InstitutionInfo> list = new ArrayList<>();
+        String data = caffeineCache.asMap().get("data");
+        if (null == data) {
+            return new ApiResponse(ErrorCodeEnum.SYSTEM_ERROR.getCode(), "数据获取失败！");
+        }
+        try {
+            list = MapperUtils.json2list(data, InstitutionInfo.class);
+        } catch (Exception e) {
+            log.error("json解析失败");
+            return new ApiResponse(ErrorCodeEnum.SYSTEM_ERROR.getCode(), e.getMessage());
+        }
+        return new ApiResponse(list);
+    }
+
+    @Override
+    public ApiResponse appendInstitutionInfo(InstitutionInfoAddReq req) {
+        List<InstitutionInfo> list = new ArrayList<>();
+        String data = caffeineCache.asMap().get("data");
+        if (null == data) {
+            return new ApiResponse(ErrorCodeEnum.SYSTEM_ERROR.getCode(), "数据获取失败！");
+        }
+        try {
+            list = MapperUtils.json2list(data, InstitutionInfo.class);
+            list.forEach(institutionInfo -> {
+                if (req.getNumber().equals(institutionInfo.getNumber())) {
+                    institutionInfo.setLegalRepresentName(req.getLegalRepresentName());
+                    institutionInfo.setLegalIdCard(req.getLegalIdCard());
+                    institutionInfo.setLegalPhone(req.getLegalPhone());
+                    institutionInfo.setContactName(req.getContactName());
+                    institutionInfo.setContactIdCard(req.getContactIdCard());
+                    institutionInfo.setContactPhone(req.getContactPhone());
+                }
+            });
+            data = MapperUtils.obj2json(list);
+            caffeineCache.put("data", data);
+        } catch (Exception e) {
+            log.error("机构信息填充失败,{}", e.getMessage());
+            return new ApiResponse(ErrorCodeEnum.SYSTEM_ERROR.getCode(), e.getMessage());
+        }
+        return new ApiResponse(ErrorCodeEnum.SUCCESS);
+    }
+
+    @Override
+    public ApiResponse downloadExcel() {
+        List<InstitutionInfo> list = new ArrayList<>();
+        String data = caffeineCache.asMap().get("data");
+        if (null == data) {
+            return new ApiResponse(ErrorCodeEnum.SYSTEM_ERROR.getCode(), "数据获取失败！");
+        }
+        try {
+            list = MapperUtils.json2list(data, InstitutionInfo.class);
+            log.info("数据量：{}条", list.size());
+        } catch (Exception e) {
+            return new ApiResponse(ErrorCodeEnum.SYSTEM_ERROR.getCode(), e.getMessage());
+        }
+        String[] headers = {"编号", "名称", "组织机构代码", "法定代表人", "法人身份证", "法人手机", "联系人", "联系人身份证", "联系人手机"};
+        List<List<Object>> dataList = new ArrayList<>();
+        for (int i = 1; i < list.size(); i++) {
+            List<Object> institution = new ArrayList<>();
+            InstitutionInfo institutionInfo = list.get(i);
+            institution.add(institutionInfo.getNumber());
+            institution.add(institutionInfo.getInstitutionName());
+            institution.add(institutionInfo.getOrgInstitutionCode());
+            institution.add(institutionInfo.getLegalRepresentName());
+            institution.add(institutionInfo.getLegalIdCard());
+            institution.add(institutionInfo.getLegalPhone());
+            institution.add(institutionInfo.getContactName());
+            institution.add(institutionInfo.getContactIdCard());
+            institution.add(institutionInfo.getContactPhone());
+            dataList.add(institution);
+        }
+        ExcelSheetPO excelSheet = new ExcelSheetPO();
+        excelSheet.setHeaders(headers);
+        excelSheet.setDataList(dataList);
+        List<ExcelSheetPO> excelSheetList = Collections.singletonList(excelSheet);
+        try {
+            ImportExcelUtil.createWorkbookAtDisk(ExcelVersion.V2007, excelSheetList, fileUrl);
+        } catch (IOException e) {
+            return new ApiResponse(ErrorCodeEnum.SYSTEM_ERROR.getCode(), e.getMessage());
+        }
+        return new ApiResponse(ErrorCodeEnum.SUCCESS);
     }
 }

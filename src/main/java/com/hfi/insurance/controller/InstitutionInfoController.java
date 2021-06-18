@@ -1,12 +1,14 @@
 package com.hfi.insurance.controller;
 
+import com.hfi.insurance.common.ApiResponse;
 import com.hfi.insurance.model.InstitutionInfo;
+import com.hfi.insurance.model.dto.InstitutionInfoAddReq;
 import com.hfi.insurance.service.InstitutionInfoService;
 import io.swagger.annotations.Api;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -15,13 +17,11 @@ import javax.annotation.Resource;
 
 @RestController
 @Api(tags = {"【接口】"})
-//@RequestMapping("/hfi")
+@RequestMapping("/hfi")
 public class InstitutionInfoController {
 
     @Resource
     private InstitutionInfoService institutionInfoService;
-    private static final Logger LOGGER = LoggerFactory.getLogger(InstitutionInfoController.class);
-
 
     /**
      * 首页
@@ -33,14 +33,25 @@ public class InstitutionInfoController {
         return "index";
     }
 
-//    @PostMapping("importExcel")
-//    @ApiOperation(value = "导入excel")
-//    public void importExcel(MultipartFile file){
-//        institutionInfoService.parseExcel(file);
-//    }
+    @GetMapping("getInstitutionInfoList")
+    public ApiResponse getInstitutionInfoList(){
+        return institutionInfoService.getInstitutionList();
+    }
 
-    @PostMapping("getClinicInfoByNumber")
-    public InstitutionInfo getClinicInfoByNumber(@RequestParam(value = "number") String number){
+    @PostMapping("getInstitutionInfoByNumber")
+    public ApiResponse getClinicInfoByNumber(@RequestParam(value = "number") String number){
         return institutionInfoService.getInstitutionInfoByNumber(number);
     }
+
+    @PostMapping("appendInstitutionInfo")
+    public ApiResponse appendInstitutionInfo(@RequestBody InstitutionInfoAddReq req){
+        return institutionInfoService.appendInstitutionInfo(req);
+    }
+
+    @PostMapping("downloadExcel")
+    public ApiResponse downloadExcel(){
+        return institutionInfoService.downloadExcel();
+    }
+
+
 }

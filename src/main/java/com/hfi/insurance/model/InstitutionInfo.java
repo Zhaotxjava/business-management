@@ -10,10 +10,14 @@ import lombok.Data;
 @Data
 public class InstitutionInfo {
     private String number;
-    private String clinicName;
+    private String institutionName;
     private String orgInstitutionCode;
     private String legalRepresentName;
+    private String legalIdCard;
+    private String legalPhone;
     private String contactName;
+    private String contactIdCard;
     private String contactPhone;
+    
 
 }

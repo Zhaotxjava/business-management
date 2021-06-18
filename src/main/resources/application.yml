@@ -1,7 +1,7 @@
 server:
-  port: 8080
+  port: 8090
   servlet:
-    context-path: /hfi
+    context-path: /insurance_info
 spring:
   thymeleaf:
     enabled: true  #开启thymeleaf视图解析
@@ -10,9 +10,32 @@ spring:
     cache: false  #是否使用缓存
     mode: HTML  #严格的HTML语法模式
     suffix: .html  #后缀名
+  jackson:
+    # 设置属性命名策略,对应jackson下PropertyNamingStrategy中的常量值，SNAKE_CASE-返回的json驼峰式转下划线，json body下划线传到后端自动转驼峰式
+    property-naming-strategy: LOWER_CAMEL_CASE
+    # 全局设置@JsonFormat的格式pattern
+    date-format: yyyy-MM-dd HH:mm:ss
+    # 当地时区
+    locale: zh
+    # 设置全局时区
+    time-zone: GMT+8
+    default-property-inclusion: NON_NULL #不为空的属性才会序列化,具体属性可看JsonInclude.Include
+    serialization:
+      WRITE_DATES_AS_TIMESTAMPS: true # 返回的java.util.date转换成timestamp
+      FAIL_ON_EMPTY_BEANS: true # 对象为空时是否报错，默认true
+    mapper:
+      USE_GETTERS_AS_SETTERS: true #默认false
+
 # Swagger API文档（是否开启）
 swagger:
   enable: true
 
 file:
   path: C:\Users\Administrator\Desktop\医保定点机构列表20210607.xlsx
+  down:
+    url: E:\demo
+
+
+
+
+
