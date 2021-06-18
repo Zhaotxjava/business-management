@@ -1,4 +1,4 @@
-package com.hengtiansoft.springbootthymeleaf.utils;
+package com.hfi.insurance.utils;
 
 
 public final class NumConstant {

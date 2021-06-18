@@ -1,4 +1,4 @@
-package com.hengtiansoft.springbootthymeleaf.utils;
+package com.hfi.insurance.utils;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

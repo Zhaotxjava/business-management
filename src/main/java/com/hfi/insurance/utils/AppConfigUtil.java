@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-package com.hengtiansoft.springbootthymeleaf.utils;
+package com.hfi.insurance.utils;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;

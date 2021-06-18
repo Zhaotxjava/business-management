@@ -1,8 +1,8 @@
-package com.hengtiansoft.springbootthymeleaf.config;
+package com.hfi.insurance.config;
 
 
-import com.hengtiansoft.springbootthymeleaf.utils.AppConfigUtil;
-import com.hengtiansoft.springbootthymeleaf.utils.WebUtil;
+import com.hfi.insurance.utils.AppConfigUtil;
+import com.hfi.insurance.utils.WebUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;

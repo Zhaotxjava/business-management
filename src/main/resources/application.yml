@@ -13,3 +13,6 @@ spring:
 # Swagger API文档（是否开启）
 swagger:
   enable: true
+
+file:
+  path: C:\Users\Administrator\Desktop\医保定点机构列表20210607.xlsx

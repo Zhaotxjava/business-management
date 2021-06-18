@@ -1,5 +1,5 @@
 
-package com.hengtiansoft.springbootthymeleaf.enums;
+package com.hfi.insurance.enums;
 
 /**
  * @Author ChenZX

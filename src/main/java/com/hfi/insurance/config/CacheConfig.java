@@ -1,4 +1,4 @@
-package com.hengtiansoft.springbootthymeleaf.config;
+package com.hfi.insurance.config;
 
 
 import com.github.benmanes.caffeine.cache.Cache;

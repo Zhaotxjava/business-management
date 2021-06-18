@@ -1,4 +1,4 @@
-package com.hengtiansoft.springbootthymeleaf.model;
+package com.hfi.insurance.model;
 
 import lombok.Data;
 
