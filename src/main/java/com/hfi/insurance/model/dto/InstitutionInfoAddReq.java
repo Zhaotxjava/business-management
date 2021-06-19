@@ -15,7 +15,7 @@ public class InstitutionInfoAddReq {
     private String number;
 
     @ApiModelProperty("法人姓名")
-    private String legalRepresentName;
+    private String legalName;
 
     @ApiModelProperty("法人身份证")
     private String legalIdCard;

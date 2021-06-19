@@ -34,6 +34,11 @@ file:
   path: C:\Users\Administrator\Desktop\医保定点机构列表20210607.xlsx
   down:
     url: E:\demo
+#天印系统接口配置
+esignpro:
+  url: http://page.iconntech.cn:18209
+  projectId: 1001001
+  secret: c5505d7831bc626e92c175052956c7fc
 
 
 

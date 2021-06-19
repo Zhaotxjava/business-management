@@ -15,21 +15,22 @@ import java.util.Map;
 class Test {
 
     public static void main(String[] args) {
-        testDoPostForOpenApi();
+        //testDoPostForOpenApi();
+        testDoGetForOpenApi();
     }
 
     /**
      * 以请求外部用户详情接口为例，get请求没有请求体，所以生成秘钥的时候以空字符为原文生成对应的秘钥，也就是同一个项目ID的get请求的秘钥应该都是一样的;
      */
-    public void testDoGetForOpenApi() {
+    public static void testDoGetForOpenApi() {
         Map<String, String> heads = new HashMap<>();
-        heads.put("x-timevale-project-id", "1000003");
-        String signature = HmacSHA256Utils.hmacSha256("", "2ffb638e64e364103edf927411f087e4");
+        heads.put("x-timevale-project-id", "1001001");
+        String signature = HmacSHA256Utils.hmacSha256("", "c5505d7831bc626e92c175052956c7fc");
         heads.put("x-timevale-signature", signature);
         Map<String, String> params = new HashMap<>();
-        params.put("accountId", "c205166f-2c1e-49cf-aa5e-c59312a60816");
-        params.put("uniqueId", "zml001");
-        String result = HttpUtil.doGet("http://127.0.0.1:8035/V1/accounts/outerAccounts/query", heads, params);
+        params.put("accountId", "8a59fe62-d596-4e53-a56d-22fc732c7642");
+        params.put("uniqueId", "220181197708241552");
+        String result = HttpUtil.doGet("http://page.iconntech.cn:18209/V1/accounts/outerAccounts/query", heads, params);
         System.out.println(result);
     }
 

@@ -20,7 +20,7 @@ public interface InstitutionInfoService {
 
     ApiResponse getInstitutionList();
 
-    ApiResponse appendInstitutionInfo(InstitutionInfoAddReq req);
+    ApiResponse updateInstitutionInfo(InstitutionInfoAddReq req);
 
     ApiResponse downloadExcel();
 }

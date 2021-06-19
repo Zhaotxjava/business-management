@@ -1,9 +1,6 @@
 package com.hfi.insurance.service.Impl;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import com.fasterxml.jackson.databind.type.CollectionType;
+import com.alibaba.fastjson.JSONObject;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.hfi.insurance.common.ApiResponse;
 import com.hfi.insurance.enums.ErrorCodeEnum;
@@ -12,25 +9,22 @@ import com.hfi.insurance.model.ExcelSheetPO;
 import com.hfi.insurance.model.InstitutionInfo;
 import com.hfi.insurance.model.dto.InstitutionInfoAddReq;
 import com.hfi.insurance.service.InstitutionInfoService;
+import com.hfi.insurance.service.OrganizationsService;
 import com.hfi.insurance.utils.ImportExcelUtil;
 import com.hfi.insurance.utils.MapperUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * @Author ChenZX
@@ -43,6 +37,9 @@ public class InstitutionInfoServiceImpl implements InstitutionInfoService {
 
     @Resource
     private Cache<String, String> caffeineCache;
+
+    @Autowired
+    private OrganizationsService organizationsService;
 
     @Value("${file.path}")
     private String filePath;
@@ -72,7 +69,7 @@ public class InstitutionInfoServiceImpl implements InstitutionInfoService {
                 InstitutionInfo institutionInfo = new InstitutionInfo();
                 for (int i = 1; i < valueList.size(); i++) {
                     String value = "";
-                    if (valueList.get(i) != null){
+                    if (valueList.get(i) != null) {
                         value = String.valueOf(valueList.get(i)).trim();
                     }
                     switch (i) {
@@ -86,7 +83,7 @@ public class InstitutionInfoServiceImpl implements InstitutionInfoService {
                             institutionInfo.setOrgInstitutionCode(value);
                             break;
                         case 5:
-                            institutionInfo.setLegalRepresentName(value);
+                            institutionInfo.setLegalName(value);
                             break;
                         case 6:
                             institutionInfo.setContactName(value);
@@ -145,17 +142,37 @@ public class InstitutionInfoServiceImpl implements InstitutionInfoService {
     }
 
     @Override
-    public ApiResponse appendInstitutionInfo(InstitutionInfoAddReq req) {
+    public ApiResponse updateInstitutionInfo(InstitutionInfoAddReq req) {
         List<InstitutionInfo> list = new ArrayList<>();
         String data = caffeineCache.asMap().get("data");
         if (null == data) {
             return new ApiResponse(ErrorCodeEnum.SYSTEM_ERROR.getCode(), "数据获取失败！");
         }
+
+        // 2>通过天印系统查询联系人是否已存在于系统，不存在则调用创建用户接口，得到用户的唯一编码，存在则直接跳到第4步
+        boolean accountExist = true;
+        String accountId = "";
+        JSONObject accountObj = organizationsService.queryAccounts("", req.getContactIdCard());
+        if (accountObj.containsKey("errCode")) {
+            if ("-1".equals(accountObj.get("errCode"))) {
+                accountExist = false;
+            } else {
+                log.error("查询外部用户信息异常，{}", accountObj);
+                return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), accountObj.getString("msg"));
+            }
+        }
+        accountId = accountObj.getString("accountId");
+        if (!accountExist) { //不存在则创建用户
+
+        }
+
+        // 3>调用天印系统查询该机构是否已存在系统，不存在则调用创建外部机构接口，存在则调用更新外部机构信息接口
+        // 4>机构创建完成以后，将数据更新到缓存并保存到excel中（保存excel可异步）
         try {
             list = MapperUtils.json2list(data, InstitutionInfo.class);
             list.forEach(institutionInfo -> {
                 if (req.getNumber().equals(institutionInfo.getNumber())) {
-                    institutionInfo.setLegalRepresentName(req.getLegalRepresentName());
+                    institutionInfo.setLegalName(req.getLegalName());
                     institutionInfo.setLegalIdCard(req.getLegalIdCard());
                     institutionInfo.setLegalPhone(req.getLegalPhone());
                     institutionInfo.setContactName(req.getContactName());
@@ -169,8 +186,8 @@ public class InstitutionInfoServiceImpl implements InstitutionInfoService {
             //重新添加缓存
             caffeineCache.put("data", data);
         } catch (Exception e) {
-            log.error("机构信息填充失败,{}", e.getMessage());
-            return new ApiResponse(ErrorCodeEnum.SYSTEM_ERROR.getCode(), e.getMessage());
+            log.error("机构信息填充失败,{}", e);
+            return new ApiResponse(ErrorCodeEnum.SYSTEM_ERROR.getCode(), "信息保存失败");
         }
         return new ApiResponse(list);
     }
@@ -196,7 +213,7 @@ public class InstitutionInfoServiceImpl implements InstitutionInfoService {
             institution.add(institutionInfo.getNumber());
             institution.add(institutionInfo.getInstitutionName());
             institution.add(institutionInfo.getOrgInstitutionCode());
-            institution.add(institutionInfo.getLegalRepresentName());
+            institution.add(institutionInfo.getLegalName());
             institution.add(institutionInfo.getLegalIdCard());
             institution.add(institutionInfo.getLegalPhone());
             institution.add(institutionInfo.getContactName());
