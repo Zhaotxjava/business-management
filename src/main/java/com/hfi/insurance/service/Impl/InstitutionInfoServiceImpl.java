@@ -10,6 +10,7 @@ import com.hfi.insurance.model.InstitutionInfo;
 import com.hfi.insurance.model.dto.InstitutionInfoAddReq;
 import com.hfi.insurance.service.InstitutionInfoService;
 import com.hfi.insurance.service.OrganizationsService;
+import com.hfi.insurance.utils.FileUploadUtil;
 import com.hfi.insurance.utils.ImportExcelUtil;
 import com.hfi.insurance.utils.MapperUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -292,18 +294,31 @@ public class InstitutionInfoServiceImpl implements InstitutionInfoService {
     }
 
     @Override
-    public ApiResponse downloadExcel() {
+    public void downloadExcel(HttpServletResponse response) {
+//        ExecutorService executorService = Executors.newSingleThreadExecutor();
+//        CompletableFuture<ApiResponse> future = CompletableFuture.supplyAsync(this::createNewExcel, executorService)
+//                .thenApplyAsync(f -> {
+//                    FileUploadUtil.download("医保定点机构列表20210607.xlsx",fileUrl,response);
+//                    return f;
+//                }, executorService);
+//        executorService.shutdown();
+//        return future.join();
+        try {
+            createNewExcel();
+        } catch (Exception e) {
+            log.error("生成新的excel失败，原因：{}",e.getMessage());
+        }
+        FileUploadUtil.download("医保定点机构列表20210607.xlsx", fileUrl, response);
+    }
+
+    private void createNewExcel() throws Exception {
         List<InstitutionInfo> list = new ArrayList<>();
         String data = caffeineCache.asMap().get("data");
         if (null == data) {
-            return new ApiResponse(ErrorCodeEnum.SYSTEM_ERROR.getCode(), "数据获取失败！");
+            return;
         }
-        try {
-            list = MapperUtils.json2list(data, InstitutionInfo.class);
-            log.info("数据量：{}条", list.size());
-        } catch (Exception e) {
-            return new ApiResponse(ErrorCodeEnum.SYSTEM_ERROR.getCode(), e.getMessage());
-        }
+        list = MapperUtils.json2list(data, InstitutionInfo.class);
+        log.info("数据量：{}条", list.size());
         String[] headers = {"编号", "名称", "组织机构代码", "法定代表人", "法人身份证", "法人手机", "联系人", "联系人身份证", "联系人手机"};
         List<List<Object>> dataList = new ArrayList<>();
         for (int i = 1; i < list.size(); i++) {
@@ -324,12 +339,7 @@ public class InstitutionInfoServiceImpl implements InstitutionInfoService {
         excelSheet.setHeaders(headers);
         excelSheet.setDataList(dataList);
         List<ExcelSheetPO> excelSheetList = Collections.singletonList(excelSheet);
-        try {
-            ImportExcelUtil.createWorkbookAtDisk(ExcelVersion.V2007, excelSheetList, fileUrl);
-        } catch (IOException e) {
-            return new ApiResponse(ErrorCodeEnum.SYSTEM_ERROR.getCode(), e.getMessage());
-        }
-        return new ApiResponse(ErrorCodeEnum.SUCCESS);
+        ImportExcelUtil.createWorkbookAtDisk(ExcelVersion.V2007, excelSheetList, fileUrl);
     }
 
     @PostConstruct

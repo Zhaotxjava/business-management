@@ -5,6 +5,7 @@ import com.hfi.insurance.common.ApiResponse;
 import com.hfi.insurance.model.InstitutionInfo;
 import com.hfi.insurance.model.dto.InstitutionInfoAddReq;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 
@@ -22,5 +23,5 @@ public interface InstitutionInfoService {
 
     ApiResponse updateInstitutionInfo(InstitutionInfoAddReq req);
 
-    ApiResponse downloadExcel();
+    void downloadExcel(HttpServletResponse response);
 }
