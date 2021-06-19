@@ -36,7 +36,7 @@ public class OrganizationsServiceImpl implements OrganizationsService {
         JSONObject object = new JSONObject();
         if (StringUtils.isNotEmpty(result)) {
             object = JSONObject.parseObject(result);
-            if ("0".equals(object.get("errCode"))) {
+            if ("0".equals(object.getString("errCode"))) {
                 //{"errCode":0,"msg":"success","errShow":true,"data":{"accountId":"8a59fe62-d596-4e53-a56d-22fc732c7642","uniqueId":"220181197708241552","esignAccountId":"54e4e31fbe0a415fba0acf7c39827d75"}}
                 return object.getJSONObject("data");
             } else {

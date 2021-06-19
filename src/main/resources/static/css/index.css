@@ -1,6 +1,10 @@
 .content{
     padding: 20px 40px;
 }
+.tableArea{
+    height: 600px;
+    overflow: scroll;
+}
 .table-title{
     font-size: 16px;
     font-weight: bold;

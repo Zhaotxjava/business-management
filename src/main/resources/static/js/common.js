@@ -33,8 +33,8 @@ function isIdCardNo(num) {
 }
 
 function isMobile(mobile) {
-    var length = value.length;
-    if (length == 11 && /^(((1[3456789]))+\d{9})$/.test(value)) {
+    var length = mobile.length;
+    if (length == 11 && /^(((1[3456789]))+\d{9})$/.test(mobile)) {
         return true;
     }
     return false;

@@ -14,17 +14,20 @@ import com.hfi.insurance.utils.ImportExcelUtil;
 import com.hfi.insurance.utils.MapperUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Collectors;
 
 /**
@@ -41,6 +44,8 @@ public class InstitutionInfoServiceImpl implements InstitutionInfoService {
 
     @Autowired
     private OrganizationsService organizationsService;
+
+    private BlockingQueue<InstitutionInfo> writeFileQueue = new LinkedBlockingQueue<>();
 
     @Value("${file.path}")
     private String filePath;
@@ -162,36 +167,110 @@ public class InstitutionInfoServiceImpl implements InstitutionInfoService {
         if (null == data) {
             return new ApiResponse(ErrorCodeEnum.SYSTEM_ERROR.getCode(), "数据获取失败！");
         }
-
+        // 1>从缓存中查询本条记录
+        InstitutionInfo cacheInfo = new InstitutionInfo();
+        try {
+            list = MapperUtils.json2list(data, InstitutionInfo.class);
+            Optional<InstitutionInfo> any = list.stream().filter(clinic -> clinic.getNumber().equals(req.getNumber())).findAny();
+            if (any.isPresent()) {
+                cacheInfo = any.get();
+            }
+        } catch (Exception e) {
+            log.error("缓存中读取机构信息失败,{}", e);
+            return new ApiResponse(ErrorCodeEnum.SYSTEM_ERROR.getCode(), "信息保存失败");
+        }
         // 2>通过天印系统查询联系人是否已存在于系统，不存在则调用创建用户接口，得到用户的唯一编码，存在则直接跳到第4步
         boolean accountExist = true;
+        boolean organExist = true;
         String accountId = "";
+        String organizeId = "";
         JSONObject accountObj = organizationsService.queryAccounts("", req.getContactIdCard());
         if (accountObj.containsKey("errCode")) {
-            if ("-1".equals(accountObj.get("errCode"))) {
+            if ("-1".equals(accountObj.getString("errCode"))) {
                 accountExist = false;
             } else {
                 log.error("查询外部用户信息异常，{}", accountObj);
                 return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), accountObj.getString("msg"));
             }
         }
-        accountId = accountObj.getString("accountId");
         if (!accountExist) { //不存在则创建用户
-
+            JSONObject resultObj = organizationsService.createAccounts(req.getContactName(), req.getContactIdCard(), req.getContactPhone());
+            if (resultObj.containsKey("errCode")) {
+                log.error("创建外部用户信息异常，{}", resultObj);
+                return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
+            }
+            accountId = resultObj.getString(accountId);
+        } else {
+            //系统已存在则更新用户信息
+            accountId = accountObj.getString("accountId");
+            JSONObject resultObj = organizationsService.updateAccounts(accountId, req.getContactName(), req.getContactIdCard(), req.getContactPhone());
+            if (resultObj.containsKey("errCode")) {
+                log.error("更新外部用户信息异常，{}", resultObj);
+                return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
+            }
         }
-
         // 3>调用天印系统查询该机构是否已存在系统，不存在则调用创建外部机构接口，存在则调用更新外部机构信息接口
+        JSONObject organObj = organizationsService.queryOrgans("", req.getNumber());
+        if (organObj.containsKey("errCode")) {
+            if ("-1".equals(organObj.getString("errCode"))) {
+                organExist = false;
+            } else {
+                log.error("查询外部机构信息异常，{}", organObj);
+                return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), accountObj.getString("msg"));
+            }
+        }
+        InstitutionInfo institutionInfo = new InstitutionInfo();
+        BeanUtils.copyProperties(req, institutionInfo);
+        institutionInfo.setInstitutionName(cacheInfo.getInstitutionName());
+        if (!organExist) { //不存在则创建机构
+            //institutionInfo.setAccountId(accountId); //创建默认经办人
+            JSONObject resultObj = organizationsService.createOrgans(institutionInfo);
+            if (resultObj.containsKey("errCode")) {
+                log.error("创建外部机构信息异常，{}", resultObj);
+                return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
+            }
+            organizeId = accountObj.getString("organizeId");
+        } else {
+            //更新机构信息
+            organizeId = accountObj.getString("organizeId");
+            institutionInfo.setOrganizeId(organizeId);
+            JSONObject resultObj = organizationsService.updateOrgans(institutionInfo);
+            if (resultObj.containsKey("errCode")) {
+                log.error("更新外部用户信息异常，{}", resultObj);
+                return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
+            }
+            //判定是否要重新绑定用户
+            if (StringUtils.isNotEmpty(cacheInfo.getAccountId())) {
+                resultObj = organizationsService.unbindAgent(cacheInfo.getAccountId(), institutionInfo.getNumber(), accountId, institutionInfo.getContactIdCard());
+                if (resultObj.containsKey("errCode")) {
+                    log.error("外部机构解绑经办人信息异常，{}", resultObj);
+                    return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
+                }
+            }
+        }
+        JSONObject resultObj = organizationsService.bindAgent(organizeId, institutionInfo.getNumber(), accountId, institutionInfo.getContactIdCard());
+        if (resultObj.containsKey("errCode")) {
+            log.error("外部机构绑定经办人信息异常，{}", resultObj);
+            return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
+        }
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        institutionInfo.setAccountId(accountId);
+        institutionInfo.setOrganizeId(organizeId);
+        institutionInfo.setUpdateTime(df.format(new Date()));
         // 4>机构创建完成以后，将数据更新到缓存并保存到excel中（保存excel可异步）
         try {
-            list = MapperUtils.json2list(data, InstitutionInfo.class);
-            list.forEach(institutionInfo -> {
-                if (req.getNumber().equals(institutionInfo.getNumber())) {
-                    institutionInfo.setLegalName(req.getLegalName());
-                    institutionInfo.setLegalIdCard(req.getLegalIdCard());
-                    institutionInfo.setLegalPhone(req.getLegalPhone());
-                    institutionInfo.setContactName(req.getContactName());
-                    institutionInfo.setContactIdCard(req.getContactIdCard());
-                    institutionInfo.setContactPhone(req.getContactPhone());
+            list.forEach(tmp -> {
+                if (req.getNumber().equals(tmp.getNumber())) {
+                    tmp.setOrgInstitutionCode(req.getOrgInstitutionCode());
+                    tmp.setLegalName(req.getLegalName());
+                    tmp.setLegalIdCard(req.getLegalIdCard());
+                    tmp.setLegalPhone(req.getLegalPhone());
+                    tmp.setContactName(req.getContactName());
+                    tmp.setContactIdCard(req.getContactIdCard());
+                    tmp.setContactPhone(req.getContactPhone());
+                    tmp.setAccountId(institutionInfo.getAccountId());
+                    tmp.setOrganizeId(institutionInfo.getOrganizeId());
+                    tmp.setUpdateTime(institutionInfo.getUpdateTime());
                 }
             });
             data = MapperUtils.obj2json(list);
@@ -200,8 +279,14 @@ public class InstitutionInfoServiceImpl implements InstitutionInfoService {
             //重新添加缓存
             caffeineCache.put("data", data);
         } catch (Exception e) {
-            log.error("机构信息填充失败,{}", e);
+            log.error("更新缓存失败,{}", e);
             return new ApiResponse(ErrorCodeEnum.SYSTEM_ERROR.getCode(), "信息保存失败");
+        }
+        // todo 另起线程处理excel
+        try {
+            writeFileQueue.put(institutionInfo);
+        } catch (Exception e) {
+            log.error("添加队列异常", e);
         }
         return new ApiResponse(list);
     }
@@ -245,5 +330,32 @@ public class InstitutionInfoServiceImpl implements InstitutionInfoService {
             return new ApiResponse(ErrorCodeEnum.SYSTEM_ERROR.getCode(), e.getMessage());
         }
         return new ApiResponse(ErrorCodeEnum.SUCCESS);
+    }
+
+    @PostConstruct
+    private void consumer() {
+        log.info("启动-开启写文件线程");
+        WriteFileThread writeFileThread = new WriteFileThread(writeFileQueue);
+        writeFileThread.start();
+    }
+
+    private class WriteFileThread extends Thread {
+        private BlockingQueue<InstitutionInfo> writeFileQueue;
+
+        public WriteFileThread(BlockingQueue<InstitutionInfo> writeFileQueue) {
+            this.writeFileQueue = writeFileQueue;
+        }
+
+        @Override
+        public void run() {
+            while (true) {
+                try {
+                    InstitutionInfo institutionInfo = writeFileQueue.take();
+                    log.info("开始写文件={}", institutionInfo);
+                } catch (InterruptedException e) {
+                    log.error("更新文件异常", e);
+                }
+            }
+        }
     }
 }

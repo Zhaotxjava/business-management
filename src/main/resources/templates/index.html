@@ -217,7 +217,7 @@
         if (isnull(legalPhone)) {
             layer.msg('请输入法人手机号');
             return false;
-        } else if (isMobile(legalPhone)) {
+        } else if (!isMobile(legalPhone)) {
             layer.msg('请输入正确的法人手机号');
             return false;
         }
@@ -228,21 +228,21 @@
         if (isnull(contactIdCard)) {
             layer.msg('请输入联系人身份证');
             return false;
-        } else if (isIdCardNo(contactIdCard)) {
+        } else if (!isIdCardNo(contactIdCard)) {
             layer.msg('请输入正确的联系人身份证');
             return false;
         }
         if (isnull(contactPhone)) {
             layer.msg('请输入联系人手机号');
             return false;
-        } else if (isMobile(contactPhone)) {
+        } else if (!isMobile(contactPhone)) {
             layer.msg('请输入正确的联系人手机号');
             return false;
         }
         $.ajax({
             url: baseurl + "/hfi/updateInstitutionInfo",
             type: "post",
-            data: {
+            data: JSON.stringify({
                 number: number,
                 institutionName: institutionName,
                 orgInstitutionCode: orgInstitutionCode,
@@ -252,8 +252,9 @@
                 contactName: contactName,
                 contactIdCard: contactIdCard,
                 contactPhone: contactPhone
-            },
+            }),
             dataType: "json",
+            contentType: "application/json; charset=UTF-8",
             async: true,
             success: function (data) {
                 console.log(JSON.stringify(data));
