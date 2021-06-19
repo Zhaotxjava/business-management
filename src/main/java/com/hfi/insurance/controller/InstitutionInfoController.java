@@ -10,6 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
 
 
 @RestController
@@ -65,8 +66,8 @@ public class InstitutionInfoController {
     }
 
     @PostMapping("downloadExcel")
-    public ApiResponse downloadExcel() {
-        return institutionInfoService.downloadExcel();
+    public ApiResponse downloadExcel(HttpServletResponse response) {
+        return institutionInfoService.downloadExcel(response);
     }
 
 

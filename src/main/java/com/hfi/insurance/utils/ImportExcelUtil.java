@@ -237,7 +237,10 @@ public class ImportExcelUtil {
      */
     public static void createWorkbookAtDisk(ExcelVersion version, List<ExcelSheetPO> excelSheets, String filePath)
             throws IOException {
-        File file = new File(filePath,System.currentTimeMillis() + ".xlsx");
+        File file = new File(filePath,"医保定点机构列表20210607.xlsx");
+        if (file.exists()){
+            file.delete();
+        }
         FileOutputStream fileOut = new FileOutputStream(file);
         createWorkbookAtOutStream(version, excelSheets, fileOut, true);
     }

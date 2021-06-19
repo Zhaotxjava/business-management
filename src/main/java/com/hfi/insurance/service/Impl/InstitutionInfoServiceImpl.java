@@ -10,6 +10,7 @@ import com.hfi.insurance.model.InstitutionInfo;
 import com.hfi.insurance.model.dto.InstitutionInfoAddReq;
 import com.hfi.insurance.service.InstitutionInfoService;
 import com.hfi.insurance.service.OrganizationsService;
+import com.hfi.insurance.utils.FileUploadUtil;
 import com.hfi.insurance.utils.ImportExcelUtil;
 import com.hfi.insurance.utils.MapperUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -19,12 +20,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 /**
@@ -198,7 +203,21 @@ public class InstitutionInfoServiceImpl implements InstitutionInfoService {
     }
 
     @Override
-    public ApiResponse downloadExcel() {
+    public ApiResponse downloadExcel(HttpServletResponse response) {
+//        ExecutorService executorService = Executors.newSingleThreadExecutor();
+//        CompletableFuture<ApiResponse> future = CompletableFuture.supplyAsync(this::createNewExcel, executorService)
+//                .thenApplyAsync(f -> {
+//                    FileUploadUtil.download("医保定点机构列表20210607.xlsx",fileUrl,response);
+//                    return f;
+//                }, executorService);
+//        executorService.shutdown();
+//        return future.join();
+        createNewExcel();
+        FileUploadUtil.download("医保定点机构列表20210607.xlsx",fileUrl,response);
+        return new ApiResponse(ErrorCodeEnum.SUCCESS);
+    }
+
+    private ApiResponse createNewExcel() {
         List<InstitutionInfo> list = new ArrayList<>();
         String data = caffeineCache.asMap().get("data");
         if (null == data) {
