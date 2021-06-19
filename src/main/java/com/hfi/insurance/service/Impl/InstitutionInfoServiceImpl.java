@@ -97,6 +97,15 @@ public class InstitutionInfoServiceImpl implements InstitutionInfoService {
                         case 7:
                             institutionInfo.setContactPhone(value);
                             break;
+                        case 9:
+                            institutionInfo.setLegalIdCard(value);
+                            break;
+                        case 10:
+                            institutionInfo.setLegalPhone(value);
+                            break;
+                        case 11:
+                            institutionInfo.setContactIdCard(value);
+                            break;
                         default:
                             break;
                     }

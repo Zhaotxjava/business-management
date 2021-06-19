@@ -21,6 +21,7 @@ public class InstitutionInfo {
     private String contactPhone;
     private String accountId;  //用户id
     private String organizeId;  //机构id
+    private String updateTime;
 
 
 }

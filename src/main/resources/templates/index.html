@@ -30,38 +30,43 @@
             <tbody id="tbody"></tbody>
         </table>
     </div>
-    <div class="popup-container" id="popupCon" onclick="cancel()">
+    <div class="popup-container" id="popupCon">
         <div class="popup" id="popup">
             <div class="form-horizontal" role="form">
                 <div class="form-group">
-                    <label for="org" class="col-sm-3 control-label">机构编码</label>
+                    <label for="number" class="col-sm-3 control-label">机构编码</label>
                     <div class="col-sm-9">
-                        <input type="text" class="form-control" id="org" placeholder="请输入">
+                        <input type="text" class="form-control" id="number" placeholder="请输入" disabled>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="orgInstitutionName" class="col-sm-3 control-label">机构名称</label>
+                    <label for="institutionName" class="col-sm-3 control-label">机构名称</label>
                     <div class="col-sm-9">
-                        <input type="text" class="form-control" id="orgInstitutionName" placeholder="">
+                        <input type="text" class="form-control" id="institutionName" placeholder="" disabled>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="orgInstitutionCode" class="col-sm-3 control-label">组织机构代码</label>
+                    <label for="orgInstitutionCode" class="col-sm-3 control-label">组织机构代码<span class="required">*</span></label>
                     <div class="col-sm-9">
                         <input type="text" class="form-control" id="orgInstitutionCode" placeholder="">
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="legalRepresentName" class="col-sm-3 control-label">法人姓名<span
-                            class="required">*</span></label>
+                    <label for="legalName" class="col-sm-3 control-label">法人姓名<span class="required">*</span></label>
                     <div class="col-sm-9">
-                        <input type="text" class="form-control" id="legalRepresentName" placeholder="">
+                        <input type="text" class="form-control" id="legalName" placeholder="">
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="legalRepresentName" class="col-sm-3 control-label">法人身份证<span class="required">*</span></label>
+                    <label for="legalIdCard" class="col-sm-3 control-label">法人身份证<span class="required">*</span></label>
                     <div class="col-sm-9">
-                        <input type="text" class="form-control" id="legalRepresentName" placeholder="">
+                        <input type="text" class="form-control" id="legalIdCard" placeholder="">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="legalPhone" class="col-sm-3 control-label">法人手机号<span class="required">*</span></label>
+                    <div class="col-sm-9">
+                        <input type="text" class="form-control" id="legalPhone" placeholder="">
                     </div>
                 </div>
                 <div class="form-group">
@@ -71,10 +76,10 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="contactName" class="col-sm-3 control-label">联系人身份证<span
+                    <label for="contactIdCard" class="col-sm-3 control-label">联系人身份证<span
                             class="required">*</span></label>
                     <div class="col-sm-9">
-                        <input type="text" class="form-control" id="contactName" placeholder="">
+                        <input type="text" class="form-control" id="contactIdCard" placeholder="">
                     </div>
                 </div>
                 <div class="form-group">
@@ -94,6 +99,7 @@
 </div>
 </body>
 <script>
+    var loadIndex = '';
     $(document).ready(function () {
         $('#popupCon').hide()
         getListData();
@@ -102,7 +108,7 @@
     function getListData() {
         //获取参数
         $.ajax({
-            url: baseurl + "/hfi/getInstitutionInfoByNumber?number=1001",
+            url: baseurl + "/hfi/getInstitutionInfoByNumber?number=0102",
             type: "post",
             data: {},
             dataType: "json",
@@ -117,31 +123,17 @@
                 } else {
                     layer.msg(data.message == '' ? '系统错误' : data.message);
                 }
+            },
+            beforeSend: function () {
+                loadIndex = layer.load(1, {shade: [0.1, '#fff']});
+            },
+            complete: function () {
+                layer.close(loadIndex);
+            },
+            error: function (e) {
+                layer.msg('系统服务异常');
             }
         });
-        /*var data = [{
-            "clinicName": "string",
-            "contactName": "string",
-            "contactPhone": "string",
-            "legalRepresentName": "string",
-            "number": "string",
-            "orgInstitutionCode": "string"
-        }, {
-            "clinicName": "string1",
-            "contactName": "string1",
-            "contactPhone": "string1",
-            "legalRepresentName": "string1",
-            "number": "string1",
-            "orgInstitutionCode": "string1"
-        }, {
-            "clinicName": "string2",
-            "contactName": "string2",
-            "contactPhone": "string2",
-            "legalRepresentName": "string2",
-            "number": "string2",
-            "orgInstitutionCode": "string2"
-        }];
-        $("#tbody").html(createTableHtml(data));*/
     }
 
     function isnull(str) {
@@ -186,7 +178,7 @@
                 bcRowHtml += '<tr value=\'rowData\'>' + rowHtml + "</tr>";
             } else {
                 rowHtml += '<td>' +
-                    '<button class=\'btn btn-primary\'onclick= "showMyPopup(' + JSON.stringify(rowData).replace(/\"/g, "'") + ')">' +
+                    '<button class=\'btn btn-slave\'onclick= "showMyPopup(' + JSON.stringify(rowData).replace(/\"/g, "'") + ')">' +
                     '信息更新' +
                     "</button>" +
                     "</td>"
@@ -198,28 +190,89 @@
     }
 
     function undataInfo() {
-        var clinicName = $("#clinicName").val();
-        var contactName = $("#contactName").val();
+        var number = $("#number").val();
+        var institutionName = $("#institutionName").val();
         var orgInstitutionCode = $("#orgInstitutionCode").val();
+        var legalName = $("#legalName").val();
+        var legalIdCard = $("#legalIdCard").val();
+        var legalPhone = $("#legalPhone").val();
+        var contactName = $("#contactName").val();
+        var contactIdCard = $("#contactIdCard").val();
         var contactPhone = $("#contactPhone").val();
-        var legalRepresentName = $("#legalRepresentName").val();
-        const params = {
-            clinicName,
-            contactName,
-            orgInstitutionCode,
-            contactPhone,
-            legalRepresentName,
+        if (isnull(orgInstitutionCode)) {
+            layer.msg('请输入组织机构代码');
+            return false;
+        }
+        if (isnull(legalName)) {
+            layer.msg('请输入法人姓名');
+            return false;
+        }
+        if (isnull(legalIdCard)) {
+            layer.msg('请输入法人身份证');
+            return false;
+        } else if (!isIdCardNo(legalIdCard)) {
+            layer.msg('请输入正确的法人身份证');
+            return false;
+        }
+        if (isnull(legalPhone)) {
+            layer.msg('请输入法人手机号');
+            return false;
+        } else if (isMobile(legalPhone)) {
+            layer.msg('请输入正确的法人手机号');
+            return false;
+        }
+        if (isnull(contactName)) {
+            layer.msg('请输入联系人姓名');
+            return false;
+        }
+        if (isnull(contactIdCard)) {
+            layer.msg('请输入联系人身份证');
+            return false;
+        } else if (isIdCardNo(contactIdCard)) {
+            layer.msg('请输入正确的联系人身份证');
+            return false;
+        }
+        if (isnull(contactPhone)) {
+            layer.msg('请输入联系人手机号');
+            return false;
+        } else if (isMobile(contactPhone)) {
+            layer.msg('请输入正确的联系人手机号');
+            return false;
         }
         $.ajax({
-            url: "/getClinicInfoByNumber",
+            url: baseurl + "/hfi/updateInstitutionInfo",
             type: "post",
-            data: params,
+            data: {
+                number: number,
+                institutionName: institutionName,
+                orgInstitutionCode: orgInstitutionCode,
+                legalName: legalName,
+                legalIdCard: legalIdCard,
+                legalPhone: legalPhone,
+                contactName: contactName,
+                contactIdCard: contactIdCard,
+                contactPhone: contactPhone
+            },
             dataType: "json",
             async: true,
             success: function (data) {
                 console.log(JSON.stringify(data));
-                $('#popupCon').hide()
-                getListData()
+                if (data.code == '200') {
+                    $('#popupCon').hide();
+                    getListData();
+                } else {
+                    layer.msg(data.message == '' ? '信息保存异常' : data.message);
+                }
+
+            },
+            beforeSend: function () {
+                loadIndex = layer.load(1, {shade: [0.1, '#fff']});
+            },
+            complete: function () {
+                layer.close(loadIndex);
+            },
+            error: function (e) {
+                layer.msg('系统服务异常');
             }
         });
     }
@@ -227,11 +280,15 @@
     function showMyPopup(rowData) {
         console.log(rowData)
         $("input").attr("value", "");
-        $("#contactPhone").val(rowData.clinicName);
-        $("#contactPhone").val(rowData.contactName);
+        $("#number").val(rowData.number);
+        $("#institutionName").val(rowData.institutionName);
         $("#orgInstitutionCode").val(rowData.orgInstitutionCode);
-        $("#contactName").val(rowData.contactPhone);
-        $("#contactPhone").val(rowData.legalRepresentName);
+        $("#legalName").val(rowData.legalName);
+        $("#legalIdCard").val(rowData.legalIdCard);
+        $("#legalPhone").val(rowData.legalPhone);
+        $("#contactName").val(rowData.contactName);
+        $("#contactIdCard").val(rowData.contactIdCard);
+        $("#contactPhone").val(rowData.contactPhone);
         $('#popupCon').show()
     }
 

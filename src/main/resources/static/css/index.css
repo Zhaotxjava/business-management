@@ -31,3 +31,9 @@ table > thead{
 .required{
     color: red;
 }
+
+.btn-slave{
+    color: #fff;
+    background-color: #8b939a;
+    border-color: #8b939a;
+}
