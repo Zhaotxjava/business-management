@@ -31,7 +31,7 @@ swagger:
   enable: true
 
 file:
-  path: C:\Users\Administrator\Desktop\医保定点机构列表20210607.xlsx
+  path: C:\Users\hengtian\Desktop\医保定点机构列表20210607.xlsx
   down:
     url: E:\demo
 #天印系统接口配置

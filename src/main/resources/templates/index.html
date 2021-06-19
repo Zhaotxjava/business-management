@@ -102,17 +102,24 @@
     function getListData() {
         //获取参数
         $.ajax({
-            url: baseurl + "/hfi/getInstitutionInfoByNumber",
+            url: baseurl + "/hfi/getInstitutionInfoByNumber?number=1001",
             type: "post",
-            data: {number: 2},
+            data: {},
             dataType: "json",
             async: true,
             success: function (data) {
                 console.log(JSON.stringify(data));
-                $("#tbody").html(createTableHtml(data));
+                if (data.code == '200') {
+                    if (!data.data || data.data.length == 0) {
+                        layer.msg('暂无数据');
+                    }
+                    $("#tbody").html(createTableHtml(data.data));
+                } else {
+                    layer.msg(data.message == '' ? '系统错误' : data.message);
+                }
             }
         });
-        var data = [{
+        /*var data = [{
             "clinicName": "string",
             "contactName": "string",
             "contactPhone": "string",
@@ -134,43 +141,59 @@
             "number": "string2",
             "orgInstitutionCode": "string2"
         }];
-        $("#tbody").html(createTableHtml(data));
+        $("#tbody").html(createTableHtml(data));*/
+    }
+
+    function isnull(str) {
+        if (str == "" || str == null || str == 'null') {
+            return true;
+        }
+        return false;
+    }
+
+    function toString(str) {
+        return isnull(str) ? '' : str;
+    }
+
+    function isMakeup(rowData) {
+        if (isnull(rowData.orgInstitutionCode) || isnull(rowData.legalName) || isnull(rowData.legalIdCard) ||
+            isnull(rowData.legalPhone) || isnull(rowData.contactName) || isnull(rowData.contactIdCard) || isnull(rowData.contactPhone)) {
+            return true;
+        }
+        return false;
     }
 
     function createTableHtml(list) {
         var html = "";
+        var bcRowHtml = "";
+        var gxRowHtml = "";
         for (var i = 0; i < list.length; i++) {
             var rowData = list[i];
             console.log(rowData)
-            var transData = {
-                clinicName: rowData.clinicName,
-                contactName: rowData.contactName,
-                contactPhone: rowData.contactPhone,
-                legalRepresentName: rowData.legalRepresentName,
-                orgInstitutionCode: rowData.orgInstitutionCode,
-            };
             var rowHtml = '';
-            for (const rowDataKey in rowData) {
-                var valueCol = rowData[rowDataKey];
-                rowHtml += '<td>' + valueCol + '</td>'
-            }
-            if (rowData.clinicName == null || rowData.orgInstitutionCode == null ||
-                rowData.contactName == null || rowData.legalRepresentName == null ||
-                rowData.contactPhone == null) {
+            rowHtml += '<td>' + (i + 1) + '</td>';
+            rowHtml += '<td>' + rowData.number + '</td>';
+            rowHtml += '<td>' + rowData.institutionName + '</td>';
+            rowHtml += '<td>' + toString(rowData.orgInstitutionCode) + '</td>';
+            rowHtml += '<td>' + toString(rowData.legalName) + '</td>';
+            rowHtml += '<td>' + toString(rowData.contactName) + '</td>';
+            if (isMakeup(rowData)) {
                 rowHtml += '<td>' +
-                    '<button class=\'btn btn-primary\'onclick= "showMyPopup(' + JSON.stringify(transData).replace(/\"/g, "'") + ')">' +
+                    '<button class=\'btn btn-primary\'onclick= "showMyPopup(' + JSON.stringify(rowData).replace(/\"/g, "'") + ')">' +
                     '信息补充' +
                     "</button>" +
-                    "</td>"
+                    "</td>";
+                bcRowHtml += '<tr value=\'rowData\'>' + rowHtml + "</tr>";
             } else {
                 rowHtml += '<td>' +
-                    '<button class=\'btn btn-primary\'onclick= "showMyPopup(' + JSON.stringify(transData).replace(/\"/g, "'") + ')">' +
+                    '<button class=\'btn btn-primary\'onclick= "showMyPopup(' + JSON.stringify(rowData).replace(/\"/g, "'") + ')">' +
                     '信息更新' +
                     "</button>" +
                     "</td>"
+                gxRowHtml += '<tr value=\'rowData\'>' + rowHtml + "</tr>";
             }
-            html += '<tr value=\'rowData\'>' + rowHtml + "</tr>"
         }
+        html += bcRowHtml + gxRowHtml;
         return html;
     }
 

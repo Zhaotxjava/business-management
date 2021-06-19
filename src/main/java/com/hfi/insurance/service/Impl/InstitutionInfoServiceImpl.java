@@ -13,6 +13,7 @@ import com.hfi.insurance.service.OrganizationsService;
 import com.hfi.insurance.utils.ImportExcelUtil;
 import com.hfi.insurance.utils.MapperUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -24,7 +25,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * @Author ChenZX
@@ -98,6 +99,7 @@ public class InstitutionInfoServiceImpl implements InstitutionInfoService {
                 list.add(institutionInfo);
             });
         });
+        log.info("读取excel数据总行数={}", list.size());
         String data = null;
         try {
             data = MapperUtils.obj2json(list);
@@ -105,6 +107,7 @@ public class InstitutionInfoServiceImpl implements InstitutionInfoService {
             log.error("集合转json失败");
         }
         caffeineCache.put("data", data);
+        log.info("缓存excel数据成功");
         return list;
     }
 
@@ -112,17 +115,19 @@ public class InstitutionInfoServiceImpl implements InstitutionInfoService {
     public ApiResponse getInstitutionInfoByNumber(String number) {
         InstitutionInfo institutionInfo = new InstitutionInfo();
         String data = caffeineCache.asMap().get("data");
+        if (StringUtils.isEmpty(data)) {
+            log.error("缓存未查询到数据");
+            return new ApiResponse(ErrorCodeEnum.SYSTEM_ERROR.getCode(), "数据未就绪，请稍后再试……");
+        }
+        List<InstitutionInfo> resultList = new ArrayList<>();
         try {
             List<InstitutionInfo> list = MapperUtils.json2list(data, InstitutionInfo.class);
-            Optional<InstitutionInfo> any = list.stream().filter(clinic -> clinic.getNumber().equals(number)).findAny();
-            if (any.isPresent()) {
-                institutionInfo = any.get();
-            }
+            resultList = list.stream().filter(clinic -> clinic.getNumber().startsWith(number)).collect(Collectors.toList());
         } catch (Exception e) {
-            log.error("json解析失败");
-            return new ApiResponse(ErrorCodeEnum.SYSTEM_ERROR.getCode(), e.getMessage());
+            log.error("json解析失败，", e);
+            return new ApiResponse(ErrorCodeEnum.SYSTEM_ERROR.getCode(), "系统异常，请联系管理员");
         }
-        return new ApiResponse(institutionInfo);
+        return new ApiResponse(resultList);
     }
 
     @Override
