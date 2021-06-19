@@ -65,9 +65,9 @@ public class InstitutionInfoController {
         return institutionInfoService.updateInstitutionInfo(req);
     }
 
-    @PostMapping("downloadExcel")
-    public ApiResponse downloadExcel(HttpServletResponse response) {
-        return institutionInfoService.downloadExcel(response);
+    @GetMapping("downloadExcel")
+    public void downloadExcel(HttpServletResponse response) {
+        institutionInfoService.downloadExcel(response);
     }
 
 

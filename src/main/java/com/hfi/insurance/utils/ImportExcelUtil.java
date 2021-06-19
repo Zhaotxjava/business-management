@@ -295,10 +295,11 @@ public class ImportExcelUtil {
         List<List<Object>> dataList = excelSheetPO.getDataList();
         for (int i = 0; i < dataList.size(); i++) {
             List<Object> values = dataList.get(i);
-            Row row = sheet.createRow(2 + i);
+            Row row = sheet.createRow(1 + i);
             for (int j = 0; j < values.size(); j++) {
                 Cell cell = row.createCell(j);
-                cell.setCellStyle(getStyle(STYLE_DATA, wb));
+                //cell.setCellStyle(getStyle(STYLE_DATA, wb));
+                cell.getCellStyle().cloneStyleFrom(getStyle(STYLE_DATA, wb));
                 if (values.get(j) != null){
                     cell.setCellValue(values.get(j).toString());
                 }

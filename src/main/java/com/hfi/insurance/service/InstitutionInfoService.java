@@ -23,5 +23,5 @@ public interface InstitutionInfoService {
 
     ApiResponse updateInstitutionInfo(InstitutionInfoAddReq req);
 
-    ApiResponse downloadExcel(HttpServletResponse response);
+    void downloadExcel(HttpServletResponse response);
 }

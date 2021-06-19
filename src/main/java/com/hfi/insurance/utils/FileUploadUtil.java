@@ -111,7 +111,8 @@ public final class FileUploadUtil {
             fileName = fileName.replaceAll("\r", "%0D");
             fileName = fileName.replaceAll("\n", "%0A");
             response.setHeader("content-disposition","attachment" + ";fileName="+ URLEncoder.encode(fileName,"UTF-8"));
-            InputStream inputStream = getInputStream(filePath);
+            File file = new File(filePath,fileName);
+            InputStream inputStream = new FileInputStream(file);
             ServletOutputStream outputStream = response.getOutputStream();
             //文件复制
             IOUtils.copy(inputStream, outputStream);
