@@ -5,6 +5,7 @@ package com.hfi.insurance.utils;
  * @Date 2021/6/18 16:18
  * @Description:
  */
+
 import com.google.common.collect.Sets;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -13,26 +14,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URLEncoder;
-import java.util.Date;
 import java.util.Set;
-import java.util.UUID;
 
 /**
  * Class Name: FileUploadUtil
  * Description: 文件上传下载工具类
- * @author:
  *
+ * @author:
  */
 
 @Component
@@ -44,7 +38,7 @@ public final class FileUploadUtil {
     private static final Logger LOGGER = LoggerFactory.getLogger(FileUploadUtil.class);
 
     private static final Set<String> VALID_FILE_EXTS = Sets.newHashSet("jpg",
-            "png", "jpeg", "gif", "bmp", "pdf", "doc", "docx", "xls", "xlsx", "txt","zip","rar");
+            "png", "jpeg", "gif", "bmp", "pdf", "doc", "docx", "xls", "xlsx", "txt", "zip", "rar");
     public static final String FILE_NAME_LOG_TIP = "File name: {}";
     private static String uploadFilePath = null;
     private static String uploadFileUrl = null;
@@ -57,7 +51,7 @@ public final class FileUploadUtil {
      */
     @PostConstruct
     public void init() {
-        FileUploadConstant  fileUploadConstant = (FileUploadConstant) ApplicationContextHelper.getBean("fileUploadConstant");
+        FileUploadConstant fileUploadConstant = (FileUploadConstant) ApplicationContextHelper.getBean("fileUploadConstant");
         uploadFilePath = fileUploadConstant.getUploadFilePath();
         uploadFileUrl = fileUploadConstant.getUploadFileUrl();
     }
@@ -71,20 +65,18 @@ public final class FileUploadUtil {
     }
 
     /**
-     *
-     * @Title: getFileExt
-     * @Description: 获取文件扩展名
      * @param fileName 文件名
      * @return String
+     * @Title: getFileExt
+     * @Description: 获取文件扩展名
      */
     public static String getFileExt(String fileName) {
         return StringUtils.substringAfterLast(fileName, ".").toLowerCase();
     }
 
     /**
-     * @Description: 删除单个文件
-     *
      * @param filePath 被删除文件的文件名
+     * @Description: 删除单个文件
      */
     public static void deleteFile(String filePath) {
         try {
@@ -96,22 +88,22 @@ public final class FileUploadUtil {
     }
 
     /**
-     *
-     * @Title: download
-     * @Description: 文件下载
      * @param fileName 文件名
      * @param filePath 文件路径
      * @param response HttpServletResponse
+     * @Title: download
+     * @Description: 文件下载
      */
     public static void download(String fileName, String filePath, HttpServletResponse response) {
         try {
+            response.setCharacterEncoding("UTF-8");
             response.setContentType("text/html;charset=UTF-8");
             response.setContentType("application/octet-stream");
             //附件下载
             fileName = fileName.replaceAll("\r", "%0D");
             fileName = fileName.replaceAll("\n", "%0A");
-            response.setHeader("content-disposition","attachment" + ";fileName="+ URLEncoder.encode(fileName,"UTF-8"));
-            File file = new File(filePath,fileName);
+            response.setHeader("content-disposition", "attachment" + ";fileName=" + URLEncoder.encode(fileName, "UTF-8"));
+            File file = new File(filePath, fileName);
             InputStream inputStream = new FileInputStream(file);
             ServletOutputStream outputStream = response.getOutputStream();
             //文件复制
@@ -124,11 +116,10 @@ public final class FileUploadUtil {
     }
 
     /**
-     *
-     * @Title: download
-     * @Description: 文件下载
      * @param fileName 文件名
      * @param response HttpServletResponse
+     * @Title: download
+     * @Description: 文件下载
      */
     public static void download(InputStream inputStream, String fileName, HttpServletResponse response) {
         try {
@@ -137,7 +128,7 @@ public final class FileUploadUtil {
             //附件下载
             fileName = fileName.replaceAll("\r", "%0D");
             fileName = fileName.replaceAll("\n", "%0A");
-            response.setHeader("content-disposition","attachment" + ";fileName="+ URLEncoder.encode(fileName,"UTF-8"));
+            response.setHeader("content-disposition", "attachment" + ";fileName=" + URLEncoder.encode(fileName, "UTF-8"));
             ServletOutputStream outputStream = response.getOutputStream();
             //文件复制
             IOUtils.copy(inputStream, outputStream);
@@ -149,12 +140,11 @@ public final class FileUploadUtil {
     }
 
     /**
-     *
-     * @Title: getInputStream
-     * @Description: 获取输入流
      * @param filePath 文件路径
      * @return InputStream
      * @throws FileNotFoundException 文件找不到异常
+     * @Title: getInputStream
+     * @Description: 获取输入流
      */
     public static InputStream getInputStream(String filePath) throws FileNotFoundException {
         String realPath = getUploadFilePath() + "/" + filePath;

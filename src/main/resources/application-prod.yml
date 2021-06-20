@@ -1,0 +1,14 @@
+# Swagger API文档（是否开启）
+swagger:
+  enable: false
+
+file:
+  path: home\ins\医保定点机构列表20210607.xlsx
+  pathCsv: home\ins\医保定点机构列表20210607.csv
+  down:
+    url: home\ins\demo
+#天印系统接口配置
+esignpro:
+  url: http://page.iconntech.cn:18209
+  projectId: 1001001
+  secret: c5505d7831bc626e92c175052956c7fc

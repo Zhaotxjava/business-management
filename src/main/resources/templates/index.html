@@ -21,7 +21,7 @@
                 <th>序号</th>
                 <th>机构编码</th>
                 <th>机构名称</th>
-                <th>组织机构代码</th>
+                <th>统一社会信用代码</th>
                 <th>法人姓名</th>
                 <th>联系人</th>
                 <th>操作</th>
@@ -46,7 +46,7 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="orgInstitutionCode" class="col-sm-3 control-label">组织机构代码<span class="required">*</span></label>
+                    <label for="orgInstitutionCode" class="col-sm-3 control-label">统一社会信用代码<span class="required">*</span></label>
                     <div class="col-sm-9">
                         <input type="text" class="form-control" id="orgInstitutionCode" placeholder="">
                     </div>
@@ -100,7 +100,12 @@
 </body>
 <script>
     var loadIndex = '';
+    var hospitalid = '[[${number}]]';
     $(document).ready(function () {
+        if (!hospitalid) {
+            layer.msg('医院编码获取异常，请联系管理员……');
+            return false;
+        }
         $('#popupCon').hide()
         getListData();
     });
@@ -108,7 +113,7 @@
     function getListData() {
         //获取参数
         $.ajax({
-            url: baseurl + "/hfi/getInstitutionInfoByNumber?number=0102",
+            url: baseurl + "/getInstitutionInfoByNumber?number=" + hospitalid,
             type: "post",
             data: {},
             dataType: "json",
@@ -200,7 +205,7 @@
         var contactIdCard = $("#contactIdCard").val();
         var contactPhone = $("#contactPhone").val();
         if (isnull(orgInstitutionCode)) {
-            layer.msg('请输入组织机构代码');
+            layer.msg('请输入统一社会信用代码');
             return false;
         }
         if (isnull(legalName)) {
@@ -240,7 +245,7 @@
             return false;
         }
         $.ajax({
-            url: baseurl + "/hfi/updateInstitutionInfo",
+            url: baseurl + "/updateInstitutionInfo",
             type: "post",
             data: JSON.stringify({
                 number: number,

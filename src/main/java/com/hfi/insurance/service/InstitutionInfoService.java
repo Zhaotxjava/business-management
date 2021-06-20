@@ -15,7 +15,10 @@ import java.util.List;
  * @Description:
  */
 public interface InstitutionInfoService {
+
     List<InstitutionInfo> parseExcel() throws IOException;
+
+    List<InstitutionInfo> parseCSV() throws IOException;
 
     ApiResponse getInstitutionInfoByNumber(String number);
 
@@ -24,4 +27,6 @@ public interface InstitutionInfoService {
     ApiResponse updateInstitutionInfo(InstitutionInfoAddReq req);
 
     void downloadExcel(HttpServletResponse response);
+
+    void downloadCSV(HttpServletResponse response) throws Exception;
 }

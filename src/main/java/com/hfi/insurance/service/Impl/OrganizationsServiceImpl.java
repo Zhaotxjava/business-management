@@ -105,7 +105,7 @@ public class OrganizationsServiceImpl implements OrganizationsService {
         jsonObject.put("legalMobile", institutionInfo.getLegalPhone());
         jsonObject.put("legalName", institutionInfo.getLegalName());
         jsonObject.put("licenseNumber", institutionInfo.getOrgInstitutionCode());
-        jsonObject.put("licenseType", "ORANO");
+        jsonObject.put("licenseType", "SOCNO");
         jsonObject.put("organizeName", institutionInfo.getInstitutionName());
         jsonObject.put("organizeNo", institutionInfo.getNumber());
         convertHead(headMap, jsonObject.toJSONString());
@@ -122,7 +122,7 @@ public class OrganizationsServiceImpl implements OrganizationsService {
         params.put("organizeId", organizeId);
         params.put("organizeNo", organizeNo);
         String result = HttpUtil.doGet(url + "/V1/organizations/outerOrgans/query", headMap, params);
-        log.info("查询外部用户【{}】接口响应{}", organizeId, result);
+        log.info("查询外部机构【{}】接口响应{}", organizeId, result);
         return convertResult(result);
     }
 
@@ -135,7 +135,7 @@ public class OrganizationsServiceImpl implements OrganizationsService {
         jsonObject.put("legalMobile", institutionInfo.getLegalPhone());
         jsonObject.put("legalName", institutionInfo.getLegalName());
         jsonObject.put("licenseNumber", institutionInfo.getOrgInstitutionCode());
-        jsonObject.put("licenseType", "ORANO");
+        jsonObject.put("licenseType", "SOCNO");
         jsonObject.put("organizeName", institutionInfo.getInstitutionName());
         jsonObject.put("organizeId", institutionInfo.getOrganizeId());
         jsonObject.put("organizeNo", institutionInfo.getNumber());

@@ -12,7 +12,7 @@ public class InstitutionInfo {
 
     private String number;
     private String institutionName;
-    private String orgInstitutionCode;  //组织机构编码
+    private String orgInstitutionCode;  //统一社会信用代码
     private String legalName;
     private String legalIdCard;
     private String legalPhone;

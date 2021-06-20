@@ -23,9 +23,8 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
+import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
@@ -52,11 +51,15 @@ public class InstitutionInfoServiceImpl implements InstitutionInfoService {
     @Value("${file.path}")
     private String filePath;
 
+    @Value("${file.pathCsv}")
+    private String filePathCsv;
+
     @Value("${file.down.url}")
     private String fileUrl;
 
     @Override
     public List<InstitutionInfo> parseExcel() throws IOException {
+        long startTime = System.currentTimeMillis();
         File file = new File(filePath);
         FileInputStream inputStream = new FileInputStream(file);
         // 根据后缀名称判断excel的版本
@@ -115,7 +118,7 @@ public class InstitutionInfoServiceImpl implements InstitutionInfoService {
                 list.add(institutionInfo);
             });
         });
-        log.info("读取excel数据总行数={}", list.size());
+        log.info("读取excel数据总行数={}，耗时={}", list.size(), System.currentTimeMillis() - startTime);
         String data = null;
         try {
             data = MapperUtils.obj2json(list);
@@ -124,6 +127,60 @@ public class InstitutionInfoServiceImpl implements InstitutionInfoService {
         }
         caffeineCache.put("data", data);
         log.info("缓存excel数据成功");
+        return list;
+    }
+
+    @Override
+    public List<InstitutionInfo> parseCSV() throws IOException {
+        long startTime = System.currentTimeMillis();
+        List<InstitutionInfo> list = new ArrayList<>();
+        File csv = new File(filePathCsv);
+        try {
+            //第二步：从字符输入流读取文本，缓冲各个字符，从而实现字符、数组和行（文本的行数通过回车符来进行判定）的高效读取。
+            BufferedReader textFile = new BufferedReader(new FileReader(csv));
+            String lineDta = "";
+
+            //第三步：将文档的下一行数据赋值给lineData，并判断是否为空，若不为空则输出
+            int i = 0;
+            while ((lineDta = textFile.readLine()) != null) {
+                if (i == 0) {
+                    i++;
+                    continue;
+                }
+                i++;
+//                log.info("第{}行数据：{}", i, lineDta);
+                InstitutionInfo institutionInfo = new InstitutionInfo();
+                list.add(institutionInfo);
+                String[] infos = lineDta.split(",");
+//                log.info("行数据转换后，总长度{}：{}", infos.length, JSON.toJSONString(infos));
+                institutionInfo.setNumber(StringUtils.isNotBlank(infos[0]) ? infos[0].trim() : "");
+                institutionInfo.setInstitutionName(StringUtils.isNotBlank(infos[1]) ? infos[1].trim() : "");
+                institutionInfo.setOrgInstitutionCode(StringUtils.isNotBlank(infos[2]) ? infos[2].trim() : "");
+                institutionInfo.setLegalName(StringUtils.isNotBlank(infos[3]) ? infos[3].trim() : "");
+                institutionInfo.setContactName(StringUtils.isNotBlank(infos[4]) ? infos[4].trim() : "");
+                institutionInfo.setContactPhone(StringUtils.isNotBlank(infos[5]) ? infos[5].trim() : "");
+                institutionInfo.setLegalIdCard(StringUtils.isNotBlank(infos[7]) ? infos[7].trim() : "");
+                institutionInfo.setLegalPhone(StringUtils.isNotBlank(infos[8]) ? infos[8].trim() : "");
+                institutionInfo.setContactIdCard(StringUtils.isNotBlank(infos[9]) ? infos[9].trim() : "");
+                institutionInfo.setAccountId(StringUtils.isNotBlank(infos[10]) ? infos[10].trim() : "");
+                institutionInfo.setOrganizeId(StringUtils.isNotBlank(infos[11]) ? infos[11].trim() : "");
+                institutionInfo.setUpdateTime(StringUtils.isNotBlank(infos[12]) ? infos[12].trim() : "");
+            }
+            textFile.close();
+        } catch (FileNotFoundException e) {
+            log.error("没有找到指定文件", e);
+        } catch (IOException e) {
+            log.error("文件读写出错", e);
+        }
+        log.info("读取csv数据总行数={}，耗时={}", list.size(), System.currentTimeMillis() - startTime);
+        String data = null;
+        try {
+            data = MapperUtils.obj2json(list);
+        } catch (Exception e) {
+            log.error("集合转json失败");
+        }
+        caffeineCache.put("data", data);
+        log.info("缓存csv数据成功");
         return list;
     }
 
@@ -258,6 +315,7 @@ public class InstitutionInfoServiceImpl implements InstitutionInfoService {
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         institutionInfo.setAccountId(accountId);
         institutionInfo.setOrganizeId(organizeId);
+        //institutionInfo.setOrganizeId("12312");
         institutionInfo.setUpdateTime(df.format(new Date()));
         // 4>机构创建完成以后，将数据更新到缓存并保存到excel中（保存excel可异步）
         try {
@@ -284,7 +342,6 @@ public class InstitutionInfoServiceImpl implements InstitutionInfoService {
             log.error("更新缓存失败,{}", e);
             return new ApiResponse(ErrorCodeEnum.SYSTEM_ERROR.getCode(), "信息保存失败");
         }
-        // todo 另起线程处理excel
         try {
             writeFileQueue.put(institutionInfo);
         } catch (Exception e) {
@@ -295,18 +352,10 @@ public class InstitutionInfoServiceImpl implements InstitutionInfoService {
 
     @Override
     public void downloadExcel(HttpServletResponse response) {
-//        ExecutorService executorService = Executors.newSingleThreadExecutor();
-//        CompletableFuture<ApiResponse> future = CompletableFuture.supplyAsync(this::createNewExcel, executorService)
-//                .thenApplyAsync(f -> {
-//                    FileUploadUtil.download("医保定点机构列表20210607.xlsx",fileUrl,response);
-//                    return f;
-//                }, executorService);
-//        executorService.shutdown();
-//        return future.join();
         try {
             createNewExcel();
         } catch (Exception e) {
-            log.error("生成新的excel失败，原因：{}",e.getMessage());
+            log.error("生成新的excel失败，原因：{}", e.getMessage());
         }
         FileUploadUtil.download("医保定点机构列表20210607.xlsx", fileUrl, response);
     }
@@ -342,6 +391,46 @@ public class InstitutionInfoServiceImpl implements InstitutionInfoService {
         ImportExcelUtil.createWorkbookAtDisk(ExcelVersion.V2007, excelSheetList, fileUrl);
     }
 
+    @Override
+    public void downloadCSV(HttpServletResponse response) throws Exception {
+        response.setCharacterEncoding("UTF-8");
+
+        File file = new File(filePathCsv);
+        if (!file.exists()) {
+            // 让浏览器用UTF-8解析数据
+            response.setHeader("Content-type", "text/html;charset=UTF-8");
+            response.getWriter().write("文件不存在");
+            return;
+        }
+
+//        String fileName = URLEncoder.encode(filePathCsv.substring(filePathCsv.lastIndexOf("/") + 1), "UTF-8");
+        String fileName = URLEncoder.encode("医保定点机构列表.csv", "UTF-8");
+        response.setContentType("text/csv");
+        response.setHeader("Content-Disposition", String.format("attachment; filename=\"%s\"", fileName));
+        InputStream is = null;
+        OutputStream os = null;
+
+        try {
+            is = new FileInputStream(filePathCsv);
+            byte[] buffer = new byte[1024];
+            os = response.getOutputStream();
+            int len;
+            while ((len = is.read(buffer)) > 0) {
+                os.write(buffer, 0, len);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            try {
+                if (is != null) is.close();
+                if (os != null) os.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+        }
+    }
+
     @PostConstruct
     private void consumer() {
         log.info("启动-开启写文件线程");
@@ -362,6 +451,60 @@ public class InstitutionInfoServiceImpl implements InstitutionInfoService {
                 try {
                     InstitutionInfo institutionInfo = writeFileQueue.take();
                     log.info("开始写文件={}", institutionInfo);
+                    String data = caffeineCache.asMap().get("data");
+                    if (null == data) {
+                        log.error("数据缓存数据获取失败");
+                        return;
+                    }
+                    // 1>从缓存中查询本条记录
+                    List<InstitutionInfo> list = new ArrayList<>();
+                    try {
+                        list = MapperUtils.json2list(data, InstitutionInfo.class);
+                    } catch (Exception e) {
+                        log.error("缓存中转换机构信息失败", e);
+                    }
+                    int length = list.size();
+                    if (length == 0) {
+                        log.error("缓存中转换机构信息后信息为空");
+                        return;
+                    }
+                    File writeFile = new File(filePathCsv);
+                    try {
+                        //第二步：通过BufferedReader类创建一个使用默认大小输出缓冲区的缓冲字符输出流
+                        BufferedWriter writeText = new BufferedWriter(new FileWriter(writeFile));
+                        //第三步：将文档的下一行数据赋值给lineData，并判断是否为空，若不为空则输出
+                        writeText.write("编号,名称,组织机构代码,法定代表人,联系人,联系人手机,changdu,法人身份证,法人手机号,联系人身份证,accountId,organizeId,更新时间,changdu");
+                        list.forEach(tmp -> {
+                            try {
+                                writeText.newLine();    //换行
+                                //调用write的方法将字符串写到流中
+                                if (StringUtils.equals(tmp.getNumber(), institutionInfo.getNumber())) {
+                                    log.info("更新数据：{}", institutionInfo);
+                                    writeText.write(tmp.getNumber() + "," + tmp.getInstitutionName() + "," + institutionInfo.getOrgInstitutionCode() + "," +
+                                            institutionInfo.getLegalName() + "," + institutionInfo.getContactName() + "," + institutionInfo.getContactPhone() + ",0," + institutionInfo.getLegalIdCard() + "," + institutionInfo.getLegalPhone() + "," +
+                                            institutionInfo.getContactIdCard() + "," + institutionInfo.getAccountId() + "," + institutionInfo.getOrganizeId() + "," + institutionInfo.getUpdateTime() + ",0");
+
+                                } else {
+                                    writeText.write(tmp.getNumber() + "," + tmp.getInstitutionName() + "," + tmp.getOrgInstitutionCode() + "," +
+                                            tmp.getLegalName() + "," + tmp.getContactName() + "," + tmp.getContactPhone() + ",0," + tmp.getLegalIdCard() + "," + tmp.getLegalPhone() + "," +
+                                            tmp.getContactIdCard() + "," + tmp.getAccountId() + "," + tmp.getOrganizeId() + "," + tmp.getUpdateTime() + ",0");
+                                }
+
+                            } catch (IOException e) {
+                                log.error("写文件异常", e);
+                            }
+
+                        });
+                        //使用缓冲区的刷新方法将数据刷到目的地中
+                        writeText.flush();
+                        //关闭缓冲区，缓冲区没有调用系统底层资源，真正调用底层资源的是FileWriter对象，缓冲区仅仅是一个提高效率的作用
+                        //因此，此处的close()方法关闭的是被缓存的流对象
+                        writeText.close();
+                    } catch (FileNotFoundException e) {
+                        log.error("没有找到指定文件", e);
+                    } catch (IOException e) {
+                        log.error("文件读写出错", e);
+                    }
                 } catch (InterruptedException e) {
                     log.error("更新文件异常", e);
                 }

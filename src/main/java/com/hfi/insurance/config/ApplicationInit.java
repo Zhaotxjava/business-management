@@ -43,7 +43,7 @@ public class ApplicationInit implements ApplicationRunner {
                     + ":"
                     + port
                     + contextPath
-                    + "swagger-ui.html#/");
+                    + "/swagger-ui.html#/");
             log.info("| Doc API http://"
                     + WebUtil.getServerIP()
                     + ":"
@@ -52,9 +52,10 @@ public class ApplicationInit implements ApplicationRunner {
                     + "/doc.html");
         }
         try {
-            institutionInfoService.parseExcel();
+            institutionInfoService.parseCSV();
+            //institutionInfoService.parseExcel();
         } catch (IOException e) {
-            log.error("数据初始化失败,{}",e.getMessage());
+            log.error("数据初始化失败,{}", e.getMessage());
         }
         log.info("| 项目启动成功");
         log.info("==================================================");
