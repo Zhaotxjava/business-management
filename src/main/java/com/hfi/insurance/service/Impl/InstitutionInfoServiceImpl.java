@@ -241,50 +241,81 @@ public class InstitutionInfoServiceImpl implements InstitutionInfoService {
         // 2>通过天印系统查询联系人是否已存在于系统，不存在则调用创建用户接口，得到用户的唯一编码，存在则直接跳到第4步
         boolean accountExist = true;
         boolean organExist = true;
+        boolean isSameAccount = true;  //法人和经办人是否同一个
         String accountId = "";
+        String defaultAccountId = ""; //法人默认经办人
         String organizeId = "";
-        JSONObject accountObj = organizationsService.queryAccounts("", req.getContactIdCard());
+        if (!req.getLegalIdCard().equals(req.getContactIdCard())) {
+            isSameAccount = false;
+        }
+        // 判定法人是否已存在系统用户
+        JSONObject accountObj = organizationsService.queryAccounts("", req.getLegalIdCard());
         if (accountObj.containsKey("errCode")) {
             if ("-1".equals(accountObj.getString("errCode"))) {
                 accountExist = false;
             } else {
-                log.error("查询外部用户信息异常，{}", accountObj);
+                log.error("查询外部用户（法人）信息异常，{}", accountObj);
                 return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), accountObj.getString("msg"));
             }
         }
         if (!accountExist) { //不存在则创建用户
-            JSONObject resultObj = organizationsService.createAccounts(req.getContactName(), req.getContactIdCard(), req.getContactPhone());
+            JSONObject resultObj = organizationsService.createAccounts(req.getLegalName(), req.getLegalIdCard(), req.getLegalPhone());
+
             if (resultObj.containsKey("errCode")) {
-                log.error("创建外部用户信息异常，{}", resultObj);
+                log.error("创建外部用户（法人）信息异常，{}", resultObj);
                 return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
             }
-            accountId = resultObj.getString("accountId");
+            defaultAccountId = resultObj.getString("accountId");
         } else {
-            //系统已存在则更新用户信息
-            accountId = accountObj.getString("accountId");
-            JSONObject resultObj = organizationsService.updateAccounts(accountId, req.getContactName(), req.getContactIdCard(), req.getContactPhone());
+            defaultAccountId = accountObj.getString("accountId");
+            JSONObject resultObj = organizationsService.updateAccounts(defaultAccountId, req.getLegalName(), req.getLegalIdCard(), req.getLegalPhone());
             if (resultObj.containsKey("errCode")) {
-                log.error("更新外部用户信息异常，{}", resultObj);
+                log.error("更新外部用户（法人）信息异常，{}", resultObj);
                 return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
+            }
+        }
+        if (!isSameAccount) {
+            log.info("法人和经办人信息不一致，再创建联系人为经办人");
+            accountObj = organizationsService.queryAccounts("", req.getContactIdCard());
+            if (accountObj.containsKey("errCode")) {
+                if ("-1".equals(accountObj.getString("errCode"))) {
+                    accountExist = false;
+                } else {
+                    log.error("查询外部用户（联系人）信息异常，{}", accountObj);
+                    return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), accountObj.getString("msg"));
+                }
+            }
+            if (!accountExist) { //不存在则创建用户
+                JSONObject resultObj = organizationsService.createAccounts(req.getContactName(), req.getContactIdCard(), req.getContactPhone());
+                if (resultObj.containsKey("errCode")) {
+                    log.error("创建外部用户（联系人）信息异常，{}", resultObj);
+                    return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
+                }
+                accountId = resultObj.getString("accountId");
+            } else {
+                accountId = accountObj.getString("accountId");
+                JSONObject resultObj = organizationsService.updateAccounts(accountId, req.getContactName(), req.getContactIdCard(), req.getContactPhone());
+                if (resultObj.containsKey("errCode")) {
+                    log.error("更新外部用户（联系人）信息异常，{}", resultObj);
+                    return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
+                }
             }
         }
         // 3>调用天印系统查询该机构是否已存在系统，不存在则调用创建外部机构接口，存在则调用更新外部机构信息接口
         JSONObject organObj = organizationsService.queryOrgans("", req.getNumber());
-        String defaultAccountId = ""; // 默认经办人
         if (organObj.containsKey("errCode")) {
             if ("-1".equals(organObj.getString("errCode"))) {
                 organExist = false;
             } else {
                 log.error("查询外部机构信息异常，{}", organObj);
-                return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), accountObj.getString("msg"));
+                return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), organObj.getString("msg"));
             }
         }
         InstitutionInfo institutionInfo = new InstitutionInfo();
         BeanUtils.copyProperties(req, institutionInfo);
         institutionInfo.setInstitutionName(cacheInfo.getInstitutionName());
         if (!organExist) { //不存在则创建机构
-            institutionInfo.setAccountId(accountId); //创建默认经办人
-            defaultAccountId = accountId;
+            institutionInfo.setAccountId(defaultAccountId); //创建默认经办人
             JSONObject resultObj = organizationsService.createOrgans(institutionInfo);
             if (resultObj.containsKey("errCode")) {
                 log.error("创建外部机构信息异常，{}", resultObj);
@@ -294,32 +325,32 @@ public class InstitutionInfoServiceImpl implements InstitutionInfoService {
         } else {
             //更新机构信息
             organizeId = organObj.getString("organizeId");
-            defaultAccountId = organObj.getString("agentAccountId");
+            if (defaultAccountId.equals(organObj.getString("agentAccountId"))) {
+                log.error("法人信息已变更，系统暂不支持接口");
+                return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), "法人信息已变更，系统暂不支持接口更新");
+            }
             institutionInfo.setOrganizeId(organizeId);
             JSONObject resultObj = organizationsService.updateOrgans(institutionInfo);
             if (resultObj.containsKey("errCode")) {
                 log.error("更新外部用户信息异常，{}", resultObj);
                 return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
             }
-            //判定是否要重新绑定用户
-            if (!StringUtils.equals(defaultAccountId, accountId)) {
-                resultObj = organizationsService.unbindAgent(organizeId, institutionInfo.getNumber(), accountId, institutionInfo.getContactIdCard());
+        }
+        if (!isSameAccount) {
+            JSONObject resultObj = null;
+            if (StringUtils.isNotBlank(cacheInfo.getAccountId()) && !StringUtils.equals(cacheInfo.getAccountId(), accountId)) {
+                resultObj = organizationsService.unbindAgent(organizeId, institutionInfo.getNumber(), cacheInfo.getAccountId(), "");
                 if (resultObj.containsKey("errCode")) {
-                    if (!(StringUtils.equals("用户不存在", resultObj.getString("msg")) ||
-                            StringUtils.equals("该机构不存在该经办人", resultObj.getString("msg")) ||
-                            StringUtils.equals("不能解绑默认经办人", resultObj.getString("msg")))) {
-                        log.error("外部机构解绑经办人信息异常，{}", resultObj);
-                        return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
-                    }
+                    log.error("外部机构解绑经办人信息异常，{}", resultObj);
                 }
             }
-        }
-        if (!StringUtils.equals(defaultAccountId, accountId)) {
-            JSONObject resultObj = organizationsService.bindAgent(organizeId, institutionInfo.getNumber(), accountId, institutionInfo.getContactIdCard());
+            resultObj = organizationsService.bindAgent(organizeId, institutionInfo.getNumber(), accountId, institutionInfo.getContactIdCard());
             if (resultObj.containsKey("errCode")) {
                 log.error("外部机构绑定经办人信息异常，{}", resultObj);
                 return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
             }
+        } else {
+            accountId = defaultAccountId;
         }
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         institutionInfo.setAccountId(accountId);
