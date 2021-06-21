@@ -73,6 +73,7 @@ public class HttpUtil {
      */
     public static String doGet(
             String url, Map<String, String> headers, Map<String, String> urlParams) {
+        log.info("请求参数：{}", urlParams);
         HttpGet httpGet = new HttpGet(buildUrl(url, urlParams));
         addHeaders(httpGet, headers);
         String data = null;
@@ -148,6 +149,7 @@ public class HttpUtil {
      * @return
      */
     public static String doPost(String url, Map<String, String> headers, String params) {
+        log.info("请求参数：{}", params);
         HttpPost httpPost = new HttpPost(url);
         String data = null;
         try {
@@ -310,9 +312,9 @@ public class HttpUtil {
                             .setTargetPreferredAuthSchemes(
                                     Arrays.asList(AuthSchemes.NTLM, AuthSchemes.DIGEST))
                             .setProxyPreferredAuthSchemes(Arrays.asList(AuthSchemes.BASIC))
-                            .setSocketTimeout(1000)
-                            .setConnectTimeout(2000)
-                            .setConnectionRequestTimeout(1000)
+                            .setSocketTimeout(10000)
+                            .setConnectTimeout(20000)
+                            .setConnectionRequestTimeout(10000)
                             .build();
         }
     }
@@ -330,13 +332,15 @@ public class HttpUtil {
                             }
 
                             @Override
-                            public void checkClientTrusted(X509Certificate[] xcs, String str) {}
+                            public void checkClientTrusted(X509Certificate[] xcs, String str) {
+                            }
 
                             @Override
-                            public void checkServerTrusted(X509Certificate[] xcs, String str) {}
+                            public void checkServerTrusted(X509Certificate[] xcs, String str) {
+                            }
                         };
                 SSLContext ctx = SSLContext.getInstance(SSLConnectionSocketFactory.TLS);
-                ctx.init(null, new TrustManager[] {trustManager}, null);
+                ctx.init(null, new TrustManager[]{trustManager}, null);
                 SSLConnectionSocketFactory socketFactory =
                         new SSLConnectionSocketFactory(ctx, NoopHostnameVerifier.INSTANCE);
                 Registry<ConnectionSocketFactory> socketFactoryRegistry =

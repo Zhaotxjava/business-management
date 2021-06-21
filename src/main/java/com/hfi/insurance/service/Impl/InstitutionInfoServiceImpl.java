@@ -258,7 +258,7 @@ public class InstitutionInfoServiceImpl implements InstitutionInfoService {
                 log.error("创建外部用户信息异常，{}", resultObj);
                 return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
             }
-            accountId = resultObj.getString(accountId);
+            accountId = resultObj.getString("accountId");
         } else {
             //系统已存在则更新用户信息
             accountId = accountObj.getString("accountId");
@@ -288,10 +288,10 @@ public class InstitutionInfoServiceImpl implements InstitutionInfoService {
                 log.error("创建外部机构信息异常，{}", resultObj);
                 return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
             }
-            organizeId = accountObj.getString("organizeId");
+            organizeId = resultObj.getString("organizeId");
         } else {
             //更新机构信息
-            organizeId = accountObj.getString("organizeId");
+            organizeId = organObj.getString("organizeId");
             institutionInfo.setOrganizeId(organizeId);
             JSONObject resultObj = organizationsService.updateOrgans(institutionInfo);
             if (resultObj.containsKey("errCode")) {
@@ -299,13 +299,15 @@ public class InstitutionInfoServiceImpl implements InstitutionInfoService {
                 return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
             }
             //判定是否要重新绑定用户
-            if (StringUtils.isNotEmpty(cacheInfo.getAccountId())) {
-                resultObj = organizationsService.unbindAgent(cacheInfo.getAccountId(), institutionInfo.getNumber(), accountId, institutionInfo.getContactIdCard());
-                if (resultObj.containsKey("errCode")) {
+            //if (StringUtils.isNotEmpty(cacheInfo.getAccountId())) {
+            resultObj = organizationsService.unbindAgent(organizeId, institutionInfo.getNumber(), accountId, institutionInfo.getContactIdCard());
+            if (resultObj.containsKey("errCode")) {
+                if (!StringUtils.equals("用户不存在", resultObj.getString("msg"))) {
                     log.error("外部机构解绑经办人信息异常，{}", resultObj);
                     return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
                 }
             }
+            //}
         }
         JSONObject resultObj = organizationsService.bindAgent(organizeId, institutionInfo.getNumber(), accountId, institutionInfo.getContactIdCard());
         if (resultObj.containsKey("errCode")) {
