@@ -270,6 +270,7 @@ public class InstitutionInfoServiceImpl implements InstitutionInfoService {
         }
         // 3>调用天印系统查询该机构是否已存在系统，不存在则调用创建外部机构接口，存在则调用更新外部机构信息接口
         JSONObject organObj = organizationsService.queryOrgans("", req.getNumber());
+        String defaultAccountId = ""; // 默认经办人
         if (organObj.containsKey("errCode")) {
             if ("-1".equals(organObj.getString("errCode"))) {
                 organExist = false;
@@ -282,7 +283,8 @@ public class InstitutionInfoServiceImpl implements InstitutionInfoService {
         BeanUtils.copyProperties(req, institutionInfo);
         institutionInfo.setInstitutionName(cacheInfo.getInstitutionName());
         if (!organExist) { //不存在则创建机构
-            //institutionInfo.setAccountId(accountId); //创建默认经办人
+            institutionInfo.setAccountId(accountId); //创建默认经办人
+            defaultAccountId = accountId;
             JSONObject resultObj = organizationsService.createOrgans(institutionInfo);
             if (resultObj.containsKey("errCode")) {
                 log.error("创建外部机构信息异常，{}", resultObj);
@@ -292,6 +294,7 @@ public class InstitutionInfoServiceImpl implements InstitutionInfoService {
         } else {
             //更新机构信息
             organizeId = organObj.getString("organizeId");
+            defaultAccountId = organObj.getString("agentAccountId");
             institutionInfo.setOrganizeId(organizeId);
             JSONObject resultObj = organizationsService.updateOrgans(institutionInfo);
             if (resultObj.containsKey("errCode")) {
@@ -299,20 +302,24 @@ public class InstitutionInfoServiceImpl implements InstitutionInfoService {
                 return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
             }
             //判定是否要重新绑定用户
-            //if (StringUtils.isNotEmpty(cacheInfo.getAccountId())) {
-            resultObj = organizationsService.unbindAgent(organizeId, institutionInfo.getNumber(), accountId, institutionInfo.getContactIdCard());
-            if (resultObj.containsKey("errCode")) {
-                if (!StringUtils.equals("用户不存在", resultObj.getString("msg"))) {
-                    log.error("外部机构解绑经办人信息异常，{}", resultObj);
-                    return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
+            if (!StringUtils.equals(defaultAccountId, accountId)) {
+                resultObj = organizationsService.unbindAgent(organizeId, institutionInfo.getNumber(), accountId, institutionInfo.getContactIdCard());
+                if (resultObj.containsKey("errCode")) {
+                    if (!(StringUtils.equals("用户不存在", resultObj.getString("msg")) ||
+                            StringUtils.equals("该机构不存在该经办人", resultObj.getString("msg")) ||
+                            StringUtils.equals("不能解绑默认经办人", resultObj.getString("msg")))) {
+                        log.error("外部机构解绑经办人信息异常，{}", resultObj);
+                        return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
+                    }
                 }
             }
-            //}
         }
-        JSONObject resultObj = organizationsService.bindAgent(organizeId, institutionInfo.getNumber(), accountId, institutionInfo.getContactIdCard());
-        if (resultObj.containsKey("errCode")) {
-            log.error("外部机构绑定经办人信息异常，{}", resultObj);
-            return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
+        if (!StringUtils.equals(defaultAccountId, accountId)) {
+            JSONObject resultObj = organizationsService.bindAgent(organizeId, institutionInfo.getNumber(), accountId, institutionInfo.getContactIdCard());
+            if (resultObj.containsKey("errCode")) {
+                log.error("外部机构绑定经办人信息异常，{}", resultObj);
+                return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
+            }
         }
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         institutionInfo.setAccountId(accountId);

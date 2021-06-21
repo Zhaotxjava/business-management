@@ -152,7 +152,9 @@ public class OrganizationsServiceImpl implements OrganizationsService {
         List<JSONObject> agentList = new ArrayList<>();
         JSONObject agent = new JSONObject();
         agent.put("accountId", accountId);
+        agent.put("isDefault", "0");
         agent.put("uniqueId", uniqueId);
+        agentList.add(agent);
 
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("organizeId", organizeId);
@@ -173,6 +175,7 @@ public class OrganizationsServiceImpl implements OrganizationsService {
         JSONObject agent = new JSONObject();
         agent.put("accountId", accountId);
         agent.put("uniqueId", uniqueId);
+        agentList.add(agent);
 
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("organizeId", organizeId);
