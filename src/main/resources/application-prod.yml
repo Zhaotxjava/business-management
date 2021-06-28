@@ -3,10 +3,10 @@ swagger:
   enable: false
 
 file:
-  path: /EAPDomain/UserFiles/医保定点机构列表20210607.xlsx
-  pathCsv: /EAPDomain/UserFiles/医保定点机构列表20210607.csv
+  path: /jingt/医保定点机构列表20210607.xlsx
+  pathCsv: /jingt/医保定点机构列表20210607.csv
   down:
-    url: /EAPDomain/UserFiles
+    url: /jingt
 #天印系统接口配置
 esignpro:
   url:  http://172.16.80.191:8088
