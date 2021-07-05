@@ -51,12 +51,12 @@ public class ApplicationInit implements ApplicationRunner {
                     + contextPath
                     + "/doc.html");
         }
-        try {
-            institutionInfoService.parseCSV();
-            //institutionInfoService.parseExcel();
-        } catch (IOException e) {
-            log.error("数据初始化失败,{}", e.getMessage());
-        }
+//        try {
+//            institutionInfoService.parseCSV();
+//            //institutionInfoService.parseExcel();
+//        } catch (IOException e) {
+//            log.error("数据初始化失败,{}", e.getMessage());
+//        }
         log.info("| 项目启动成功");
         log.info("==================================================");
     }

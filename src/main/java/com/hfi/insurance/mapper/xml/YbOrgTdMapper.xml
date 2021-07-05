@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hfi.insurance.mapper.YbOrgTdMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.hfi.insurance.model.YbOrgTd">
+        <id column="AKB020" property="akb020" />
+        <result column="AKB021" property="akb021" />
+        <result column="AKB022" property="akb022" />
+        <result column="AAE053" property="aae053" />
+        <result column="AKA101" property="aka101" />
+        <result column="AKB023" property="akb023" />
+        <result column="BKB012" property="bkb012" />
+        <result column="AAE045" property="aae045" />
+        <result column="BKB001" property="bkb001" />
+        <result column="AAE100" property="aae100" />
+        <result column="BKB117" property="bkb117" />
+        <result column="AAE013" property="aae013" />
+        <result column="BKB301" property="bkb301" />
+        <result column="BKB302" property="bkb302" />
+        <result column="BKA938" property="bka938" />
+        <result column="AAE004" property="aae004" />
+        <result column="AAE005" property="aae005" />
+        <result column="AAE006" property="aae006" />
+        <result column="BKA968" property="bka968" />
+        <result column="BKA975" property="bka975" />
+        <result column="BKA977" property="bka977" />
+        <result column="BKA978" property="bka978" />
+        <result column="BKA983" property="bka983" />
+        <result column="AAA027" property="aaa027" />
+        <result column="BKA996" property="bka996" />
+        <result column="AKB141" property="akb141" />
+        <result column="BKA992" property="bka992" />
+        <result column="BKB500" property="bkb500" />
+        <result column="BKB501" property="bkb501" />
+        <result column="BKB502" property="bkb502" />
+        <result column="BKB503" property="bkb503" />
+        <result column="BKB504" property="bkb504" />
+        <result column="BKB505" property="bkb505" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        AKB020, AKB021, AKB022, AAE053, AKA101, AKB023, BKB012, AAE045, BKB001, AAE100, BKB117, AAE013, BKB301, BKB302, BKA938, AAE004, AAE005, AAE006, BKA968, BKA975, BKA977, BKA978, BKA983, AAA027, BKA996, AKB141, BKA992, BKB500, BKB501, BKB502, BKB503, BKB504, BKB505
+    </sql>
+
+</mapper>
