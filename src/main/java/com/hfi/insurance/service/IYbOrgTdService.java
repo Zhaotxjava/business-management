@@ -1,7 +1,10 @@
 package com.hfi.insurance.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.hfi.insurance.common.ApiResponse;
 import com.hfi.insurance.model.YbOrgTd;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.hfi.insurance.model.dto.OrgTdQueryReq;
 
 /**
  * <p>
@@ -12,5 +15,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * @since 2021-07-05
  */
 public interface IYbOrgTdService extends IService<YbOrgTd> {
+
+    Page<YbOrgTd> getOrgTdList(OrgTdQueryReq req);
 
 }

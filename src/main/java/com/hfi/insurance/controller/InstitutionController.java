@@ -38,11 +38,11 @@ public class InstitutionController {
     private IYbInstitutionInfoService institutionInfoService;
 
     @PostMapping("getInstitutionInfoList")
-    @ApiOperation("分页查询机构信息")
+    @ApiOperation("分页查询外部机构信息")
     public ApiResponse getInstitutionInfoList(@RequestBody InstitutionInfoQueryReq req) {
         Page<YbInstitutionInfo> page =
                 institutionInfoService.getInstitutionInfoList(req.getNumber(), req.getInstitutionName(), req.getPageNum(), req.getPageSize());
-        return new ApiResponse(page.getRecords());
+        return new ApiResponse(page);
     }
 
     @PostMapping("import")

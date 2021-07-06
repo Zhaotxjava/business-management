@@ -9,17 +9,12 @@ import lombok.Data;
  * @Description:
  */
 @Data
-public class InstitutionInfoQueryReq {
+public class InstitutionInfoQueryReq extends PageReq{
 
     @ApiModelProperty("机构编号")
     private String number;
 
-    @ApiModelProperty("机构编码")
+    @ApiModelProperty("机构名称")
     private String institutionName;
 
-    @ApiModelProperty("当前页")
-    private Integer pageNum;
-
-    @ApiModelProperty("每页数量")
-    private Integer pageSize;
 }

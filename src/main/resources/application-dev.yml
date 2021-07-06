@@ -44,3 +44,7 @@ spring:
     configuration:
       log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
       map-underscore-to-camel-case: true
+logging:
+  level:
+    com:
+      hfi: debug
