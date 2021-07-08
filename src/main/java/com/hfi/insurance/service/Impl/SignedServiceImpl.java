@@ -2,18 +2,22 @@ package com.hfi.insurance.service.Impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.hfi.insurance.common.ApiResponse;
+import com.hfi.insurance.mapper.YbFlowInfoMapper;
+import com.hfi.insurance.model.YbFlowInfo;
 import com.hfi.insurance.model.sign.req.GetPageWithPermissionV2Model;
 import com.hfi.insurance.model.sign.req.GetSignUrlsReq;
 import com.hfi.insurance.model.sign.req.StandardCreateFlowBO;
-import com.hfi.insurance.model.sign.res.GetPageWithPermissionResult;
+import com.hfi.insurance.model.sign.req.TemplateUseParam;
 import com.hfi.insurance.service.SignedService;
 import com.hfi.insurance.utils.HmacSHA256Utils;
 import com.hfi.insurance.utils.HttpUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.annotation.Resource;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,6 +28,8 @@ import java.util.Map;
  */
 @Service
 public class SignedServiceImpl implements SignedService {
+    @Resource
+    private YbFlowInfoMapper flowInfoMapper;
 
     @Value("${esignpro.url}")
     private String url;
@@ -40,24 +46,71 @@ public class SignedServiceImpl implements SignedService {
     }
 
     @Override
+    public JSONObject getTemplateInfo(String templateId) {
+        Map<String, String> headMap = new HashMap<>();
+        Map<String,String> templateIdParam = new HashMap<>();
+        templateIdParam.put("templateId",templateId);
+        convertHead(headMap,JSON.toJSONString(templateIdParam));
+        String result = HttpUtil.doPost(url + "/esignpro/rest/template/api/getTemplateInfo", headMap, JSON.toJSONString(templateIdParam));
+        return convertResult(result);
+    }
+
+    @Override
+    public JSONObject buildTemplateDoc(TemplateUseParam templateUseParam) {
+        Map<String, String> headMap = new HashMap<>();
+        convertHead(headMap,JSON.toJSONString(templateUseParam));
+        String result = HttpUtil.doPost(url + "/esignpro/rest/template/api/buildTemplateDoc", headMap, JSON.toJSONString(templateUseParam));
+        return convertResult(result);
+    }
+
+    @Override
+    public JSONObject upload(MultipartFile file) {
+        String result = null;
+        try {
+            byte[] data = file.getBytes();
+            Map<String, String> heads = new HashMap<>();
+            convertHead(heads,"");
+            result = HttpUtil.doPostFile(url + "/V1/files/upload", data, "file", file.getOriginalFilename(), heads, null);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return convertResult(result);
+    }
+
+    @Override
     public JSONObject createSignFlows(StandardCreateFlowBO standardCreateFlow) {
         Map<String, String> headMap = new HashMap<>();
         convertHead(headMap,JSON.toJSONString(standardCreateFlow));
         String result = HttpUtil.doPost(url + "/V1/signFlows/create", headMap, JSON.toJSONString(standardCreateFlow));
-        return convertResult(result);
+        JSONObject jsonObject = convertResult(result);
+        String signFlowId = jsonObject.getString("signFlowId");
+        YbFlowInfo flowInfo = new YbFlowInfo();
+        flowInfo.setSignFlowId(signFlowId);
+        flowInfoMapper.insert(flowInfo);
+        return jsonObject;
     }
 
     @Override
     public JSONObject getSignUrls(GetSignUrlsReq req) {
         Map<String, String> headMap = new HashMap<>();
         convertHead(headMap,JSON.toJSONString(req));
-        Map<String, String> urlParams = new HashMap<>(16);
+        Map urlParams = new HashMap<>(16);
         urlParams.put("signFlowId",req.getSignFlowId());
-        urlParams.put("accountType",String.valueOf(req.getAccountType()));
+        urlParams.put("accountType",req.getAccountType());
         urlParams.put("accountId",req.getAccountId());
         urlParams.put("uniqueId",req.getUniqueId());
-        urlParams.put("signPlatform",String.valueOf(req.getSignPlatform()));
+        urlParams.put("signPlatform",req.getSignPlatform());
         urlParams.put("qrCode",String.valueOf(req.getQrCode()));
+        String s = HttpUtil.doGet(url + "/V1/signFlows/signUrls", headMap, urlParams);
+        return convertResult(s);
+    }
+
+    @Override
+    public JSONObject getSignDetail(Integer signFlowId) {
+        Map<String, String> headMap = new HashMap<>();
+        convertHead(headMap,"");
+        Map urlParams = new HashMap<>(16);
+        urlParams.put("signFlowId",signFlowId);
         String s = HttpUtil.doGet(url + "/V1/signFlows/signUrls", headMap, urlParams);
         return convertResult(s);
     }
