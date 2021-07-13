@@ -1,8 +1,10 @@
 package com.hfi.insurance.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.hfi.insurance.common.ApiResponse;
 import com.hfi.insurance.model.YbInstitutionInfo;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.hfi.insurance.model.dto.InstitutionInfoAddReq;
 
 /**
  * <p>
@@ -14,5 +16,9 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IYbInstitutionInfoService extends IService<YbInstitutionInfo> {
     Page<YbInstitutionInfo> getInstitutionInfoList(String number,String institutionName,int current,int limit);
+
+    YbInstitutionInfo getInstitutionInfo(String number);
+
+    ApiResponse updateInstitutionInfo(InstitutionInfoAddReq req);
 
 }

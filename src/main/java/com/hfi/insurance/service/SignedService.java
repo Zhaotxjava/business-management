@@ -48,6 +48,8 @@ public interface SignedService {
 
     JSONObject createSignFlows(StandardCreateFlowBO standardCreateFlow);
 
+    JSONObject getDocKeyPosition();
+
     /**
      * 获取签署地址列表
      * @param req

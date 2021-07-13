@@ -1,6 +1,7 @@
 package com.hfi.insurance.model.sign.req;
 
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.util.List;
@@ -18,6 +19,7 @@ public class StandardSignerInfoBean {
     private Integer allowApiSign;
     private String authorizationOrganizeId;
     private String authorizationOrganizeNo;
+    @ApiModelProperty("是否静默签署")
     private Boolean autoSign;
     private String contactMobile;
     private Integer isOrsign;

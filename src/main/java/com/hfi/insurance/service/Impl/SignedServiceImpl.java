@@ -91,6 +91,11 @@ public class SignedServiceImpl implements SignedService {
     }
 
     @Override
+    public JSONObject getDocKeyPosition() {
+        return null;
+    }
+
+    @Override
     public JSONObject getSignUrls(GetSignUrlsReq req) {
         Map<String, String> headMap = new HashMap<>();
         convertHead(headMap,JSON.toJSONString(req));

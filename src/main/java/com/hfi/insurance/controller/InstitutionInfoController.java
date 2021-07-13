@@ -5,6 +5,7 @@ import com.hfi.insurance.enums.ErrorCodeEnum;
 import com.hfi.insurance.model.dto.InstitutionInfoAddReq;
 import com.hfi.insurance.service.InstitutionInfoService;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Controller;
@@ -32,12 +33,18 @@ public class InstitutionInfoController {
     }
 
     @PostMapping("home")
+    @ApiOperation("重定向")
     public String index(String hospitalid, String platid, HttpServletRequest request, Model model) {
         //application/x-www-form-urlencoded;charset=UTF-8
         model.addAttribute("number", hospitalid); //医院编码
         model.addAttribute("areaCode", platid); ///统筹区编码
-        return "index";
+        int flag = 0;
+        if (StringUtils.isNotBlank(hospitalid)){
+            flag = 1;
+        }
+        return "redirect:http://baidu.com/index?number=" + hospitalid + "?areaCode=" + platid + "?flag=" + flag;
     }
+
 
     @GetMapping("getInstitutionInfoList")
     @ResponseBody

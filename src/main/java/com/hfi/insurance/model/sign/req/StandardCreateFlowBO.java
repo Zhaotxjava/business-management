@@ -62,6 +62,7 @@ public class StandardCreateFlowBO {
     @ApiModelProperty("签署完成重定向地址")
     private String redirectUrl;
 
+    @ApiModelProperty(value = "流程文档信息集合",required = true)
     private List<FlowDocBean> signDocs;
 
     @ApiModelProperty("签署文件类型 PDF/OFD")
@@ -73,9 +74,10 @@ public class StandardCreateFlowBO {
     @ApiModelProperty("签署有效期")
     private String signValidity;
 
+    @ApiModelProperty(value = "签署人信息集合",required = true)
     private List<StandardSignerInfoBean> signers;
 
-    @ApiModelProperty("流程主题")
+    @ApiModelProperty(value = "流程主题",required = true)
     private String subject;
 
     @ApiModelProperty("是否Ukey签署")

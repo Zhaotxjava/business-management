@@ -74,4 +74,10 @@ public class SignedController {
         //发起人、签署方、发起时间入库，签署状态从详情数据中筛选出来
         return  new ApiResponse(null);
     }
+
+    @PostMapping("previewTemplate")
+    @ApiOperation("预览签署文档")
+    public ApiResponse previewTemplate(){
+        return null;
+    }
 }
