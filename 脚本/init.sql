@@ -18,9 +18,16 @@ CREATE TABLE `yb_institution_info` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='定点机构信息';
 
 CREATE TABLE `yb_flow_info` (
-  `flow_id` int(11) NOT NULL AUTO_INCREMENT,
-  `sign_flow_id` varchar(20) NOT NULL COMMENT '天印系统的签署流程id',
-  `create_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `updateTime` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`flow_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='签署流程记录';
+	`flow_id` INT(11) NOT NULL AUTO_INCREMENT,
+	`sign_flow_id` VARCHAR(20) NOT NULL COMMENT '天印系统的签署流程id' COLLATE 'utf8_general_ci',
+	`initiator` VARCHAR(200) NOT NULL COMMENT '发起人' COLLATE 'utf8_general_ci',
+	`signers` VARCHAR(500) NOT NULL COMMENT '签署方' COLLATE 'utf8_general_ci',
+	`copy_viewers` VARCHAR(500) NOT NULL COMMENT '抄送人' COLLATE 'utf8_general_ci',
+	`create_time` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+	`updateTime` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	PRIMARY KEY (`flow_id`) USING BTREE
+)
+COMMENT='签署流程记录'
+COLLATE='utf8_general_ci'
+ENGINE=InnoDB
+;

@@ -28,8 +28,7 @@ import java.util.Map;
  */
 @Service
 public class SignedServiceImpl implements SignedService {
-    @Resource
-    private YbFlowInfoMapper flowInfoMapper;
+
 
     @Value("${esignpro.url}")
     private String url;
@@ -82,12 +81,7 @@ public class SignedServiceImpl implements SignedService {
         Map<String, String> headMap = new HashMap<>();
         convertHead(headMap,JSON.toJSONString(standardCreateFlow));
         String result = HttpUtil.doPost(url + "/V1/signFlows/create", headMap, JSON.toJSONString(standardCreateFlow));
-        JSONObject jsonObject = convertResult(result);
-        String signFlowId = jsonObject.getString("signFlowId");
-        YbFlowInfo flowInfo = new YbFlowInfo();
-        flowInfo.setSignFlowId(signFlowId);
-        flowInfoMapper.insert(flowInfo);
-        return jsonObject;
+        return convertResult(result);
     }
 
     @Override

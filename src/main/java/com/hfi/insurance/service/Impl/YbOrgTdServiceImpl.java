@@ -10,6 +10,8 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 /**
  * <p>
  * 定点医疗服务机构信息 服务实现类
@@ -40,5 +42,12 @@ public class YbOrgTdServiceImpl extends ServiceImpl<YbOrgTdMapper, YbOrgTd> impl
         }
         Page<YbOrgTd> page = new Page<>(req.getPageNum(),req.getPageSize());
         return baseMapper.selectPage(page, queryWrapper);
+    }
+
+    @Override
+    public List<YbOrgTd> getYbOrgTdList(List<String> number) {
+        QueryWrapper<YbOrgTd> queryWrapper = new QueryWrapper<>();
+        queryWrapper.in("AKB020",number);
+        return baseMapper.selectList(queryWrapper);
     }
 }

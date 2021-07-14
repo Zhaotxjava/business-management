@@ -38,9 +38,10 @@ public class InstitutionInfoController {
         //application/x-www-form-urlencoded;charset=UTF-8
         model.addAttribute("number", hospitalid); //医院编码
         model.addAttribute("areaCode", platid); ///统筹区编码
-        int flag = 0;
+        //默认内部机构
+        int flag = 1;
         if (StringUtils.isNotBlank(hospitalid)){
-            flag = 1;
+            flag = 2;
         }
         return "redirect:http://baidu.com/index?number=" + hospitalid + "?areaCode=" + platid + "?flag=" + flag;
     }

@@ -185,7 +185,9 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         //institutionInfo.setOrganizeId("12312");
         institutionInfo.setUpdateTime(df.format(new Date()));
         // 4>机构创建完成以后，更新数据库
-
+        YbInstitutionInfo ybInstitutionInfo = new YbInstitutionInfo();
+        BeanUtils.copyProperties(institutionInfo,ybInstitutionInfo);
+        institutionInfoMapper.updateById(ybInstitutionInfo);
         return new ApiResponse(ErrorCodeEnum.SUCCESS);
     }
 }

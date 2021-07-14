@@ -14,7 +14,9 @@ import java.util.List;
 @ApiModel("签署人信息")
 @Data
 public class StandardSignerInfoBean {
+    @ApiModelProperty("用户id")
     private String accountId;
+    @ApiModelProperty("用户类型;1:内部,2外部")
     private Integer accountType;
     private Integer allowApiSign;
     private String authorizationOrganizeId;

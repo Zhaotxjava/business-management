@@ -6,6 +6,8 @@ import com.hfi.insurance.model.YbOrgTd;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.hfi.insurance.model.dto.OrgTdQueryReq;
 
+import java.util.List;
+
 /**
  * <p>
  * 定点医疗服务机构信息 服务类
@@ -17,5 +19,7 @@ import com.hfi.insurance.model.dto.OrgTdQueryReq;
 public interface IYbOrgTdService extends IService<YbOrgTd> {
 
     Page<YbOrgTd> getOrgTdList(OrgTdQueryReq req);
+
+    List<YbOrgTd> getYbOrgTdList(List<String> number);
 
 }
