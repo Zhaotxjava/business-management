@@ -29,11 +29,15 @@ public class InstitutionInfoController {
     public String index(@RequestParam(name = "hospitalid", required = true) String hospitalid, @RequestParam(name = "platid", required = false) String platid, Model model) {
         model.addAttribute("number", hospitalid); //医院编码
         model.addAttribute("areaCode", platid); ///统筹区编码
-        return "index";
+        //默认内部机构
+        int flag = 1;
+        if (StringUtils.isNotBlank(hospitalid)){
+            flag = 2;
+        }
+        return "redirect:http://baidu.com/index?number=" + hospitalid + "?areaCode=" + platid + "?flag=" + flag;
     }
 
     @PostMapping("home")
-    @ApiOperation("重定向")
     public String index(String hospitalid, String platid, HttpServletRequest request, Model model) {
         //application/x-www-form-urlencoded;charset=UTF-8
         model.addAttribute("number", hospitalid); //医院编码

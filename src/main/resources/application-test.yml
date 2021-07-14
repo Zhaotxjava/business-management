@@ -1,3 +1,5 @@
+server:
+  port: 8097
 # Swagger API文档（是否开启）
 swagger:
   enable: true
@@ -15,9 +17,9 @@ esignpro:
 
 spring:
   datasource:
-    username: test
-    password: test@22
-    url: jdbc:mysql://192.30.255.22:3306/db_insurance_info?useUnicode\=true&characterEncoding\=utf-8&allowMultiQueries\=true
+    username: db_insurance_info
+    password: db_insurance_info
+    url: jdbc:mysql://192.20.33.32:3306/db_insurance_info?useUnicode\=true&characterEncoding\=utf-8&allowMultiQueries\=true
     driver-class-name: com.mysql.jdbc.Driver
     hikari:
       connection-timeout: 10000

@@ -2,9 +2,11 @@ package com.hfi.insurance.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.hfi.insurance.common.ApiResponse;
+import com.hfi.insurance.model.sign.req.CreateSignFlowReq;
 import com.hfi.insurance.model.sign.req.GetPageWithPermissionV2Model;
 import com.hfi.insurance.model.sign.req.GetSignUrlsReq;
 import com.hfi.insurance.model.sign.req.StandardCreateFlowBO;
+import com.hfi.insurance.service.SignedBizService;
 import com.hfi.insurance.service.SignedService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -32,8 +34,9 @@ import javax.annotation.Resource;
 public class SignedController {
     @Resource
     private SignedService signedService;
+    @Resource
+    private SignedBizService signedBizService;
     //获取签署地址列表
-
     @PostMapping("getSignUrl")
     @ApiOperation("获取二维码")
     public ApiResponse getSignUrl(@RequestBody GetSignUrlsReq req){
@@ -56,9 +59,8 @@ public class SignedController {
 
     @PostMapping("createSignFlows")
     @ApiOperation("发起签署-创建流程")
-    public ApiResponse createSignFlows(@RequestBody StandardCreateFlowBO req){
-        JSONObject signFlows = signedService.createSignFlows(req);
-        return new ApiResponse(signFlows);
+    public ApiResponse createSignFlows(@RequestBody CreateSignFlowReq req){
+        return signedBizService.createSignFlow(req);
     }
 
 //    @GetMapping("getSignDetail/{signFlowId}")

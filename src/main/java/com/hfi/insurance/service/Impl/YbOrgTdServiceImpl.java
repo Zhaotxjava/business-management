@@ -50,4 +50,5 @@ public class YbOrgTdServiceImpl extends ServiceImpl<YbOrgTdMapper, YbOrgTd> impl
         queryWrapper.in("AKB020",number);
         return baseMapper.selectList(queryWrapper);
     }
+
 }

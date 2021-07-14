@@ -11,5 +11,8 @@ import lombok.Data;
 public class TemplateFlowBean {
     private Integer flowId;
     private String flowName;
-
+    private PredefineBean predefine;
+    private Integer routingOrder;
+    private SignDateBean signDate;
+    private SignatoryBean signatory;
 }

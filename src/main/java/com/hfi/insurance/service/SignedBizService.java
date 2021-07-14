@@ -10,5 +10,6 @@ import com.hfi.insurance.model.sign.req.StandardCreateFlowBO;
  * @Description:
  */
 public interface SignedBizService {
+
     ApiResponse createSignFlow(CreateSignFlowReq req);
 }
