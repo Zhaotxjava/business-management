@@ -51,6 +51,13 @@ public class SignedController {
         return new ApiResponse(pageWithPermission);
     }
 
+    @GetMapping("getTemplateDetailInfo")
+    @ApiOperation("获取模板详细信息")
+    public ApiResponse getTemplateDetailInfo(@RequestParam("templateId") String templateId){
+        JSONObject templateInfo = signedService.getTemplateInfo(templateId);
+        return new ApiResponse(templateInfo);
+    }
+
     @PostMapping("upload")
     @ApiOperation("上传文件")
     public ApiResponse uploadFile(@RequestParam("file") MultipartFile file){

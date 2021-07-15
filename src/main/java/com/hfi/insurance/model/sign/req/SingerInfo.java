@@ -22,4 +22,7 @@ public class SingerInfo {
 
     @ApiModelProperty("签署方式 0-自由签署 4-关键字签署")
     private Integer signType;
+
+    @ApiModelProperty("机构签署区域 甲方,丙方,乙方...")
+    private String flowName;
 }

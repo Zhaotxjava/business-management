@@ -19,7 +19,7 @@ spring:
   datasource:
     username: db_insurance_info
     password: db_insurance_info
-    url: jdbc:mysql://192.20.33.32:3306/db_insurance_info?useUnicode\=true&characterEncoding\=utf-8&allowMultiQueries\=true
+    url: jdbc:mysql://192.20.97.37:3306/db_insurance_info?useUnicode\=true&characterEncoding\=utf-8&allowMultiQueries\=true
     driver-class-name: com.mysql.jdbc.Driver
     hikari:
       connection-timeout: 10000

@@ -37,6 +37,11 @@ public interface SignedService {
      */
     JSONObject buildTemplateDoc(TemplateUseParam templateUseParam);
 
+    /**
+     * 文件直传，返回fileKey
+     * @param file
+     * @return
+     */
     JSONObject upload(MultipartFile file);
 
 
@@ -64,8 +69,12 @@ public interface SignedService {
      */
     JSONObject getSignDetail(Integer signFlowId);
 
-
-
+    /**
+     * 获取签署流程文档下载地址
+     * @param signFlowId
+     * @return
+     */
+    JSONObject getSignFlowDocUrls(String signFlowId);
 
 
 }
