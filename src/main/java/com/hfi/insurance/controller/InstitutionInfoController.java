@@ -1,16 +1,20 @@
 package com.hfi.insurance.controller;
 
+import com.github.benmanes.caffeine.cache.Cache;
 import com.hfi.insurance.common.ApiResponse;
 import com.hfi.insurance.enums.ErrorCodeEnum;
 import com.hfi.insurance.model.dto.InstitutionInfoAddReq;
 import com.hfi.insurance.service.InstitutionInfoService;
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -25,6 +29,9 @@ public class InstitutionInfoController {
     @Resource
     private InstitutionInfoService institutionInfoService;
 
+    @Resource
+    private Cache<String, String> caffeineCache;
+
     @GetMapping("home")
     public String index(@RequestParam(name = "hospitalid", required = true) String hospitalid, @RequestParam(name = "platid", required = false) String platid, Model model) {
         model.addAttribute("number", hospitalid); //医院编码
@@ -34,7 +41,9 @@ public class InstitutionInfoController {
         if (StringUtils.isNotBlank(hospitalid)){
             flag = 2;
         }
-        return "redirect:http://baidu.com/index?number=" + hospitalid + "?areaCode=" + platid + "?flag=" + flag;
+        caffeineCache.put("areaCode",platid);
+        caffeineCache.put("number",hospitalid);
+        return "redirect:http://baidu.com/index?number=" + hospitalid + "&areaCode=" + platid + "&flag=" + flag;
     }
 
     @PostMapping("home")
@@ -47,6 +56,8 @@ public class InstitutionInfoController {
         if (StringUtils.isNotBlank(hospitalid)){
             flag = 2;
         }
+        caffeineCache.put("areaCode",platid);
+        caffeineCache.put("number",hospitalid);
         return "redirect:http://baidu.com/index?number=" + hospitalid + "?areaCode=" + platid + "?flag=" + flag;
     }
 

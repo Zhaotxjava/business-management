@@ -21,4 +21,5 @@ public interface IYbOrgTdService extends IService<YbOrgTd> {
     Page<YbOrgTd> getOrgTdList(OrgTdQueryReq req);
 
     List<YbOrgTd> getYbOrgTdList(List<String> number);
+
 }

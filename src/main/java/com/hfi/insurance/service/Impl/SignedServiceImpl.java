@@ -2,8 +2,6 @@ package com.hfi.insurance.service.Impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.hfi.insurance.mapper.YbFlowInfoMapper;
-import com.hfi.insurance.model.YbFlowInfo;
 import com.hfi.insurance.model.sign.req.GetPageWithPermissionV2Model;
 import com.hfi.insurance.model.sign.req.GetSignUrlsReq;
 import com.hfi.insurance.model.sign.req.StandardCreateFlowBO;
@@ -16,7 +14,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -39,6 +36,7 @@ public class SignedServiceImpl implements SignedService {
     @Override
     public JSONObject getPageWithPermission(GetPageWithPermissionV2Model getPageWithPermissionV2Model) {
         Map<String, String> headMap = new HashMap<>();
+        getPageWithPermissionV2Model.setAccountId("279e974f-577d-47fa-86cd-6672c617043a");
         convertHead(headMap,JSON.toJSONString(getPageWithPermissionV2Model));
         String result = HttpUtil.doPost(url + "/esignpro/rest/template/api/getPageWithPermission", headMap, JSON.toJSONString(getPageWithPermissionV2Model));
         return convertResult(result);

@@ -7,6 +7,7 @@ import com.hfi.insurance.mapper.YbOrgTdMapper;
 import com.hfi.insurance.model.dto.OrgTdQueryReq;
 import com.hfi.insurance.service.IYbOrgTdService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -27,18 +28,18 @@ public class YbOrgTdServiceImpl extends ServiceImpl<YbOrgTdMapper, YbOrgTd> impl
     public Page<YbOrgTd> getOrgTdList(OrgTdQueryReq req) {
         QueryWrapper<YbOrgTd> queryWrapper = new QueryWrapper<>();
         queryWrapper.likeRight("AAA027","3301");
-        if (StringUtils.isNotBlank(req.getAKB020())){
-            queryWrapper.eq("AKB020",req.getAKB020());
+        if (StringUtils.isNotBlank(req.getNumber())){
+            queryWrapper.eq("AKB020",req.getNumber());
         }
-        if (StringUtils.isNotBlank(req.getAKB021())){
-            queryWrapper.eq("AKB021",req.getAKB021());
+        if (StringUtils.isNotBlank(req.getInstitutionName())){
+            queryWrapper.eq("AKB021",req.getInstitutionName());
         }
-        if (StringUtils.isNotBlank(req.getAKB022()) && StringUtils.isNotBlank(req.getAKA101())
-        && StringUtils.isNotBlank(req.getAAA027()) && StringUtils.isNotBlank(req.getBKA938())){
-            queryWrapper.in("AKA101",req.getAKA101())
-                    .in("AKB022",req.getAKB022())
-                    .in("AAA027",req.getAAA027())
-                    .in("BKA938",req.getBKA938());
+        if (CollectionUtils.isNotEmpty(req.getInstitutionTypes()) && CollectionUtils.isNotEmpty(req.getInstitutionLevels())
+        && CollectionUtils.isNotEmpty(req.getAreas()) && CollectionUtils.isNotEmpty(req.getProfits())){
+            queryWrapper.in("AKA101",req.getInstitutionLevels())
+                    .in("AKB022",req.getInstitutionTypes())
+                    .in("AAA027",req.getAreas())
+                    .in("BKA938",req.getProfits());
         }
         Page<YbOrgTd> page = new Page<>(req.getPageNum(),req.getPageSize());
         return baseMapper.selectPage(page, queryWrapper);

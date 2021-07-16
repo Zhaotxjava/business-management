@@ -17,8 +17,8 @@ esignpro:
 
 spring:
   datasource:
-    username: db_insurance_info
-    password: db_insurance_info
+    username: user_insurance_info
+    password: test_insurance
     url: jdbc:mysql://192.20.97.37:3306/db_insurance_info?useUnicode\=true&characterEncoding\=utf-8&allowMultiQueries\=true
     driver-class-name: com.mysql.jdbc.Driver
     hikari:

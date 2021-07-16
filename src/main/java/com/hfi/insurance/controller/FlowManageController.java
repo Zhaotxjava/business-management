@@ -3,6 +3,7 @@ package com.hfi.insurance.controller;
 import com.alibaba.fastjson.JSONObject;
 import com.hfi.insurance.common.ApiResponse;
 import com.hfi.insurance.model.sign.req.CreateSignFlowReq;
+import com.hfi.insurance.model.sign.req.GetPageWithPermissionReq;
 import com.hfi.insurance.model.sign.req.GetPageWithPermissionV2Model;
 import com.hfi.insurance.model.sign.req.GetSignUrlsReq;
 import com.hfi.insurance.model.sign.req.StandardCreateFlowBO;
@@ -30,8 +31,8 @@ import javax.annotation.Resource;
 @Slf4j
 @RestController
 @RequestMapping(value = "/sign")
-@Api(tags = {"【签署管理接口】"})
-public class SignedController {
+@Api(tags = {"【批量发起接口】"})
+public class FlowManageController {
     @Resource
     private SignedService signedService;
     @Resource
@@ -46,16 +47,14 @@ public class SignedController {
 
     @PostMapping("getTemplate")
     @ApiOperation("分页查询模板列表")
-    public ApiResponse getTemplate(@RequestBody GetPageWithPermissionV2Model req){
-        JSONObject pageWithPermission = signedService.getPageWithPermission(req);
-        return new ApiResponse(pageWithPermission);
+    public ApiResponse getTemplate(@RequestBody GetPageWithPermissionReq req){
+        return signedBizService.getPageWithPermission(req);
     }
 
     @GetMapping("getTemplateDetailInfo")
     @ApiOperation("获取模板详细信息")
     public ApiResponse getTemplateDetailInfo(@RequestParam("templateId") String templateId){
-        JSONObject templateInfo = signedService.getTemplateInfo(templateId);
-        return new ApiResponse(templateInfo);
+        return signedBizService.getTemplateInfo(templateId);
     }
 
     @PostMapping("upload")
@@ -70,23 +69,11 @@ public class SignedController {
         return signedBizService.createSignFlow(req);
     }
 
-//    @GetMapping("getSignDetail/{signFlowId}")
-//    @ApiOperation("获取签署流程进度详情")
-//    public ApiResponse getSignDetail(@PathVariable Integer signFlowId){
-//        JSONObject signDetail = signedService.getSignDetail(signFlowId);
-//        return new ApiResponse(signDetail);
-//    }
-
-    @PostMapping("getSignRecords")
-    @ApiOperation("获取签署列表")
-    public ApiResponse getSignRecords(){
-        //发起人、签署方、发起时间入库，签署状态从详情数据中筛选出来
-        return  new ApiResponse(null);
+    @GetMapping("getSignDetail/{signFlowId}")
+    @ApiOperation("获取签署流程进度详情")
+    public ApiResponse getSignDetail(@PathVariable Integer signFlowId){
+        JSONObject signDetail = signedService.getSignDetail(signFlowId);
+        return new ApiResponse(signDetail);
     }
 
-    @PostMapping("previewTemplate")
-    @ApiOperation("预览签署文档")
-    public ApiResponse previewTemplate(){
-        return null;
-    }
 }
