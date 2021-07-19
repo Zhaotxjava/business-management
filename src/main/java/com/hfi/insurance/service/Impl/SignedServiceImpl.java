@@ -106,9 +106,9 @@ public class SignedServiceImpl implements SignedService {
     public JSONObject getSignDetail(Integer signFlowId) {
         Map<String, String> headMap = new HashMap<>();
         convertHead(headMap,"");
-        Map urlParams = new HashMap<>(16);
+        Map<String,Integer> urlParams = new HashMap<>(16);
         urlParams.put("signFlowId",signFlowId);
-        String s = HttpUtil.doGet(url + "/V1/signFlows/signUrls", headMap, urlParams);
+        String s = HttpUtil.doGetWithIntegerParam(url + "/V1/signFlows/signDetail", headMap, urlParams);
         return convertResult(s);
     }
 
