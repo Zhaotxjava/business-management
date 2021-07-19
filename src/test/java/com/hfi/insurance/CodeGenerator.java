@@ -61,21 +61,21 @@ public class CodeGenerator {
         strategyConfig.setNaming(NamingStrategy.underline_to_camel);
         strategyConfig.setColumnNaming(NamingStrategy.underline_to_camel);//数据库表字段映射到实体的命名策略
         // .setSuperMapperClass(“cn.saytime.mapper.BaseMapper”)
-        strategyConfig.setInclude("yb_flow_info","yb_institution_info","yb_org_td");//修改替换成你需要的表名，多个表名传数组
+        strategyConfig.setInclude("yb_flow_info");//修改替换成你需要的表名，多个表名传数组
         // 4.设置包配置package
         PackageConfig packageConfig = new PackageConfig();
         //pc.setModuleName(scanner(“模块名”));
         // 设置包名
         packageConfig.setParent("com.hfi.insurance");
-        packageConfig.setController("controller");
+        //packageConfig.setController("controller");
         // 设置对象实例类
         packageConfig.setEntity("model");
         // dao接口包名
-        packageConfig.setMapper("mapper");
+        //packageConfig.setMapper("mapper");
         // service接口包名
-        packageConfig.setService("service");
+        //packageConfig.setService("service");
         // service实现包名
-        packageConfig.setServiceImpl("service.impl");
+        //packageConfig.setServiceImpl("service.impl");
         packageConfig.setXml("mapper.xml");
 
         // 代码生成器–4.应用自动生成

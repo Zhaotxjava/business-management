@@ -26,9 +26,6 @@ public class SingerInfo {
     @ApiModelProperty("签署方式  2-手动自由签署 3-手动坐标签署 4-手动关键字签署")
     private Integer signType;
 
-    @ApiModelProperty("甲方签署方式 0-静默坐标签署 1-静默关键字签署 2-手动自由签署 3-手动坐标签署 4-手动关键字签署")
-    private Integer partyASignType;
-
     @ApiModelProperty("机构签署区域 甲方,丙方,乙方...")
     private String flowName;
 }

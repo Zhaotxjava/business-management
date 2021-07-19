@@ -11,6 +11,9 @@ import lombok.Data;
 public class TemplateFlowBean {
     private Integer flowId;
     private String flowName;
+    /**
+     * 签署位置信息
+     */
     private PredefineBean predefine;
     private Integer routingOrder;
     private SignDateBean signDate;

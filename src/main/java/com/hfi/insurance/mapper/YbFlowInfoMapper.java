@@ -9,7 +9,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * </p>
  *
  * @author ChenZX
- * @since 2021-07-05
+ * @since 2021-07-19
  */
 public interface YbFlowInfoMapper extends BaseMapper<YbFlowInfo> {
 

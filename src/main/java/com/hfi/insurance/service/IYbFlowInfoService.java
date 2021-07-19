@@ -9,7 +9,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * </p>
  *
  * @author ChenZX
- * @since 2021-07-05
+ * @since 2021-07-19
  */
 public interface IYbFlowInfoService extends IService<YbFlowInfo> {
 

@@ -15,10 +15,11 @@ import java.util.List;
 public class PredefineBean {
     private Boolean addSignTime;
     private String keyWord;
-    private String pageNo;
-    private Integer posX;
-    private Integer posY;
+//    private String pageNo;
+//    private Integer posX;
+//    private Integer posY;
+    private List<Position> positions;
     private Integer predefineId;
     private String signatureType;
-    private List<TemplateSignTimeInfo> templateSignTimeInfos;
+
 }

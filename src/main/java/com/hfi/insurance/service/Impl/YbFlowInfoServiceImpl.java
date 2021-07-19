@@ -1,4 +1,4 @@
-package com.hfi.insurance.service.Impl;
+package com.hfi.insurance.service.impl;
 
 import com.hfi.insurance.model.YbFlowInfo;
 import com.hfi.insurance.mapper.YbFlowInfoMapper;
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
  * </p>
  *
  * @author ChenZX
- * @since 2021-07-05
+ * @since 2021-07-19
  */
 @Service
 public class YbFlowInfoServiceImpl extends ServiceImpl<YbFlowInfoMapper, YbFlowInfo> implements IYbFlowInfoService {
