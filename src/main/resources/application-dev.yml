@@ -51,4 +51,7 @@ spring:
 logging:
   level:
     com:
-      hfi: debug
+      hfi:
+        insurance: debug
+  file:
+    path: logs

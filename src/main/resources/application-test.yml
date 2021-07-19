@@ -51,3 +51,11 @@ spring:
     multipart:
       max-file-size: 50MB
       max-request-size: 100MB
+
+logging:
+  level:
+    com:
+      hfi:
+        insurance: debug
+  file:
+    path: logs
