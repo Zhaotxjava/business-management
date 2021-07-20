@@ -1,4 +1,4 @@
-package com.hfi.insurance.service.Impl;
+package com.hfi.insurance.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
@@ -13,7 +13,6 @@ import com.hfi.insurance.mapper.YbFlowInfoMapper;
 import com.hfi.insurance.model.InstitutionInfo;
 import com.hfi.insurance.model.YbFlowInfo;
 import com.hfi.insurance.model.YbInstitutionInfo;
-import com.hfi.insurance.model.YbOrgTd;
 import com.hfi.insurance.model.sign.Position;
 import com.hfi.insurance.model.sign.PredefineBean;
 import com.hfi.insurance.model.sign.SignatoryBean;
@@ -47,7 +46,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**

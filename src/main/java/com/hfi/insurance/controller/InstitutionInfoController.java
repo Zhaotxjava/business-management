@@ -10,15 +10,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.HashMap;
+import java.util.Map;
 
 
 @Controller
@@ -32,17 +30,26 @@ public class InstitutionInfoController {
     @Resource
     private Cache<String, String> caffeineCache;
 
+    @GetMapping("welcome")
+    @ResponseBody
+    public Object welcome() {
+        Map<String, String> ret = new HashMap<>();
+        ret.put("version", "1.0");
+        ret.put("desc", "欢迎使用");
+        return ret;
+    }
+
     @GetMapping("home")
     public String index(@RequestParam(name = "hospitalid", required = true) String hospitalid, @RequestParam(name = "platid", required = false) String platid, Model model) {
         model.addAttribute("number", hospitalid); //医院编码
         model.addAttribute("areaCode", platid); ///统筹区编码
         //默认内部机构
         int flag = 1;
-        if (StringUtils.isNotBlank(hospitalid)){
+        if (StringUtils.isNotBlank(hospitalid)) {
             flag = 2;
         }
-        caffeineCache.put("areaCode",platid);
-        caffeineCache.put("number",hospitalid);
+        caffeineCache.put("areaCode", platid);
+        caffeineCache.put("number", hospitalid);
         return "redirect:http://baidu.com/index?number=" + hospitalid + "&areaCode=" + platid + "&flag=" + flag;
     }
 
@@ -53,11 +60,11 @@ public class InstitutionInfoController {
         model.addAttribute("areaCode", platid); ///统筹区编码
         //默认内部机构
         int flag = 1;
-        if (StringUtils.isNotBlank(hospitalid)){
+        if (StringUtils.isNotBlank(hospitalid)) {
             flag = 2;
         }
-        caffeineCache.put("areaCode",platid);
-        caffeineCache.put("number",hospitalid);
+        caffeineCache.put("areaCode", platid);
+        caffeineCache.put("number", hospitalid);
         return "redirect:http://baidu.com/index?number=" + hospitalid + "?areaCode=" + platid + "?flag=" + flag;
     }
 

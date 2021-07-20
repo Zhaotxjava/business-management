@@ -1,4 +1,4 @@
-package com.hfi.insurance.service.Impl;
+package com.hfi.insurance.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
 import com.hfi.insurance.model.InstitutionInfo;

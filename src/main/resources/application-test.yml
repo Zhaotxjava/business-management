@@ -5,10 +5,10 @@ swagger:
   enable: true
 
 file:
-  path: C:\Users\hengtian\Desktop\医保定点机构列表20210607.xlsx
-  pathCsv: C:\Users\hengtian\Desktop\医保定点机构列表20210607.csv
+  path: /opt/app/insurance-info-server/service/医保定点机构列表20210607.xlsx
+  pathCsv: /opt/app/insurance-info-server/service/医保定点机构列表20210607.csv
   down:
-    url: E:\demo
+    url: /opt/app/insurance-info-server/service/demo
 #天印系统接口配置
 esignpro:
   url: http://page.iconntech.cn:18209
