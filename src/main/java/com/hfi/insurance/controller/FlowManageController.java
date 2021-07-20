@@ -37,13 +37,7 @@ public class FlowManageController {
     private SignedService signedService;
     @Resource
     private SignedBizService signedBizService;
-    //获取签署地址列表
-    @PostMapping("getSignUrl")
-    @ApiOperation("获取二维码")
-    public ApiResponse getSignUrl(@RequestBody GetSignUrlsReq req){
-        JSONObject result = signedService.getSignUrls(req);
-        return new ApiResponse(result);
-    }
+
 
     @PostMapping("getTemplate")
     @ApiOperation("分页查询模板列表")
@@ -69,11 +63,6 @@ public class FlowManageController {
         return signedBizService.createSignFlow(req);
     }
 
-    @GetMapping("getSignDetail/{signFlowId}")
-    @ApiOperation("获取签署流程进度详情")
-    public ApiResponse getSignDetail(@PathVariable Integer signFlowId){
-        JSONObject signDetail = signedService.getSignDetail(signFlowId);
-        return new ApiResponse(signDetail);
-    }
+
 
 }

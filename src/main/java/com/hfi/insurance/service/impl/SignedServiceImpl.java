@@ -90,8 +90,8 @@ public class SignedServiceImpl implements SignedService {
     @Override
     public JSONObject getSignUrls(GetSignUrlsReq req) {
         Map<String, String> headMap = new HashMap<>();
-        convertHead(headMap,JSON.toJSONString(req));
-        Map urlParams = new HashMap<>(16);
+        convertHead(headMap,"");
+        Map<String,String> urlParams = new HashMap<>(16);
         urlParams.put("signFlowId",req.getSignFlowId());
         urlParams.put("accountType",req.getAccountType());
         urlParams.put("accountId",req.getAccountId());
@@ -106,9 +106,9 @@ public class SignedServiceImpl implements SignedService {
     public JSONObject getSignDetail(Integer signFlowId) {
         Map<String, String> headMap = new HashMap<>();
         convertHead(headMap,"");
-        Map urlParams = new HashMap<>(16);
+        Map<String,Integer> urlParams = new HashMap<>(16);
         urlParams.put("signFlowId",signFlowId);
-        String s = HttpUtil.doGet(url + "/V1/signFlows/signUrls", headMap, urlParams);
+        String s = HttpUtil.doGetWithIntegerParam(url + "/V1/signFlows/signDetail", headMap, urlParams);
         return convertResult(s);
     }
 

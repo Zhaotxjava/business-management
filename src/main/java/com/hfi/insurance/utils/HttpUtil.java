@@ -245,6 +245,45 @@ public class HttpUtil {
         return data;
     }
 
+    public static String doGetWithIntegerParam(
+            String url, Map<String, String> headers, Map<String, Integer> urlParams) {
+        log.info("请求参数：{}", urlParams);
+        StringBuilder sbUrl = new StringBuilder();
+        if (!StringUtils.isBlank(url)) {
+            sbUrl.append(url);
+        }
+        if (MapUtils.isNotEmpty(urlParams)) {
+            StringBuilder sbQuery = new StringBuilder();
+            for (Map.Entry<String, Integer> query : urlParams.entrySet()) {
+                String key = query.getKey();
+                int value = query.getValue();
+                sbQuery.append(key)
+                        .append("=")
+                        .append(value)
+                        .append("&");
+            }
+            String params = sbQuery.substring(0, sbQuery.length() - 1);
+            if (StringUtils.isNotBlank(url)) {
+                sbUrl.append("?").append(params);
+            }
+        }
+        String finalUrl = sbUrl.toString().replace(" ", "");
+        HttpGet httpGet = new HttpGet(finalUrl);
+        addHeaders(httpGet, headers);
+        String data = null;
+        try {
+            CloseableHttpResponse response = httpClient.execute(httpGet);
+            checkResponseStatusCode(response);
+            data = getJsonStr(response);
+        } catch (IOException e) {
+            log.error("an IOException occurred while executing get request", e);
+            throw new RuntimeException(e);
+        } finally {
+            httpGet.releaseConnection();
+        }
+        return data;
+    }
+
     private static String buildUrl(String url, Map<String, String> querys) {
         StringBuilder sbUrl = new StringBuilder();
         if (!StringUtils.isBlank(url)) {

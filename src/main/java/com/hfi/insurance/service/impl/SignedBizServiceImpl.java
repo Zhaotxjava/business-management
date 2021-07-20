@@ -295,8 +295,9 @@ public class SignedBizServiceImpl implements SignedBizService {
             String signFlowId = signFlows.getString("signFlowId");
             YbFlowInfo flowInfo = new YbFlowInfo();
             flowInfo.setInitiator("超级管理员");
-            String singerName = institutionNames.stream().collect(Collectors.joining(","));
+            String singerName = String.join(",", institutionNames);
             flowInfo.setSigners(singerName);
+            flowInfo.setSubject(req.getTemplateId() + "-" +System.currentTimeMillis());
             flowInfo.setCopyViewers(singerName);
             flowInfo.setSignFlowId(signFlowId);
             flowInfoMapper.insert(flowInfo);
