@@ -8,6 +8,7 @@ import com.hfi.insurance.service.InstitutionInfoService;
 import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +24,9 @@ import java.util.Map;
 @Slf4j
 @Api(tags = {"【接口】"})
 public class InstitutionInfoController {
+
+    @Value("${redirect.url}")
+    private String redirectUrl;
 
     @Resource
     private InstitutionInfoService institutionInfoService;
@@ -50,7 +54,7 @@ public class InstitutionInfoController {
         }
         caffeineCache.put("areaCode", platid);
         caffeineCache.put("number", hospitalid);
-        return "redirect:http://baidu.com/index?number=" + hospitalid + "&areaCode=" + platid + "&flag=" + flag;
+        return "redirect:" + redirectUrl + "?number=" + hospitalid + "&areaCode=" + platid + "&flag=" + flag;
     }
 
     @PostMapping("home")
@@ -65,7 +69,7 @@ public class InstitutionInfoController {
         }
         caffeineCache.put("areaCode", platid);
         caffeineCache.put("number", hospitalid);
-        return "redirect:http://baidu.com/index?number=" + hospitalid + "?areaCode=" + platid + "?flag=" + flag;
+        return "redirect:" + redirectUrl + "?number=" + hospitalid + "&areaCode=" + platid + "&flag=" + flag;
     }
 
 

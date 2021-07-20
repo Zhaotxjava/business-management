@@ -2,6 +2,9 @@
 swagger:
   enable: false
 
+redirect:
+  url: https://jsbceshi.hfi-health.com:18188/e-contract/#
+
 file:
   path: /jingt/医保定点机构列表20210607.xlsx
   pathCsv: /jingt/医保定点机构列表20210607.csv
