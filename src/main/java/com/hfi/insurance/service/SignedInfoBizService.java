@@ -2,6 +2,7 @@ package com.hfi.insurance.service;
 
 import com.hfi.insurance.common.ApiResponse;
 import com.hfi.insurance.model.sign.req.GetRecordInfoReq;
+import com.hfi.insurance.model.sign.req.GetSignUrlsReq;
 
 /**
  * @Author ChenZX
@@ -11,4 +12,6 @@ import com.hfi.insurance.model.sign.req.GetRecordInfoReq;
 public interface SignedInfoBizService {
 
     ApiResponse getSignedRecord(GetRecordInfoReq req);
+
+    ApiResponse getSignUrls(GetSignUrlsReq req);
 }

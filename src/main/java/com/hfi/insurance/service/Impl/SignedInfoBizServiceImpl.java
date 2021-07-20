@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.hfi.insurance.common.ApiResponse;
 import com.hfi.insurance.model.YbFlowInfo;
 import com.hfi.insurance.model.sign.req.GetRecordInfoReq;
+import com.hfi.insurance.model.sign.req.GetSignUrlsReq;
 import com.hfi.insurance.model.sign.res.SignRecordsRes;
 import com.hfi.insurance.model.sign.res.SingerInfoRes;
 import com.hfi.insurance.service.IYbFlowInfoService;
@@ -61,5 +62,10 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
         }).collect(Collectors.toList());
         signRecordsResPage.setRecords(recordRes);
         return new ApiResponse(signRecordsResPage);
+    }
+
+    @Override
+    public ApiResponse getSignUrls(GetSignUrlsReq req) {
+        return null;
     }
 }
