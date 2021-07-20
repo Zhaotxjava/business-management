@@ -1,4 +1,4 @@
-package com.hfi.insurance.service.Impl;
+package com.hfi.insurance.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -66,6 +66,8 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
 
     @Override
     public ApiResponse getSignUrls(GetSignUrlsReq req) {
+        JSONObject signUrls = signedService.getSignUrls(req);
+        //signUrls.getString("")
         return null;
     }
 }
