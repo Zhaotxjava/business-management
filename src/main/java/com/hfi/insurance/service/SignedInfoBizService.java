@@ -14,4 +14,6 @@ public interface SignedInfoBizService {
     ApiResponse getSignedRecord(GetRecordInfoReq req);
 
     ApiResponse getSignUrls(GetSignUrlsReq req);
+
+    ApiResponse getPreviewUrl(String fileKey,String docId);
 }

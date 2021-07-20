@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
@@ -40,22 +41,28 @@ public class SignInfoController {
     @ApiOperation("获取签署流程记录")
     @PostMapping("/getSignInfoRecord")
     public ApiResponse getSignInfoRecord(@RequestBody GetRecordInfoReq req){
-        return new ApiResponse(signedInfoBizService.getSignedRecord(req));
+        return signedInfoBizService.getSignedRecord(req);
     }
 
     @GetMapping("getSignDetail/{signFlowId}")
-    @ApiOperation("获取签署流程进度详情")
+    @ApiOperation("获取签署流程进度详情-不用联调")
     public ApiResponse getSignDetail(@PathVariable Integer signFlowId){
         JSONObject signDetail = signedService.getSignDetail(signFlowId);
         return new ApiResponse(signDetail);
+    }
+
+
+    @GetMapping("getPreviewUrl")
+    @ApiOperation("预览")
+    public ApiResponse getPreviewUrl(@RequestParam("fileKey") String fileKey,@RequestParam(value = "docId",required = false) String docId){
+        return signedInfoBizService.getPreviewUrl(fileKey,docId);
     }
     //查看
 
     @PostMapping("getSignUrl")
     @ApiOperation("获取二维码")
     public ApiResponse getSignUrl(@RequestBody GetSignUrlsReq req){
-        JSONObject result = signedService.getSignUrls(req);
-        return new ApiResponse(result);
+        return signedInfoBizService.getSignUrls(req);
     }
 }
 

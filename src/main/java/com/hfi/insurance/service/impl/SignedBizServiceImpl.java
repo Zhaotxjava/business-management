@@ -30,6 +30,7 @@ import com.hfi.insurance.model.sign.req.StandardSignDocBean;
 import com.hfi.insurance.model.sign.req.StandardSignerInfoBean;
 import com.hfi.insurance.model.sign.req.TemplateFormValueParam;
 import com.hfi.insurance.model.sign.req.TemplateUseParam;
+import com.hfi.insurance.service.IYbFlowInfoService;
 import com.hfi.insurance.service.IYbInstitutionInfoService;
 import com.hfi.insurance.service.IYbOrgTdService;
 import com.hfi.insurance.service.SignedBizService;
@@ -61,7 +62,7 @@ public class SignedBizServiceImpl implements SignedBizService {
     private SignedService signedService;
 
     @Resource
-    private YbFlowInfoMapper flowInfoMapper;
+    private IYbFlowInfoService flowInfoService;
 
     @Resource
     private IYbOrgTdService orgTdService;
@@ -78,6 +79,7 @@ public class SignedBizServiceImpl implements SignedBizService {
         Map<String, List<InstitutionInfo>> flowNameInstitutionMap = new HashMap<>();
         Map<Integer, String> flowNameSizeMap = new LinkedHashMap<>(16);
         List<String> institutionNames = new ArrayList<>();
+        List<InstitutionInfo> institutionInfos = new ArrayList<>();
         singerInfos.forEach(singerInfo -> {
             int size = singerInfo.getInstitutionInfoList().size();
             flowNameSizeMap.put(size, singerInfo.getFlowName());
@@ -92,217 +94,246 @@ public class SignedBizServiceImpl implements SignedBizService {
         String templateStr = templateInfoJson.getString("template");
         log.info("模板信息：{}", templateStr);
         TemplateInfoBean templateInfo = JSON.parseObject(templateStr, TemplateInfoBean.class);
+        //乙方（3）* （丙方+丁方）
         for (int i = 0; i < maxSize; i++) {
             StandardCreateFlowBO standardCreateFlow = new StandardCreateFlowBO();
             //文档信息
             List<FlowDocBean> signDocs = new ArrayList<>();
-            FlowDocBean flowDocBean = new FlowDocBean();
-            ETemplateType templateType = EnumHelper.translate(ETemplateType.class, req.getTemplateType());
-            if (ETemplateType.TEMPLATE_FILL == templateType) {
-                //填充模板的形式发起签署
-                TemplateUseParam templateUseParam = new TemplateUseParam();
-                //填充表单信息（文本域）
-                List<TemplateFormValueParam> templateFormValues = new ArrayList<>();
-                for (TemplateFormBean templateForm : templateInfo.getTemplateForms()) {
-                    TemplateFormValueParam templateFormValueParam = new TemplateFormValueParam();
-                    templateFormValueParam.setFormId(templateForm.getFormId());
-                    //文本域名称要是甲方、乙方、丙方机构名称...格式
-                    String formName = templateForm.getFormName();
-                    String flowName = formName.substring(0, 2);
-                    log.info("文本域名称：{}", flowName);
-                    List<InstitutionInfo> institutionInfos = flowNameInstitutionMap.get(flowName);
-
-                    if (!CollectionUtils.isEmpty(institutionInfos)) {
-                        if (flowName.equals(maxSizeFlowName)) {
-                            templateFormValueParam.setFormValue(institutionInfos.get(i).getInstitutionName());
-                        } else {
-                            templateFormValueParam.setFormValue(institutionInfos.get(0).getInstitutionName());
-                        }
-                    }
-                    if ("甲方".equals(flowName)){
-                        templateFormValueParam.setFormValue("杭州市医疗保障局");
-                    }
-                    templateFormValues.add(templateFormValueParam);
+            FlowDocBean flowDocBean = assembleSignDocs(req, templateInfo, flowNameInstitutionMap, maxSizeFlowName, i);
+            String fileKey = flowDocBean.getDocFilekey();
+            signDocs.add(flowDocBean);
+            standardCreateFlow.setSignDocs(signDocs);
+            //签署人信息
+            List<TemplateFlowBean> templateFlows = templateInfo.getTemplateFlows();
+            Map<String, PredefineBean> accountSignatoryMap = new HashMap<>();
+            Map<String, PredefineBean> flowNamePredefineMap = new HashMap<>();
+            templateFlows.forEach(templateFlowBean -> {
+                SignatoryBean signatory = templateFlowBean.getSignatory();
+                //todo 此处可能会覆盖
+                if (signatory != null) {
+                    accountSignatoryMap.put(signatory.getAccountId(), templateFlowBean.getPredefine());
                 }
-                templateUseParam.setTemplateFormValues(templateFormValues);
-                templateUseParam.setTemplateId(templateId);
-                JSONObject jsonObject = signedService.buildTemplateDoc(templateUseParam);
-                log.info("填充模板后文档信息：{}",jsonObject);
-                String fileKey = jsonObject.getString("fileKey");
-                flowDocBean.setDocFilekey(fileKey);
-                flowDocBean.setDocName(templateInfo.getTemplateName());
-                signDocs.add(flowDocBean);
-                standardCreateFlow.setSignDocs(signDocs);
-
-                //签署人信息
-                List<TemplateFlowBean> templateFlows = templateInfo.getTemplateFlows();
-                Map<String, PredefineBean> accountSignatoryMap = new HashMap<>();
-                Map<String, PredefineBean> flowNamePredefineMap = new HashMap<>();
-                templateFlows.forEach(templateFlowBean -> {
-                    SignatoryBean signatory = templateFlowBean.getSignatory();
-                    //todo 此处可能会覆盖
-                    if (signatory != null) {
-                        accountSignatoryMap.put(signatory.getAccountId(), templateFlowBean.getPredefine());
-                    }
-                    flowNamePredefineMap.put(templateFlowBean.getFlowName(), templateFlowBean.getPredefine());
-                });
-                List<StandardSignerInfoBean> singerList = new ArrayList<>();
-                //填充乙丙丁方签署信息
-                for (SingerInfo singerInfo : req.getSingerInfos()) {
-                    List<InstitutionInfo> institutionInfoList = singerInfo.getInstitutionInfoList();
-                    //获取签署机构名称
-                    String singerNames = institutionInfoList.stream().map(InstitutionInfo::getInstitutionName)
-                            .collect(Collectors.joining(","));
-                    institutionNames.add(singerNames);
-
-                    InstitutionInfo institution = null;
-                    if (singerInfo.getFlowName().equals(maxSizeFlowName)) {
-                        institution = institutionInfoList.get(i);
-                    } else {
-                        institution = CollectionUtils.firstElement(institutionInfoList);
-                    }
-                    String accountId = "";
-                    if (institution != null) {
-                        YbInstitutionInfo institutionInfo = institutionInfoService.getInstitutionInfo(institution.getNumber());
-                        accountId = institutionInfo.getAccountId();
-                    }
-                    PredefineBean predefineBean = accountSignatoryMap.get(accountId);
-                    if (predefineBean == null) {
-                        predefineBean = flowNamePredefineMap.get(singerInfo.getFlowName());
-                    }
-                    log.info("位置信息：{}", JSON.toJSONString(predefineBean));
-                    //填充签署人信息
-                    StandardSignerInfoBean signerInfoBean = new StandardSignerInfoBean();
-                    signerInfoBean.setAccountId(accountId);
-//                    signerInfoBean.setAuthorizationOrganizeId("");
-                    signerInfoBean.setAccountType(singerInfo.getAccountType());
-                    ESignType signType = EnumHelper.translate(ESignType.class, singerInfo.getSignType());
-                    if (ESignType.DEFAULT_COORDINATE_SIGN == signType || ESignType.DEFAULT_KEY_WORD_SIGN == signType) {
-                        signerInfoBean.setAutoSign(false);
-                    }
-                    //签署文档信息;指定文档进行签署，未指定的文档将作为只读
-                    List<StandardSignDocBean> signDocDetails = new ArrayList<>();
-                    StandardSignDocBean standardSignDocBean = new StandardSignDocBean();
-                    standardSignDocBean.setDocFilekey(fileKey);
-
-                    List<SignInfoBeanV2> signPos = new ArrayList<>();
-                    SignInfoBeanV2 signInfoBeanV2 = new SignInfoBeanV2();
-                    //签署方式默认为0
-                    signInfoBeanV2.setSignType(1);
-                    if (ESignType.MANUAL_KEY_WORD_SIGN == signType || ESignType.DEFAULT_KEY_WORD_SIGN == signType) {
-                        String keyWord = predefineBean.getKeyWord();
-                        signInfoBeanV2.setKey(keyWord != null ? keyWord : singerInfo.getKey());
-                    }
-                    //位置签署要匹配区域
-                    if ((ESignType.MANUAL_COORDINATE_SIGN == signType || ESignType.DEFAULT_COORDINATE_SIGN == signType)) {
-                        List<Position> positions = predefineBean.getPositions();
-                        Position position = CollectionUtils.firstElement(positions);
-                        signInfoBeanV2.setPosX(Float.valueOf(position.getPosX()));
-                        signInfoBeanV2.setPosY(Float.valueOf(position.getPosY()));
-                        signInfoBeanV2.setPosPage(position.getPageNo());
-                    }
-                    signPos.add(signInfoBeanV2);
-                    standardSignDocBean.setSignPos(signPos);
-                    signDocDetails.add(standardSignDocBean);
-                    signerInfoBean.setSignDocDetails(signDocDetails);
-                    singerList.add(signerInfoBean);
+                flowNamePredefineMap.put(templateFlowBean.getFlowName(), templateFlowBean.getPredefine());
+            });
+            List<StandardSignerInfoBean> singerList = new ArrayList<>();
+            //填充乙丙丁方签署信息
+            for (SingerInfo singerInfo : req.getSingerInfos()) {
+                List<InstitutionInfo> institutionInfoList = singerInfo.getInstitutionInfoList();
+                //获取签署机构名称
+                String singerNames = institutionInfoList.stream().map(InstitutionInfo::getInstitutionName)
+                        .collect(Collectors.joining(","));
+                institutionNames.add(singerNames);
+                InstitutionInfo institution = null;
+                String flowName = singerInfo.getFlowName();
+                if (flowName.equals(maxSizeFlowName)) {
+                    institution = institutionInfoList.get(i);
+                } else {
+                    institution = CollectionUtils.firstElement(institutionInfoList);
                 }
-                //todo 填充甲方信息
-                StandardSignerInfoBean partyA = new StandardSignerInfoBean();
-                String areaCode = caffeineCache.asMap().get("areaCode");
-                //String orgName = getInstitutionNameByAreaCode(areaCode);
-
-                //todo 查询内部机构详情 /V1/organizations/innerOrgans/queryByOrgname
-                partyA.setAccountId("279e974f-577d-47fa-86cd-6672c617043a");
-//                partyA.setAuthorizationOrganizeId();
-                partyA.setAccountType(1);
-                PredefineBean predefineBean = accountSignatoryMap.get("279e974f-577d-47fa-86cd-6672c617043a");
-                if (null == predefineBean) {
-                    predefineBean = flowNamePredefineMap.get("甲方");
+                String accountId = "";
+                if (institution != null) {
+                    institutionInfos.add(institution);
+                    YbInstitutionInfo institutionInfo = institutionInfoService.getInstitutionInfo(institution.getNumber());
+                    accountId = institutionInfo.getAccountId();
                 }
-                ESignType signType = EnumHelper.translate(ESignType.class, req.getPartyASignType());
-                if (ESignType.DEFAULT_COORDINATE_SIGN == signType || ESignType.DEFAULT_KEY_WORD_SIGN == signType) {
-                    partyA.setAutoSign(false);
-                }
-                //签署文档信息;指定文档进行签署，未指定的文档将作为只读
-                List<StandardSignDocBean> signDocDetails = new ArrayList<>();
-                StandardSignDocBean standardSignDocBean = new StandardSignDocBean();
-                standardSignDocBean.setDocFilekey(fileKey);
-
-                List<SignInfoBeanV2> signPos = new ArrayList<>();
-                SignInfoBeanV2 signInfoBeanV2 = new SignInfoBeanV2();
-                //签署方式默认为0
-                signInfoBeanV2.setSignType(1);
-                if (ESignType.MANUAL_KEY_WORD_SIGN == signType || ESignType.DEFAULT_KEY_WORD_SIGN == signType) {
-                    String keyWord = predefineBean.getKeyWord();
-                    //todo 甲方关键词
-                    signInfoBeanV2.setKey(keyWord);
-                }
-                //位置签署要匹配区域
-                if (ESignType.MANUAL_COORDINATE_SIGN == signType || ESignType.DEFAULT_COORDINATE_SIGN == signType) {
-                    List<Position> positions = predefineBean.getPositions();
-                    Position position = CollectionUtils.firstElement(positions);
-                    signInfoBeanV2.setPosX(Float.valueOf(position.getPosX()));
-                    signInfoBeanV2.setPosY(Float.valueOf(position.getPosY()));
-                    signInfoBeanV2.setPosPage(position.getPageNo());
-                }
-                signPos.add(signInfoBeanV2);
-                standardSignDocBean.setSignPos(signPos);
-                signDocDetails.add(standardSignDocBean);
-                partyA.setSignDocDetails(signDocDetails);
-                singerList.add(partyA);
-                //"发起人姓名不能为空
-                standardCreateFlow.setInitiatorName("超级管理员");
-                //手机号或者邮箱
-                standardCreateFlow.setInitiatorMobile("18879476719");
-                standardCreateFlow.setSigners(singerList);
-                //流程主题
-                standardCreateFlow.setSubject(req.getTemplateId() + "-" +System.currentTimeMillis());
-            } else {
-                //            文件直传的方式发起签署
-                flowDocBean.setDocFilekey(req.getFileKey());
-                signDocs.add(flowDocBean);
-                standardCreateFlow.setSignDocs(signDocs);
-                List<StandardSignerInfoBean> singerList = req.getSingerInfos().stream().map(singerInfo -> {
-                    //填充签署人信息
-                    StandardSignerInfoBean signerInfoBean = new StandardSignerInfoBean();
-                    List<StandardSignDocBean> signDocDetails = new ArrayList<>();
-                    StandardSignDocBean standardSignDocBean = new StandardSignDocBean();
-                    standardSignDocBean.setDocFilekey(req.getFileKey());
-                    List<SignInfoBeanV2> signPos = new ArrayList<>();
-                    SignInfoBeanV2 signInfoBean = new SignInfoBeanV2();
-                    //签署方式默认为0
-                    signInfoBean.setSignType(1);
-                    signInfoBean.setKey(singerInfo.getKey());
-                    signPos.add(signInfoBean);
-                    standardSignDocBean.setSignPos(signPos);
-                    signDocDetails.add(standardSignDocBean);
-                    signerInfoBean.setSignDocDetails(signDocDetails);
-                    return signerInfoBean;
-                }).collect(Collectors.toList());
-                standardCreateFlow.setSigners(singerList);
-                standardCreateFlow.setSubject("");
+                PredefineBean predefineBean = flowNamePredefineMap.get(flowName);
+                log.info("位置信息：{}", JSON.toJSONString(predefineBean));
+                //填充签署人信息
+                StandardSignerInfoBean signerInfoBean = assembleStandardSignerInfoBean(accountId, singerInfo, fileKey, predefineBean);
+                singerList.add(signerInfoBean);
             }
+            //todo 填充甲方信息
+            PredefineBean predefineBeanA = accountSignatoryMap.get("279e974f-577d-47fa-86cd-6672c617043a");
+            if (null == predefineBeanA) {
+                predefineBeanA = flowNamePredefineMap.get("甲方");
+            }
+            StandardSignerInfoBean partyA = assemblePartyAInfo(predefineBeanA, req.getPartyASignType(), fileKey);
+            singerList.add(partyA);
+            //"发起人姓名不能为空
+            standardCreateFlow.setInitiatorName("超级管理员");
+            //手机号或者邮箱
+            standardCreateFlow.setInitiatorMobile("18879476719");
+            standardCreateFlow.setSigners(singerList);
+            //流程主题
+            standardCreateFlow.setSubject(req.getTemplateId() + "-" + System.currentTimeMillis());
             log.info("创建流程入参：{}", JSON.toJSONString(standardCreateFlow));
             JSONObject signFlows = signedService.createSignFlows(standardCreateFlow);
             log.info("创建流程出参：{}", JSON.toJSONString(signFlows));
             // todo 优化
             Integer errCode = signFlows.getInteger("errCode");
-            if (errCode != null && -1 == errCode){
+            if (errCode != null && -1 == errCode) {
                 return new ApiResponse(signFlows.getString("msg"));
             }
-
             String signFlowId = signFlows.getString("signFlowId");
-            YbFlowInfo flowInfo = new YbFlowInfo();
-            flowInfo.setInitiator("超级管理员");
-            String singerName = String.join(",", institutionNames);
-            flowInfo.setSigners(singerName);
-            flowInfo.setSubject(req.getTemplateId() + "-" +System.currentTimeMillis());
-            flowInfo.setCopyViewers(singerName);
-            flowInfo.setSignFlowId(signFlowId);
-            flowInfoMapper.insert(flowInfo);
+            List<InstitutionInfo> distinctInstitutions = institutionInfos.stream().distinct().collect(Collectors.toList());
+            List<YbFlowInfo> flowInfoList = new ArrayList<>();
+            distinctInstitutions.forEach(institutionInfo -> {
+                YbFlowInfo flowInfo = new YbFlowInfo();
+                flowInfo.setInitiator("超级管理员");
+                flowInfo.setNumber(institutionInfo.getNumber());
+                String singerName = String.join(",", institutionNames);
+                flowInfo.setSigners(singerName);
+                flowInfo.setSubject(req.getTemplateId() + "-" + System.currentTimeMillis());
+                flowInfo.setCopyViewers(singerName);
+                flowInfo.setSignFlowId(signFlowId);
+                flowInfoList.add(flowInfo);
+            });
+//            flowInfoList.add()
+            flowInfoService.saveBatch(flowInfoList);
         }
         return new ApiResponse(ErrorCodeEnum.SUCCESS);
+    }
+
+    /**
+     * 填充文档信息
+     *
+     * @param req
+     * @param templateInfo
+     * @param flowNameInstitutionMap
+     * @param maxSizeFlowName
+     * @param i
+     * @return
+     */
+    private FlowDocBean assembleSignDocs(CreateSignFlowReq req, TemplateInfoBean templateInfo,
+                                         Map<String, List<InstitutionInfo>> flowNameInstitutionMap,
+                                         String maxSizeFlowName, int i) {
+        FlowDocBean flowDocBean = new FlowDocBean();
+        ETemplateType templateType = EnumHelper.translate(ETemplateType.class, req.getTemplateType());
+        if (ETemplateType.TEMPLATE_FILL == templateType) {
+            //填充模板的形式发起签署
+            TemplateUseParam templateUseParam = new TemplateUseParam();
+            //填充表单信息（文本域）
+            List<TemplateFormValueParam> templateFormValues = new ArrayList<>();
+            for (TemplateFormBean templateForm : templateInfo.getTemplateForms()) {
+                TemplateFormValueParam templateFormValueParam = new TemplateFormValueParam();
+                templateFormValueParam.setFormId(templateForm.getFormId());
+                //文本域名称要是甲方、乙方、丙方机构名称...格式
+                String formName = templateForm.getFormName();
+                String flowName = formName.substring(0, 2);
+                log.info("文本域名称：{}", flowName);
+                List<InstitutionInfo> institutionInfos = flowNameInstitutionMap.get(flowName);
+
+                if (!CollectionUtils.isEmpty(institutionInfos)) {
+                    if (flowName.equals(maxSizeFlowName)) {
+                        templateFormValueParam.setFormValue(institutionInfos.get(i).getInstitutionName());
+                    } else {
+                        templateFormValueParam.setFormValue(institutionInfos.get(0).getInstitutionName());
+                    }
+                }
+                if ("甲方".equals(flowName)) {
+                    templateFormValueParam.setFormValue("杭州市医疗保障局");
+                }
+                templateFormValues.add(templateFormValueParam);
+            }
+            templateUseParam.setTemplateFormValues(templateFormValues);
+            templateUseParam.setTemplateId(req.getTemplateId());
+            JSONObject jsonObject = signedService.buildTemplateDoc(templateUseParam);
+            log.info("填充模板后文档信息：{}", jsonObject);
+            String fileKey = jsonObject.getString("fileKey");
+            flowDocBean.setDocFilekey(fileKey);
+            flowDocBean.setDocName(templateInfo.getTemplateName());
+        } else {
+            //文件直传的方式发起签署
+            flowDocBean.setDocFilekey(req.getFileKey());
+        }
+        return flowDocBean;
+    }
+
+    /**
+     * 组装签署人信息(乙丙丁)
+     *
+     * @param accountId
+     * @param singerInfo
+     * @param fileKey
+     * @param predefineBean
+     * @return
+     */
+    private StandardSignerInfoBean assembleStandardSignerInfoBean(String accountId, SingerInfo singerInfo, String fileKey, PredefineBean predefineBean) {
+        StandardSignerInfoBean signerInfoBean = new StandardSignerInfoBean();
+        signerInfoBean.setAccountId(accountId);
+//                    signerInfoBean.setAuthorizationOrganizeId("");
+        signerInfoBean.setAccountType(singerInfo.getAccountType());
+        ESignType signType = EnumHelper.translate(ESignType.class, singerInfo.getSignType());
+        if (ESignType.DEFAULT_COORDINATE_SIGN == signType || ESignType.DEFAULT_KEY_WORD_SIGN == signType) {
+            signerInfoBean.setAutoSign(false);
+        }
+        //签署文档信息;指定文档进行签署，未指定的文档将作为只读
+        List<StandardSignDocBean> signDocDetails = new ArrayList<>();
+        StandardSignDocBean standardSignDocBean = new StandardSignDocBean();
+        standardSignDocBean.setDocFilekey(fileKey);
+
+        List<SignInfoBeanV2> signPos = new ArrayList<>();
+        SignInfoBeanV2 signInfoBeanV2 = new SignInfoBeanV2();
+        //签署方式默认为0
+        signInfoBeanV2.setSignType(1);
+        if (ESignType.MANUAL_KEY_WORD_SIGN == signType || ESignType.DEFAULT_KEY_WORD_SIGN == signType) {
+            String keyWord = predefineBean.getKeyWord();
+            signInfoBeanV2.setKey(keyWord != null ? keyWord : singerInfo.getKey());
+        }
+        //位置签署要匹配区域
+        if ((ESignType.MANUAL_COORDINATE_SIGN == signType || ESignType.DEFAULT_COORDINATE_SIGN == signType)) {
+            List<Position> positions = predefineBean.getPositions();
+            Position position = CollectionUtils.firstElement(positions);
+            signInfoBeanV2.setPosX(Float.valueOf(position.getPosX()));
+            signInfoBeanV2.setPosY(Float.valueOf(position.getPosY()));
+            signInfoBeanV2.setPosPage(position.getPageNo());
+        }
+        signPos.add(signInfoBeanV2);
+        standardSignDocBean.setSignPos(signPos);
+        signDocDetails.add(standardSignDocBean);
+        signerInfoBean.setSignDocDetails(signDocDetails);
+        return signerInfoBean;
+    }
+
+
+    /**
+     * 填充甲方信息
+     *
+     * @param predefineBean
+     * @param partyASignType
+     * @param fileKey
+     * @return
+     */
+    private StandardSignerInfoBean assemblePartyAInfo(PredefineBean predefineBean, int partyASignType, String fileKey) {
+        StandardSignerInfoBean partyA = new StandardSignerInfoBean();
+        String areaCode = caffeineCache.asMap().get("areaCode");
+        //String orgName = getInstitutionNameByAreaCode(areaCode);
+
+        //todo 查询内部机构详情 /V1/organizations/innerOrgans/queryByOrgname
+        partyA.setAccountId("279e974f-577d-47fa-86cd-6672c617043a");
+//                partyA.setAuthorizationOrganizeId();
+        partyA.setAccountType(1);
+        ESignType signType = EnumHelper.translate(ESignType.class, partyASignType);
+        if (ESignType.DEFAULT_COORDINATE_SIGN == signType || ESignType.DEFAULT_KEY_WORD_SIGN == signType) {
+            partyA.setAutoSign(false);
+        }
+        //签署文档信息;指定文档进行签署，未指定的文档将作为只读
+        List<StandardSignDocBean> signDocDetails = new ArrayList<>();
+        StandardSignDocBean standardSignDocBean = new StandardSignDocBean();
+        standardSignDocBean.setDocFilekey(fileKey);
+
+        List<SignInfoBeanV2> signPos = new ArrayList<>();
+        SignInfoBeanV2 signInfoBeanV2 = new SignInfoBeanV2();
+        //签署方式默认为0
+        signInfoBeanV2.setSignType(1);
+        if (ESignType.MANUAL_KEY_WORD_SIGN == signType || ESignType.DEFAULT_KEY_WORD_SIGN == signType) {
+            String keyWord = predefineBean.getKeyWord();
+            //todo 甲方关键词
+            signInfoBeanV2.setKey(keyWord);
+        }
+        //位置签署要匹配区域
+        if (ESignType.MANUAL_COORDINATE_SIGN == signType || ESignType.DEFAULT_COORDINATE_SIGN == signType) {
+            List<Position> positions = predefineBean.getPositions();
+            Position position = CollectionUtils.firstElement(positions);
+            signInfoBeanV2.setPosX(Float.valueOf(position.getPosX()));
+            signInfoBeanV2.setPosY(Float.valueOf(position.getPosY()));
+            signInfoBeanV2.setPosPage(position.getPageNo());
+        }
+        signPos.add(signInfoBeanV2);
+        standardSignDocBean.setSignPos(signPos);
+        signDocDetails.add(standardSignDocBean);
+        partyA.setSignDocDetails(signDocDetails);
+        return partyA;
     }
 
     /**

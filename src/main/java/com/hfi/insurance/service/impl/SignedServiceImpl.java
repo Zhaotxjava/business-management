@@ -116,9 +116,20 @@ public class SignedServiceImpl implements SignedService {
     public JSONObject getSignFlowDocUrls(String signFlowId) {
         Map<String, String> headMap = new HashMap<>();
         convertHead(headMap,"");
-        Map urlParams = new HashMap<>(16);
+        Map<String,String> urlParams = new HashMap<>(16);
         urlParams.put("signFlowId",signFlowId);
         String s = HttpUtil.doGet(url + "/V1/signFlows/getSignFlowDocUrls", headMap, urlParams);
+        return convertResult(s);
+    }
+
+    @Override
+    public JSONObject getPreviewUrl(String fileKey, String docId) {
+        Map<String, String> headMap = new HashMap<>();
+        convertHead(headMap,"");
+        Map<String,String> urlParams = new HashMap<>(16);
+        urlParams.put("fileKey",fileKey);
+        urlParams.put("docId",docId);
+        String s = HttpUtil.doGet(url + " /V1/signDocs/getPreviewUrl", headMap, urlParams);
         return convertResult(s);
     }
 

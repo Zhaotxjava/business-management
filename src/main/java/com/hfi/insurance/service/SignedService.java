@@ -76,5 +76,13 @@ public interface SignedService {
      */
     JSONObject getSignFlowDocUrls(String signFlowId);
 
+    /**
+     * 获取文档预览的URL
+     * @param fileKey
+     * @param docId
+     * @return
+     */
+    JSONObject getPreviewUrl(String fileKey, String docId);
+
 
 }

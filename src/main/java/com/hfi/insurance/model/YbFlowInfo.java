@@ -44,6 +44,11 @@ public class YbFlowInfo implements Serializable {
     private Integer flowStatus;
 
     /**
+     * 机构编号
+     */
+    private String number;
+
+    /**
      * 签署状态
      */
     private String signStatus;
@@ -68,7 +73,6 @@ public class YbFlowInfo implements Serializable {
      */
     private String signers;
 
-    private String accountId;
 
     /**
      * 抄送人

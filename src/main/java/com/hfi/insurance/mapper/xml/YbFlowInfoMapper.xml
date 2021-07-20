@@ -8,6 +8,7 @@
         <result column="sign_flow_id" property="signFlowId" />
         <result column="subject" property="subject" />
         <result column="flow_status" property="flowStatus" />
+        <result column="number" property="number" />
         <result column="sign_status" property="signStatus" />
         <result column="initiator" property="initiator" />
         <result column="initiator_time" property="initiatorTime" />
@@ -21,7 +22,7 @@
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        flow_id, sign_flow_id, subject, flow_status, sign_status, initiator, initiator_time, handle_time, signers, copy_viewers, flow_type, create_time, update_time
+        flow_id, sign_flow_id, subject, flow_status,number,sign_status, initiator, initiator_time, handle_time, signers, copy_viewers, flow_type, create_time, update_time
     </sql>
 
 </mapper>
