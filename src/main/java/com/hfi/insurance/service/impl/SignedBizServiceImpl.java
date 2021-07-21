@@ -45,6 +45,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -74,11 +75,13 @@ public class SignedBizServiceImpl implements SignedBizService {
     @Resource
     private IYbInstitutionInfoService institutionInfoService;
 
-    @Resource
-    private Cache<String, String> caffeineCache;
+//    @Resource
+//    private Cache<String, String> caffeineCache;
 
     @Override
-    public ApiResponse createSignFlow(CreateSignFlowReq req) {
+    public ApiResponse createSignFlow(CreateSignFlowReq req, HttpSession session) {
+        String uniqueId = (String) session.getAttribute("areaCode");
+        String institutionNumber = (String) session.getAttribute("number");
         List<SingerInfo> singerInfos = req.getSingerInfos();
         Map<String, List<InstitutionInfo>> flowNameInstitutionMap = new HashMap<>();
         Map<Integer, String> flowNameSizeMap = new LinkedHashMap<>(16);
@@ -148,7 +151,7 @@ public class SignedBizServiceImpl implements SignedBizService {
             }
             //todo 填充甲方信息
             PredefineBean predefineBeanA = flowNamePredefineMap.get("甲方");
-            StandardSignerInfoBean partyA = assemblePartyAInfo(predefineBeanA, req.getPartyASignType(), fileKey);
+            StandardSignerInfoBean partyA = assemblePartyAInfo(predefineBeanA, req.getPartyASignType(), fileKey,uniqueId);
             singerList.add(partyA);
             //发起人姓名不能为空
             String initiatorName = partyA.getAccountName();
@@ -179,15 +182,19 @@ public class SignedBizServiceImpl implements SignedBizService {
                         .setSubject(subject)
                         .setCopyViewers(singerName)
                         .setSignFlowId(signFlowId)
+                        .setNumber(institutionNumber)
+                        .setAccountType(2)
                         .setFlowType("Common");
                 flowInfoList.add(flowInfo);
             });
             YbFlowInfo flowAInfo = new YbFlowInfo();
             flowAInfo.setInitiator(initiatorName)
-                    .setNumber(partyA.getUniqueId())
+                    .setNumber(uniqueId)
                     .setSubject(subject)
                     .setCopyViewers(singerName)
                     .setSignFlowId(signFlowId)
+                    .setUniqueId(uniqueId)
+                    .setAccountType(1)
                     .setFlowType("Common");
             flowInfoList.add(flowAInfo);
             flowInfoService.saveBatch(flowInfoList);
@@ -305,9 +312,9 @@ public class SignedBizServiceImpl implements SignedBizService {
      * @param fileKey
      * @return
      */
-    private StandardSignerInfoBean assemblePartyAInfo(PredefineBean predefineBean, int partyASignType, String fileKey) {
+    private StandardSignerInfoBean assemblePartyAInfo(PredefineBean predefineBean, int partyASignType, String fileKey,String uniqueId) {
         StandardSignerInfoBean partyA = new StandardSignerInfoBean();
-        String uniqueId = caffeineCache.asMap().get("areaCode");
+//        String uniqueId = caffeineCache.asMap().get("areaCode");
         log.info("发起方（甲方）唯一标识：{}",uniqueId);
         QueryInnerAccountsReq queryInnerAccountsReq = new QueryInnerAccountsReq();
         queryInnerAccountsReq.setUniqueId(uniqueId);

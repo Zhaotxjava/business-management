@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpSession;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -41,8 +42,12 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
     private OrganizationsService organizationsService;
 
     @Override
-    public Page<YbInstitutionInfo> getInstitutionInfoList(String number, String institutionName, int current, int limit) {
+    public Page<YbInstitutionInfo> getInstitutionInfoList(String number, String institutionName, int current, int limit, HttpSession session) {
         QueryWrapper<YbInstitutionInfo> queryWrapper = new QueryWrapper<>();
+        String institutionNumber = (String) session.getAttribute("number");
+        if (StringUtils.isNotBlank(institutionNumber)){
+            queryWrapper.like("number",institutionNumber);
+        }
         if (StringUtils.isNotBlank(number)){
             queryWrapper.eq("number",number);
         }

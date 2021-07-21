@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpSession;
 
 /**
  * @Author ChenZX
@@ -59,8 +60,8 @@ public class FlowManageController {
 
     @PostMapping("createSignFlows")
     @ApiOperation("发起签署-创建流程")
-    public ApiResponse createSignFlows(@RequestBody CreateSignFlowReq req){
-        return signedBizService.createSignFlow(req);
+    public ApiResponse createSignFlows(@RequestBody CreateSignFlowReq req, HttpSession session){
+        return signedBizService.createSignFlow(req,session);
     }
 
 

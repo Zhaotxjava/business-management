@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,9 +44,9 @@ public class InstitutionController {
 
     @PostMapping("getInstitutionInfoList")
     @ApiOperation("分页查询外部机构信息")
-    public ApiResponse getInstitutionInfoList(@RequestBody InstitutionInfoQueryReq req) {
+    public ApiResponse getInstitutionInfoList(@RequestBody InstitutionInfoQueryReq req, HttpSession session) {
         Page<YbInstitutionInfo> page =
-                institutionInfoService.getInstitutionInfoList(req.getNumber(), req.getInstitutionName(), req.getPageNum(), req.getPageSize());
+                institutionInfoService.getInstitutionInfoList(req.getNumber(), req.getInstitutionName(), req.getPageNum(), req.getPageSize(),session);
         return new ApiResponse(page);
     }
 

@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,8 +32,6 @@ public class InstitutionInfoController {
     @Resource
     private InstitutionInfoService institutionInfoService;
 
-    @Resource
-    private Cache<String, String> caffeineCache;
 
     @GetMapping("welcome")
     @ResponseBody
@@ -44,7 +43,8 @@ public class InstitutionInfoController {
     }
 
     @GetMapping("home")
-    public String index(@RequestParam(name = "hospitalid", required = true) String hospitalid, @RequestParam(name = "platid", required = false) String platid, Model model) {
+    public String index(@RequestParam(name = "hospitalid", required = true) String hospitalid, @RequestParam(name = "platid", required = false) String platid,
+                        Model model, HttpSession session) {
         model.addAttribute("number", hospitalid); //医院编码
         model.addAttribute("areaCode", platid); ///统筹区编码
         //默认外部机构
@@ -52,31 +52,27 @@ public class InstitutionInfoController {
         if (StringUtils.isNotBlank(platid)) {
             flag = 1;
         }
-        if (caffeineCache != null){
-            caffeineCache.put("areaCode", platid);
-            caffeineCache.put("number", hospitalid);
-        }else {
-            log.info("添加至缓存失败！");
-        }
+        session.setAttribute("areaCode",platid);
+        session.setAttribute("number",hospitalid);
+//        caffeineCache.put("areaCode", platid);
+//        caffeineCache.put("number", hospitalid);
         return "redirect:" + redirectUrl + "?number=" + hospitalid + "&areaCode=" + platid + "&flag=" + flag;
     }
 
     @PostMapping("home")
-    public String index(String hospitalid, String platid, HttpServletRequest request, Model model) {
+    public String index(String hospitalid, String platid, HttpServletRequest request, Model model,HttpSession session) {
         //application/x-www-form-urlencoded;charset=UTF-8
         model.addAttribute("number", hospitalid); //医院编码
         model.addAttribute("areaCode", platid); ///统筹区编码
-        //默认内部机构
-        int flag = 1;
-        if (StringUtils.isNotBlank(hospitalid)) {
-            flag = 2;
+        //默认外部机构
+        int flag = 2;
+        if (StringUtils.isNotBlank(platid)) {
+            flag = 1;
         }
-        if (caffeineCache != null){
-            caffeineCache.put("areaCode", platid);
-            caffeineCache.put("number", hospitalid);
-        }else {
-            log.info("添加至缓存失败！");
-        }
+        session.setAttribute("areaCode",platid);
+        session.setAttribute("number",hospitalid);
+//        caffeineCache.put("areaCode", platid);
+//        caffeineCache.put("number", hospitalid);
         return "redirect:" + redirectUrl + "?number=" + hospitalid + "&areaCode=" + platid + "&flag=" + flag;
     }
 

@@ -48,6 +48,10 @@ public class YbFlowInfo implements Serializable {
      */
     private String number;
 
+    private String uniqueId;
+
+    private Integer accountType;
+
     /**
      * 签署状态
      */
