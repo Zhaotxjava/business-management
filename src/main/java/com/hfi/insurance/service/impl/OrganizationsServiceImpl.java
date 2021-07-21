@@ -2,6 +2,7 @@ package com.hfi.insurance.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
 import com.hfi.insurance.model.InstitutionInfo;
+import com.hfi.insurance.model.sign.req.QueryInnerAccountsReq;
 import com.hfi.insurance.service.OrganizationsService;
 import com.hfi.insurance.utils.HmacSHA256Utils;
 import com.hfi.insurance.utils.HttpUtil;
@@ -185,6 +186,20 @@ public class OrganizationsServiceImpl implements OrganizationsService {
         convertHead(headMap, jsonObject.toJSONString());
         String result = HttpUtil.doPost(url + "/V1/organizations/outerOrgans/unbindAgent", headMap, jsonObject.toJSONString());
         log.info("外部机构【{}】解绑经办人【{}】接口响应{}", organizeId, accountId, result);
+        return convertResult(result);
+    }
+
+    @Override
+    public JSONObject queryInnerAccounts(QueryInnerAccountsReq req) {
+        Map<String, String> headMap = new HashMap<>();
+
+        Map<String,String> param = new HashMap<>();
+        param.put("uniqueId", req.getUniqueId());
+        param.put("pageIndex",req.getPageIndex());
+        param.put("pageSize",req.getPageSize());
+        convertHead(headMap, "");
+        String result = HttpUtil.doGet(url + "/V1/accounts/innerAccounts/list", headMap, param);
+        log.info("根据用户标识【{}】查询用户列表信息接口响应{}", req.getUniqueId(), result);
         return convertResult(result);
     }
 }

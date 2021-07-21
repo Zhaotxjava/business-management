@@ -52,10 +52,10 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
         List<SignRecordsRes> recordRes = flowInfos.stream().map(ybFlowInfo -> {
             SignRecordsRes recordsRes = new SignRecordsRes();
             BeanUtils.copyProperties(ybFlowInfo,recordsRes);
-            Integer flowId = ybFlowInfo.getFlowId();
-            JSONObject signDetail = signedService.getSignDetail(flowId);
+            String flowId = ybFlowInfo.getSignFlowId();
+            JSONObject signDetail = signedService.getSignDetail(Integer.valueOf(flowId));
             log.info("流程id：{}，详情：{}",flowId,signDetail);
-            String singers = signDetail.getString("singers");
+            String singers = signDetail.getString("signers");
             List<SingerInfoRes> singerInfos = JSON.parseArray(singers, SingerInfoRes.class);
             //匹配用户，填充信息
             String number = ybFlowInfo.getNumber();

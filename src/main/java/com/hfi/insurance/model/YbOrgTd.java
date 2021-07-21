@@ -1,9 +1,11 @@
 package com.hfi.insurance.model;
 
-import java.io.Serializable;
+import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+
+import java.io.Serializable;
 
 /**
  * <p>
@@ -23,7 +25,8 @@ public class YbOrgTd implements Serializable {
     /**
      * 定点机构编号
      */
-      private String akb020;
+    @TableId(value = "AKB020")
+    private String akb020;
 
     /**
      * 定点机构名称

@@ -32,11 +32,14 @@ public class SignRecordsRes {
     private String initiateTime;
 
     @ApiModelProperty("流程ID")
-    private Integer signFlowId;
+    private String signFlowId;
 
     @ApiModelProperty("流程状态")
     private Integer flowStatus;
 
     @ApiModelProperty("签署状态")
     private String signStatus;
+
+    @ApiModelProperty("类别")
+    private String flowType;
 }

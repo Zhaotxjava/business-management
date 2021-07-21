@@ -18,6 +18,8 @@ public class StandardSignerInfoBean {
     private String accountId;
     @ApiModelProperty("用户类型;1:内部,2外部")
     private Integer accountType;
+    @ApiModelProperty("用户名")
+    private String accountName;
     private Integer allowApiSign;
     private String authorizationOrganizeId;
     private String authorizationOrganizeNo;

@@ -23,6 +23,7 @@ import com.hfi.insurance.model.sign.req.CreateSignFlowReq;
 import com.hfi.insurance.model.sign.req.FlowDocBean;
 import com.hfi.insurance.model.sign.req.GetPageWithPermissionReq;
 import com.hfi.insurance.model.sign.req.GetPageWithPermissionV2Model;
+import com.hfi.insurance.model.sign.req.QueryInnerAccountsReq;
 import com.hfi.insurance.model.sign.req.SignInfoBeanV2;
 import com.hfi.insurance.model.sign.req.SingerInfo;
 import com.hfi.insurance.model.sign.req.StandardCreateFlowBO;
@@ -30,9 +31,11 @@ import com.hfi.insurance.model.sign.req.StandardSignDocBean;
 import com.hfi.insurance.model.sign.req.StandardSignerInfoBean;
 import com.hfi.insurance.model.sign.req.TemplateFormValueParam;
 import com.hfi.insurance.model.sign.req.TemplateUseParam;
+import com.hfi.insurance.model.sign.res.StandardAccountListReturn;
 import com.hfi.insurance.service.IYbFlowInfoService;
 import com.hfi.insurance.service.IYbInstitutionInfoService;
 import com.hfi.insurance.service.IYbOrgTdService;
+import com.hfi.insurance.service.OrganizationsService;
 import com.hfi.insurance.service.SignedBizService;
 import com.hfi.insurance.service.SignedService;
 import com.hfi.insurance.utils.EnumHelper;
@@ -47,6 +50,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -65,7 +69,7 @@ public class SignedBizServiceImpl implements SignedBizService {
     private IYbFlowInfoService flowInfoService;
 
     @Resource
-    private IYbOrgTdService orgTdService;
+    private OrganizationsService organizationsService;
 
     @Resource
     private IYbInstitutionInfoService institutionInfoService;
@@ -143,16 +147,14 @@ public class SignedBizServiceImpl implements SignedBizService {
                 singerList.add(signerInfoBean);
             }
             //todo 填充甲方信息
-            PredefineBean predefineBeanA = accountSignatoryMap.get("279e974f-577d-47fa-86cd-6672c617043a");
-            if (null == predefineBeanA) {
-                predefineBeanA = flowNamePredefineMap.get("甲方");
-            }
+            PredefineBean predefineBeanA = flowNamePredefineMap.get("甲方");
             StandardSignerInfoBean partyA = assemblePartyAInfo(predefineBeanA, req.getPartyASignType(), fileKey);
             singerList.add(partyA);
-            //"发起人姓名不能为空
-            standardCreateFlow.setInitiatorName("超级管理员");
+            //发起人姓名不能为空
+            String initiatorName = partyA.getAccountName();
+            standardCreateFlow.setInitiatorName(initiatorName);
             //手机号或者邮箱
-            standardCreateFlow.setInitiatorMobile("18879476719");
+            standardCreateFlow.setInitiatorMobile(partyA.getContactMobile());
             standardCreateFlow.setSigners(singerList);
             //流程主题
             standardCreateFlow.setSubject(req.getTemplateId() + "-" + System.currentTimeMillis());
@@ -167,18 +169,27 @@ public class SignedBizServiceImpl implements SignedBizService {
             String signFlowId = signFlows.getString("signFlowId");
             List<InstitutionInfo> distinctInstitutions = institutionInfos.stream().distinct().collect(Collectors.toList());
             List<YbFlowInfo> flowInfoList = new ArrayList<>();
+            String singerName = String.join(",", institutionNames);
+            String subject = req.getTemplateId() + "-" + System.currentTimeMillis();
             distinctInstitutions.forEach(institutionInfo -> {
                 YbFlowInfo flowInfo = new YbFlowInfo();
-                flowInfo.setInitiator("超级管理员");
-                flowInfo.setNumber(institutionInfo.getNumber());
-                String singerName = String.join(",", institutionNames);
-                flowInfo.setSigners(singerName);
-                flowInfo.setSubject(req.getTemplateId() + "-" + System.currentTimeMillis());
-                flowInfo.setCopyViewers(singerName);
-                flowInfo.setSignFlowId(signFlowId);
+                flowInfo.setInitiator(initiatorName)
+                        .setNumber(institutionInfo.getNumber())
+                        .setSigners(singerName)
+                        .setSubject(subject)
+                        .setCopyViewers(singerName)
+                        .setSignFlowId(signFlowId)
+                        .setFlowType("Common");
                 flowInfoList.add(flowInfo);
             });
-//            flowInfoList.add()
+            YbFlowInfo flowAInfo = new YbFlowInfo();
+            flowAInfo.setInitiator(initiatorName)
+                    .setNumber(partyA.getUniqueId())
+                    .setSubject(subject)
+                    .setCopyViewers(singerName)
+                    .setSignFlowId(signFlowId)
+                    .setFlowType("Common");
+            flowInfoList.add(flowAInfo);
             flowInfoService.saveBatch(flowInfoList);
         }
         return new ApiResponse(ErrorCodeEnum.SUCCESS);
@@ -296,13 +307,27 @@ public class SignedBizServiceImpl implements SignedBizService {
      */
     private StandardSignerInfoBean assemblePartyAInfo(PredefineBean predefineBean, int partyASignType, String fileKey) {
         StandardSignerInfoBean partyA = new StandardSignerInfoBean();
-        String areaCode = caffeineCache.asMap().get("areaCode");
-        //String orgName = getInstitutionNameByAreaCode(areaCode);
+        String uniqueId = caffeineCache.asMap().get("areaCode");
+        log.info("发起方（甲方）唯一标识：{}",uniqueId);
+        QueryInnerAccountsReq queryInnerAccountsReq = new QueryInnerAccountsReq();
+        queryInnerAccountsReq.setUniqueId(uniqueId);
+        queryInnerAccountsReq.setPageSize("10");
+        queryInnerAccountsReq.setPageIndex("1");
+        JSONObject innerAccounts = organizationsService.queryInnerAccounts(queryInnerAccountsReq);
+        String accounts = innerAccounts.getString("accounts");
+        if (null != accounts){
+            List<StandardAccountListReturn> accountListReturns = JSON.parseArray(accounts, StandardAccountListReturn.class);
+            StandardAccountListReturn accountReturn = CollectionUtils.firstElement(accountListReturns);
+            log.info("甲方用户id:{}",accountReturn.getAccountId());
+            //partyA.setAccountId("279e974f-577d-47fa-86cd-6672c617043a");
+            partyA.setAccountId(accountReturn.getAccountId());
+//            partyA.setAuthorizationOrganizeId();
+            partyA.setContactMobile(accountReturn.getMobile());
+            partyA.setAccountName(accountReturn.getName());
 
-        //todo 查询内部机构详情 /V1/organizations/innerOrgans/queryByOrgname
-        partyA.setAccountId("279e974f-577d-47fa-86cd-6672c617043a");
-//                partyA.setAuthorizationOrganizeId();
+        }
         partyA.setAccountType(1);
+        partyA.setUniqueId(uniqueId);
         ESignType signType = EnumHelper.translate(ESignType.class, partyASignType);
         if (ESignType.DEFAULT_COORDINATE_SIGN == signType || ESignType.DEFAULT_KEY_WORD_SIGN == signType) {
             partyA.setAutoSign(false);
@@ -406,8 +431,15 @@ public class SignedBizServiceImpl implements SignedBizService {
         log.info("获取模板详细信息响应参数：{}", templateInfo);
         if (templateInfo.getBoolean("success")) {
             String templateInfoString = templateInfo.getString("template");
-            JSONObject data = JSON.parseObject(templateInfoString);
-            return new ApiResponse(data);
+            TemplateInfoBean templateInfoBean = JSON.parseObject(templateInfoString, TemplateInfoBean.class);
+            List<TemplateFlowBean> templateFlows = templateInfoBean.getTemplateFlows();
+            List<PredefineBean> predefineList = templateFlows.stream().map(TemplateFlowBean::getPredefine).collect(Collectors.toList());
+            Optional<PredefineBean> any = predefineList.stream().filter(predefineBean -> null != predefineBean.getPositions()).findAny();
+            if (any.isPresent()){
+                return new ApiResponse("是否使用该模板坐标！");
+            }else {
+                return new ApiResponse("该模板不包含坐标信息！");
+            }
         } else {
             return new ApiResponse(ErrorCodeEnum.RESPONES_ERROR);
         }

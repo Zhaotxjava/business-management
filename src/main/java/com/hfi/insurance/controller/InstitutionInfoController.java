@@ -47,13 +47,17 @@ public class InstitutionInfoController {
     public String index(@RequestParam(name = "hospitalid", required = true) String hospitalid, @RequestParam(name = "platid", required = false) String platid, Model model) {
         model.addAttribute("number", hospitalid); //医院编码
         model.addAttribute("areaCode", platid); ///统筹区编码
-        //默认内部机构
-        int flag = 1;
-        if (StringUtils.isNotBlank(hospitalid)) {
-            flag = 2;
+        //默认外部机构
+        int flag = 2;
+        if (StringUtils.isNotBlank(platid)) {
+            flag = 1;
         }
-        caffeineCache.put("areaCode", platid);
-        caffeineCache.put("number", hospitalid);
+        if (caffeineCache != null){
+            caffeineCache.put("areaCode", platid);
+            caffeineCache.put("number", hospitalid);
+        }else {
+            log.info("添加至缓存失败！");
+        }
         return "redirect:" + redirectUrl + "?number=" + hospitalid + "&areaCode=" + platid + "&flag=" + flag;
     }
 
@@ -67,8 +71,12 @@ public class InstitutionInfoController {
         if (StringUtils.isNotBlank(hospitalid)) {
             flag = 2;
         }
-        caffeineCache.put("areaCode", platid);
-        caffeineCache.put("number", hospitalid);
+        if (caffeineCache != null){
+            caffeineCache.put("areaCode", platid);
+            caffeineCache.put("number", hospitalid);
+        }else {
+            log.info("添加至缓存失败！");
+        }
         return "redirect:" + redirectUrl + "?number=" + hospitalid + "&areaCode=" + platid + "&flag=" + flag;
     }
 

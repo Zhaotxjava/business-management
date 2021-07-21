@@ -1,6 +1,11 @@
 package com.hfi.insurance;
 
+import com.alibaba.fastjson.JSONObject;
+import com.hfi.insurance.model.sign.req.QueryInnerAccountsReq;
+import com.hfi.insurance.service.OrganizationsService;
+import com.hfi.insurance.service.SignedService;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.concurrent.Callable;
@@ -18,6 +23,8 @@ import java.util.concurrent.TimeUnit;
  */
 @SpringBootTest
 class SpringbootThymeleafApplicationTests {
+    @Autowired
+    private OrganizationsService organizationsService;
 
     @Test
     void contextLoads() {
@@ -32,6 +39,15 @@ class SpringbootThymeleafApplicationTests {
         executor.shutdown();
 
 
+    }
+    @Test
+    public void test(){
+        QueryInnerAccountsReq req = new QueryInnerAccountsReq();
+        req.setUniqueId("jianghua");
+        req.setPageIndex("1");
+        req.setPageSize("10");
+        JSONObject jsonObject = organizationsService.queryInnerAccounts(req);
+        System.out.println(jsonObject.toJSONString());
     }
 
     public static void main(String[] args) throws ExecutionException, InterruptedException {

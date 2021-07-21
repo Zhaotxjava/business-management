@@ -2,6 +2,7 @@ package com.hfi.insurance.service;
 
 import com.alibaba.fastjson.JSONObject;
 import com.hfi.insurance.model.InstitutionInfo;
+import com.hfi.insurance.model.sign.req.QueryInnerAccountsReq;
 
 public interface OrganizationsService {
 
@@ -20,4 +21,6 @@ public interface OrganizationsService {
     JSONObject bindAgent(String organizeId, String organizeNo, String accountId, String uniqueId);
 
     JSONObject unbindAgent(String organizeId, String organizeNo, String accountId, String uniqueId);
+
+    JSONObject queryInnerAccounts(QueryInnerAccountsReq req);
 }

@@ -1,6 +1,7 @@
 package com.hfi.insurance.model;
 
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -31,6 +32,7 @@ public class YbInstitutionInfo implements Serializable {
      * 机构编号
      */
     @ApiModelProperty("机构编号")
+    @TableId(value = "number")
     private String number;
 
     /**
