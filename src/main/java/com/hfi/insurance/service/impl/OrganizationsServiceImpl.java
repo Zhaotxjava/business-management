@@ -194,12 +194,24 @@ public class OrganizationsServiceImpl implements OrganizationsService {
         Map<String, String> headMap = new HashMap<>();
 
         Map<String,String> param = new HashMap<>();
-        param.put("uniqueId", req.getUniqueId());
+        param.put("organizeId",req.getOrganizeId());
+        //param.put("uniqueId", req.getUniqueId());
         param.put("pageIndex",req.getPageIndex());
         param.put("pageSize",req.getPageSize());
         convertHead(headMap, "");
         String result = HttpUtil.doGet(url + "/V1/accounts/innerAccounts/list", headMap, param);
         log.info("根据用户标识【{}】查询用户列表信息接口响应{}", req.getUniqueId(), result);
+        return convertResult(result);
+    }
+
+    @Override
+    public JSONObject queryInnerOrgans(String organizeNo) {
+        Map<String, String> headMap = new HashMap<>();
+        Map<String,String> param = new HashMap<>();
+        param.put("organizeNo",organizeNo);
+        convertHead(headMap, "");
+        String result = HttpUtil.doGet(url + "/V1/organizations/innerOrgans/query", headMap, param);
+        log.info("根据机构编号【{}】查询机构信息接口响应{}", organizeNo, result);
         return convertResult(result);
     }
 }

@@ -4,6 +4,7 @@ import com.hfi.insurance.common.ApiResponse;
 import com.hfi.insurance.model.sign.req.CreateSignFlowReq;
 import com.hfi.insurance.model.sign.req.GetPageWithPermissionReq;
 import com.hfi.insurance.model.sign.req.StandardCreateFlowBO;
+import org.springframework.http.HttpRequest;
 
 import javax.servlet.http.HttpSession;
 

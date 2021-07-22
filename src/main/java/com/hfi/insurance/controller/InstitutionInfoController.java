@@ -12,6 +12,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -44,7 +46,7 @@ public class InstitutionInfoController {
 
     @GetMapping("home")
     public String index(@RequestParam(name = "hospitalid", required = true) String hospitalid, @RequestParam(name = "platid", required = false) String platid,
-                        Model model, HttpSession session) {
+                        Model model) {
         model.addAttribute("number", hospitalid); //医院编码
         model.addAttribute("areaCode", platid); ///统筹区编码
         //默认外部机构
@@ -52,6 +54,9 @@ public class InstitutionInfoController {
         if (StringUtils.isNotBlank(platid)) {
             flag = 1;
         }
+        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        HttpServletRequest request = requestAttributes.getRequest();
+        HttpSession session =  request.getSession();
         session.setAttribute("areaCode",platid);
         session.setAttribute("number",hospitalid);
 //        caffeineCache.put("areaCode", platid);

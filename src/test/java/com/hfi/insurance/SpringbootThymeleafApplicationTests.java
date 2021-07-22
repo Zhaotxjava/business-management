@@ -50,6 +50,13 @@ class SpringbootThymeleafApplicationTests {
         System.out.println(jsonObject.toJSONString());
     }
 
+    @Test
+    public void test2(){
+
+        JSONObject jsonObject = organizationsService.queryInnerOrgans("330199");
+        System.out.println(jsonObject.toJSONString());
+    }
+
     public static void main(String[] args) throws ExecutionException, InterruptedException {
         ExecutorService executorService = Executors.newCachedThreadPool();
         executorService.submit(new Callable<Object>() {

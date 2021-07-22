@@ -23,4 +23,6 @@ public interface OrganizationsService {
     JSONObject unbindAgent(String organizeId, String organizeNo, String accountId, String uniqueId);
 
     JSONObject queryInnerAccounts(QueryInnerAccountsReq req);
+
+    JSONObject queryInnerOrgans(String organizeNo);
 }
