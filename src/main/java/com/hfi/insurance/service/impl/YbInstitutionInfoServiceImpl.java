@@ -7,9 +7,12 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.hfi.insurance.common.ApiResponse;
 import com.hfi.insurance.enums.ErrorCodeEnum;
 import com.hfi.insurance.mapper.YbInstitutionInfoMapper;
+import com.hfi.insurance.mapper.YbOrgTdMapper;
 import com.hfi.insurance.model.InstitutionInfo;
 import com.hfi.insurance.model.YbInstitutionInfo;
+import com.hfi.insurance.model.YbOrgTd;
 import com.hfi.insurance.model.dto.InstitutionInfoAddReq;
+import com.hfi.insurance.model.dto.OrgTdQueryReq;
 import com.hfi.insurance.service.IYbInstitutionInfoService;
 import com.hfi.insurance.service.OrganizationsService;
 import lombok.extern.slf4j.Slf4j;
@@ -17,11 +20,15 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 /**
  * <p>
@@ -38,24 +45,48 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
     @Resource
     private YbInstitutionInfoMapper institutionInfoMapper;
 
+    @Resource
+    private YbOrgTdMapper orgTdMapper;
+
     @Autowired
     private OrganizationsService organizationsService;
 
     @Override
-    public Page<YbInstitutionInfo> getInstitutionInfoList(String number, String institutionName, int current, int limit, HttpSession session) {
-        QueryWrapper<YbInstitutionInfo> queryWrapper = new QueryWrapper<>();
+    public Page<YbInstitutionInfo> getInstitutionInfoList(String number, String institutionName, int current, int limit) {
+        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        HttpServletRequest request = requestAttributes.getRequest();
+        HttpSession session =  request.getSession();
+        //填充yb_institution_info的数据
+        QueryWrapper<YbOrgTd> queryWrapper = new QueryWrapper<>();
         String institutionNumber = (String) session.getAttribute("number");
-        if (StringUtils.isNotBlank(institutionNumber)){
-            queryWrapper.like("number",institutionNumber);
-        }
-        if (StringUtils.isNotBlank(number)){
-            queryWrapper.eq("number",number);
-        }
-        if (StringUtils.isNotBlank(institutionName)){
-            queryWrapper.eq("institution_name",institutionName);
-        }
+//        if (StringUtils.isNotBlank(institutionNumber)){
+//            queryWrapper.like("number",institutionNumber);
+//        }
+//        if (StringUtils.isNotBlank(number)){
+//            queryWrapper.eq("number",number);
+//        }
+//        if (StringUtils.isNotBlank(institutionName)){
+//            queryWrapper.eq("institution_name",institutionName);
+//        }
+        List<YbInstitutionInfo> ybInstitutionInfos = institutionInfoMapper.selectInstitutionInfoAndOrg(institutionNumber,number, institutionName, current-1, limit);
+        Integer total = orgTdMapper.selectCount(queryWrapper);
         Page<YbInstitutionInfo> page = new Page<>(current,limit);
-        return baseMapper.selectPage(page, queryWrapper);
+        page.setRecords(ybInstitutionInfos);
+        page.setTotal(total);
+        return page;
+    }
+
+    @Override
+    public Page<YbInstitutionInfo> getOrgTdListForCreateFlow(OrgTdQueryReq req) {
+        Integer pageNum = req.getPageNum();
+        req.setPageNum(pageNum - 1);
+        List<YbInstitutionInfo> ybInstitutionInfos = institutionInfoMapper.selectOrgForCreateFlow(req);
+        QueryWrapper<YbInstitutionInfo> queryWrapper = new QueryWrapper<>();
+        Integer total = institutionInfoMapper.selectCount(queryWrapper);
+        Page<YbInstitutionInfo> page = new Page<>(req.getPageNum(),req.getPageSize());
+        page.setRecords(ybInstitutionInfos);
+        page.setTotal(total);
+        return page;
     }
 
     @Override

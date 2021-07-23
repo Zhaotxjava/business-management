@@ -107,10 +107,16 @@ public class YbInstitutionInfo implements Serializable {
     @ApiModelProperty("天印系统机构标记")
     private String organizeId;
 
+    private String area;
+
+    private String level;
+
+    private String profit;
+
     @JsonFormat(pattern ="yyyy-MM-dd HH:mm:ss", timezone = "GMT+08:00")
     private Date createTime;
 
-    @TableField("updateTime")
+    @TableField("update_time")
     @JsonFormat(pattern ="yyyy-MM-dd HH:mm:ss", timezone = "GMT+08:00")
     private Date updateTime;
 

@@ -48,6 +48,7 @@ import org.springframework.util.CollectionUtils;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -139,7 +140,9 @@ public class SignedBizServiceImpl implements SignedBizService {
                     if (institution != null) {
                         institutionInfos.add(institution);
                         YbInstitutionInfo institutionInfo = institutionInfoService.getInstitutionInfo(institution.getNumber());
-                        accountId = institutionInfo.getAccountId();
+                        if (institutionInfo != null){
+                            accountId = institutionInfo.getAccountId();
+                        }
                     }
                     PredefineBean predefineBean = flowNamePredefineMap.get(flowName);
                     log.info("位置信息：{}", JSON.toJSONString(predefineBean));
@@ -163,6 +166,7 @@ public class SignedBizServiceImpl implements SignedBizService {
                 standardCreateFlow.setInitiatorName(initiatorName);
                 //手机号或者邮箱
                 standardCreateFlow.setInitiatorMobile(partyA.getContactMobile());
+                standardCreateFlow.setInitiatorAccountId(partyA.getAccountId());
                 standardCreateFlow.setSigners(singerList);
                 //流程主题
                 standardCreateFlow.setSubject(req.getTemplateId() + "-" + System.currentTimeMillis());
@@ -194,9 +198,11 @@ public class SignedBizServiceImpl implements SignedBizService {
                 YbFlowInfo flowAInfo = new YbFlowInfo();
                 flowAInfo.setInitiator(initiatorName)
                         .setNumber(organizeNo)
+                        .setSigners(singerName)
                         .setSubject(subject)
                         .setCopyViewers(singerName)
                         .setSignFlowId(signFlowId)
+                        .setInitiatorTime(new Date())
                         .setUniqueId(partyA.getUniqueId())
                         .setAccountType(1)
                         .setFlowType("Common");
@@ -251,6 +257,7 @@ public class SignedBizServiceImpl implements SignedBizService {
             standardCreateFlow.setInitiatorName(initiatorName);
             //手机号或者邮箱
             standardCreateFlow.setInitiatorMobile(partyA.getContactMobile());
+            standardCreateFlow.setInitiatorAccountId(partyA.getAccountId());
             standardCreateFlow.setSigners(singerList);
             //流程主题
             standardCreateFlow.setSubject(req.getTemplateId() + "-" + System.currentTimeMillis());
@@ -283,9 +290,11 @@ public class SignedBizServiceImpl implements SignedBizService {
             YbFlowInfo flowAInfo = new YbFlowInfo();
             flowAInfo.setInitiator(initiatorName)
                     .setNumber(organizeNo)
+                    .setSigners(singerName)
                     .setSubject(subject)
                     .setCopyViewers(singerName)
                     .setSignFlowId(signFlowId)
+                    .setInitiatorTime(new Date())
                     .setUniqueId(partyA.getUniqueId())
                     .setAccountType(1)
                     .setFlowType("Common");
@@ -431,6 +440,7 @@ public class SignedBizServiceImpl implements SignedBizService {
             partyA.setContactMobile(accountReturn.getMobile());
             partyA.setAccountName(accountReturn.getName());
             partyA.setUniqueId(accountReturn.getUniqueId());
+            partyA.setAccountId(accountReturn.getAccountId());
         }
         partyA.setAccountType(1);
         ESignType signType = EnumHelper.translate(ESignType.class, partyASignType);

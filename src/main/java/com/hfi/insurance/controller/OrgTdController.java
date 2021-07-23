@@ -4,6 +4,7 @@ package com.hfi.insurance.controller;
 import com.alibaba.fastjson.JSON;
 import com.hfi.insurance.common.ApiResponse;
 import com.hfi.insurance.model.dto.OrgTdQueryReq;
+import com.hfi.insurance.service.IYbInstitutionInfoService;
 import com.hfi.insurance.service.IYbOrgTdService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -32,12 +33,14 @@ import javax.annotation.Resource;
 public class OrgTdController {
     @Resource
     private IYbOrgTdService orgTdService;
+    @Resource
+    private IYbInstitutionInfoService institutionInfoService;
 
     @PostMapping("getOrgTdInfo")
     @ApiOperation("查询签署机构信息")
     public ApiResponse getOrgTdInfo(@RequestBody OrgTdQueryReq req){
         log.info("查询签署机构信息入参：{}", JSON.toJSONString(req));
-        return new ApiResponse(orgTdService.getOrgTdList(req));
+        return new ApiResponse(institutionInfoService.getOrgTdListForCreateFlow(req));
     }
 }
 

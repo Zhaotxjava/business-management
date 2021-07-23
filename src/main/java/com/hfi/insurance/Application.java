@@ -7,7 +7,7 @@ import org.springframework.cache.annotation.EnableCaching;
 
 @SpringBootApplication
 @EnableCaching
-@MapperScan(basePackages={"com.hfi.insurance.mapper"})
+//@MapperScan(basePackages={"com.hfi.insurance.mapper"})
 public class Application {
 
     public static void main(String[] args) {

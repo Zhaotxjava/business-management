@@ -1,6 +1,8 @@
 package com.hfi.insurance;
 
 import com.alibaba.fastjson.JSONObject;
+import com.hfi.insurance.mapper.YbInstitutionInfoMapper;
+import com.hfi.insurance.model.YbInstitutionInfo;
 import com.hfi.insurance.model.sign.req.QueryInnerAccountsReq;
 import com.hfi.insurance.service.OrganizationsService;
 import com.hfi.insurance.service.SignedService;
@@ -8,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -25,6 +28,8 @@ import java.util.concurrent.TimeUnit;
 class SpringbootThymeleafApplicationTests {
     @Autowired
     private OrganizationsService organizationsService;
+    @Autowired
+    private YbInstitutionInfoMapper institutionInfoMapper;
 
     @Test
     void contextLoads() {
@@ -55,6 +60,12 @@ class SpringbootThymeleafApplicationTests {
 
         JSONObject jsonObject = organizationsService.queryInnerOrgans("330199");
         System.out.println(jsonObject.toJSONString());
+    }
+
+    @Test
+    public void testSelectInstitutionInfoAndOrg(){
+//        List<YbInstitutionInfo> ybInstitutionInfos = institutionInfoMapper.selectInstitutionInfoAndOrg(null, null, 1, 10);
+//        System.out.println(ybInstitutionInfos.size());
     }
 
     public static void main(String[] args) throws ExecutionException, InterruptedException {

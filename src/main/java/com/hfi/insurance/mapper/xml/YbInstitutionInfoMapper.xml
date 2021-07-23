@@ -18,12 +18,78 @@
         <result column="account_id" property="accountId" />
         <result column="organize_id" property="organizeId" />
         <result column="create_time" property="createTime" />
-        <result column="updateTime" property="updateTime" />
+        <result column="update_time" property="updateTime" />
     </resultMap>
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        number, institution_name, org_institution_code, legal_name, legal_card_type, legal_id_card, legal_phone, contact_name, contact_card_type, contact_id_card, contact_phone, account_id, organize_id, create_time, updateTime
+        number, institution_name, org_institution_code, legal_name, legal_card_type, legal_id_card, legal_phone, contact_name, contact_card_type, contact_id_card, contact_phone, account_id, organize_id, create_time, update_time
     </sql>
+    <select id="selectNumber" resultType="java.lang.String">
+        select number from yb_institution_info
+        union
+        select AKB020 as number from yb_org_td
+    </select>
 
+    <select id="selectInstitutionInfoAndOrg" resultMap="BaseResultMap">
+        select org.AKB020 as number ,org.AKB021 as institution_name,
+        case when ins.legal_name is null
+        then org.AAE045
+        else ins.legal_name
+        end as legal_name,
+        ins.org_institution_code,ins.legal_card_type,ins.legal_id_card,
+        ins.legal_phone,ins.contact_name,ins.contact_card_type,ins.contact_id_card,
+        ins.contact_phone,ins.account_id,ins.organize_id,ins.create_time,ins.update_time
+        from yb_org_td org
+        left join yb_institution_info ins on org.AKB020 = ins.number
+        <where>
+            <if test="institutionNumber != null and institutionNumber != ''">
+                org.AKB020 like concat('%', #{institutionNumber} , '%')
+            </if>
+            <if test="institutionName != null and institutionName != ''">
+                and org.AKB021 = #{institutionName}
+            </if>
+            <if test="number != null and number != ''">
+                and org.AKB020 = #{number}
+            </if>
+        </where>
+        limit #{pageNum},#{pageSize}
+    </select>
+
+
+    <select id="selectOrgForCreateFlow" resultType="com.hfi.insurance.model.YbInstitutionInfo">
+        select org.AKB020 as number ,org.AKB021 as institution_name,org.AKA101 as level,
+        org.AAA027 as area ,org.BKA938 as profit,ins.legal_name,
+        ins.org_institution_code,ins.legal_card_type,ins.legal_id_card,
+        ins.legal_phone,ins.contact_name,ins.contact_card_type,ins.contact_id_card,
+        ins.contact_phone,ins.account_id,ins.organize_id,ins.create_time,ins.update_time
+        from yb_institution_info ins
+        inner join yb_org_td org on org.AKB020 = ins.number
+        <where>
+            org.AAA027 like concat('3301%')
+            <if test="institutionName != null and institutionName != ''">
+                and org.AKB021 = #{institutionName}
+            </if>
+            <if test="number != null and number != ''">
+                and org.AKB020 = #{number}
+            </if>
+            and org.AKB022 in
+            <foreach collection="institutionTypes" item="type" open="(" close=")" separator="," index="index">
+                #{type}
+            </foreach>
+            and org.AKA101 in
+            <foreach collection="institutionLevels" item="level" open="(" close=")" separator="," index="index">
+                #{level}
+            </foreach>
+            and org.AAA027 in
+            <foreach collection="areas" item="area" open="(" close=")" separator="," index="index">
+                #{area}
+            </foreach>
+            and org.BKA938 in
+            <foreach collection="profits" item="profit" open="(" close=")" separator="," index="index">
+                #{profit}
+            </foreach>
+        </where>
+        limit #{pageNum},#{pageSize}
+    </select>
 </mapper>

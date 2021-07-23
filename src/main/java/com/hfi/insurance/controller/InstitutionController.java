@@ -44,9 +44,9 @@ public class InstitutionController {
 
     @PostMapping("getInstitutionInfoList")
     @ApiOperation("分页查询外部机构信息")
-    public ApiResponse getInstitutionInfoList(@RequestBody InstitutionInfoQueryReq req, HttpSession session) {
+    public ApiResponse getInstitutionInfoList(@RequestBody InstitutionInfoQueryReq req) {
         Page<YbInstitutionInfo> page =
-                institutionInfoService.getInstitutionInfoList(req.getNumber(), req.getInstitutionName(), req.getPageNum(), req.getPageSize(),session);
+                institutionInfoService.getInstitutionInfoList(req.getNumber(), req.getInstitutionName(), req.getPageNum(), req.getPageSize());
         return new ApiResponse(page);
     }
 
