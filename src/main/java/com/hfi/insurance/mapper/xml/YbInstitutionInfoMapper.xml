@@ -43,8 +43,9 @@
         from yb_org_td org
         left join yb_institution_info ins on org.AKB020 = ins.number
         <where>
+             org.BKB012 = '1'
             <if test="institutionNumber != null and institutionNumber != ''">
-                org.AKB020 like concat('%', #{institutionNumber} , '%')
+                and org.AKB020 like concat('%', #{institutionNumber} , '%')
             </if>
             <if test="institutionName != null and institutionName != ''">
                 and org.AKB021 = #{institutionName}
@@ -57,7 +58,7 @@
     </select>
 
 
-    <select id="selectOrgForCreateFlow" resultType="com.hfi.insurance.model.YbInstitutionInfo">
+    <select id="selectOrgForCreateFlow" resultType="com.hfi.insurance.model.dto.res.InstitutionInfoRes">
         select org.AKB020 as number ,org.AKB021 as institution_name,org.AKA101 as level,
         org.AAA027 as area ,org.BKA938 as profit,ins.legal_name,
         ins.org_institution_code,ins.legal_card_type,ins.legal_id_card,
@@ -66,7 +67,7 @@
         from yb_institution_info ins
         inner join yb_org_td org on org.AKB020 = ins.number
         <where>
-            org.AAA027 like concat('3301%')
+            org.AAA027 like concat('3301%') and org.BKB012 = '1'
             <if test="institutionName != null and institutionName != ''">
                 and org.AKB021 = #{institutionName}
             </if>

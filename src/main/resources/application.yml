@@ -23,10 +23,10 @@ spring:
     locale: zh
     # 设置全局时区
     time-zone: GMT+8
-    default-property-inclusion: NON_NULL #不为空的属性才会序列化,具体属性可看JsonInclude.Include
+#    default-property-inclusion: NON_NULL #不为空的属性才会序列化,具体属性可看JsonInclude.Include
     serialization:
       WRITE_DATES_AS_TIMESTAMPS: true # 返回的java.util.date转换成timestamp
-      FAIL_ON_EMPTY_BEANS: true # 对象为空时是否报错，默认true
+      FAIL_ON_EMPTY_BEANS: false # 对象为空时是否报错，默认true
     mapper:
       USE_GETTERS_AS_SETTERS: true #默认false
 

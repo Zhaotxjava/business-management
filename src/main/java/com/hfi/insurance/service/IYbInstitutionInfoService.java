@@ -2,11 +2,13 @@ package com.hfi.insurance.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.hfi.insurance.common.ApiResponse;
+import com.hfi.insurance.common.PageDto;
 import com.hfi.insurance.model.YbInstitutionInfo;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.hfi.insurance.model.YbOrgTd;
 import com.hfi.insurance.model.dto.InstitutionInfoAddReq;
 import com.hfi.insurance.model.dto.OrgTdQueryReq;
+import com.hfi.insurance.model.dto.res.InstitutionInfoRes;
 
 import javax.servlet.http.HttpSession;
 
@@ -29,7 +31,7 @@ public interface IYbInstitutionInfoService extends IService<YbInstitutionInfo> {
      */
     Page<YbInstitutionInfo> getInstitutionInfoList(String number, String institutionName, int current, int limit);
 
-    Page<YbInstitutionInfo> getOrgTdListForCreateFlow(OrgTdQueryReq req);
+    Page<InstitutionInfoRes> getOrgTdListForCreateFlow(OrgTdQueryReq req);
 
     YbInstitutionInfo getInstitutionInfo(String number);
 

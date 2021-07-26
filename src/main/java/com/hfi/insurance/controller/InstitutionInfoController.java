@@ -25,7 +25,7 @@ import java.util.Map;
 
 @Controller
 @Slf4j
-@Api(tags = {"【接口】"})
+@Api(tags = {"【跳转接口】"})
 public class InstitutionInfoController {
 
     @Value("${redirect.url}")

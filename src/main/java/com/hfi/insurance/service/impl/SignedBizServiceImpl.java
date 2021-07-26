@@ -82,7 +82,6 @@ public class SignedBizServiceImpl implements SignedBizService {
 //    private Cache<String, String> caffeineCache;
 
     @Override
-    @LogAnnotation
     public ApiResponse createSignFlow(CreateSignFlowReq req, HttpSession session) {
         String organizeNo = (String) session.getAttribute("areaCode");
         String institutionNumber = (String) session.getAttribute("number");
@@ -142,25 +141,25 @@ public class SignedBizServiceImpl implements SignedBizService {
                     if (institution != null) {
                         institutionInfos.add(institution);
                         YbInstitutionInfo institutionInfo = institutionInfoService.getInstitutionInfo(institution.getNumber());
-                        if (institutionInfo != null){
+                        if (institutionInfo != null) {
                             accountId = institutionInfo.getAccountId();
                         }
                     }
                     PredefineBean predefineBean = flowNamePredefineMap.get(flowName);
                     log.info("位置信息：{}", JSON.toJSONString(predefineBean));
                     //填充签署人信息
-                    StandardSignerInfoBean signerInfoBean = assembleStandardSignerInfoBean(accountId, singerInfo, fileKey, predefineBean,templateType);
+                    StandardSignerInfoBean signerInfoBean = assembleStandardSignerInfoBean(accountId, singerInfo, fileKey, predefineBean, templateType);
                     singerList.add(signerInfoBean);
                 }
-                //todo 填充甲方信息
+                //填充甲方信息
                 PredefineBean predefineBeanA = flowNamePredefineMap.get("甲方");
                 StandardSignerInfoBean partyA = null;
                 try {
-                    partyA = assemblePartyAInfo(predefineBeanA, req.getPartyASignType(), fileKey, organizeNo,templateType);
+                    partyA = assemblePartyAInfo(predefineBeanA, req.getPartyASignType(), fileKey, organizeNo, templateType);
                 } catch (Exception e) {
-                    log.error("填充甲方信息失败：{}",e.getMessage());
+                    log.error("填充甲方信息失败：{}", e.getMessage());
                     e.printStackTrace();
-                    return new ApiResponse(ErrorCodeEnum.SYSTEM_ERROR);
+                    return new ApiResponse(ErrorCodeEnum.SYSTEM_ERROR.getCode(),ErrorCodeEnum.SYSTEM_ERROR.getMessage());
                 }
                 singerList.add(partyA);
                 //发起人姓名不能为空
@@ -175,10 +174,8 @@ public class SignedBizServiceImpl implements SignedBizService {
                 log.info("创建流程入参：{}", JSON.toJSONString(standardCreateFlow));
                 JSONObject signFlows = signedService.createSignFlows(standardCreateFlow);
                 log.info("创建流程出参：{}", JSON.toJSONString(signFlows));
-                // todo 优化
-                Integer errCode = signFlows.getInteger("errCode");
-                if (errCode != null && -1 == errCode) {
-                    return new ApiResponse(signFlows.getString("msg"));
+                if (signFlows.containsKey("errCode")) {
+                    return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(),signFlows.getString("msg"));
                 }
                 String signFlowId = signFlows.getString("signFlowId");
                 List<InstitutionInfo> distinctInstitutions = institutionInfos.stream().distinct().collect(Collectors.toList());
@@ -247,9 +244,9 @@ public class SignedBizServiceImpl implements SignedBizService {
             }
             StandardSignerInfoBean partyA = null;
             try {
-                partyA = assemblePartyAInfo(null, req.getPartyASignType(), fileKey, organizeNo,templateType);
+                partyA = assemblePartyAInfo(null, req.getPartyASignType(), fileKey, organizeNo, templateType);
             } catch (Exception e) {
-                log.error("填充甲方信息失败：{}",e.getMessage());
+                log.error("填充甲方信息失败：{}", e.getMessage());
                 e.printStackTrace();
                 return new ApiResponse(ErrorCodeEnum.SYSTEM_ERROR);
             }
@@ -266,10 +263,8 @@ public class SignedBizServiceImpl implements SignedBizService {
             log.info("创建流程入参：{}", JSON.toJSONString(standardCreateFlow));
             JSONObject signFlows = signedService.createSignFlows(standardCreateFlow);
             log.info("创建流程出参：{}", JSON.toJSONString(signFlows));
-            // todo 优化
-            Integer errCode = signFlows.getInteger("errCode");
-            if (errCode != null && -1 == errCode) {
-                return new ApiResponse(signFlows.getString("msg"));
+            if (signFlows.containsKey("errCode")) {
+                return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(),signFlows.getString("msg"));
             }
             String signFlowId = signFlows.getString("signFlowId");
             List<InstitutionInfo> distinctInstitutions = institutionInfos.stream().distinct().collect(Collectors.toList());
@@ -365,7 +360,7 @@ public class SignedBizServiceImpl implements SignedBizService {
      * @param predefineBean
      * @return
      */
-    private StandardSignerInfoBean assembleStandardSignerInfoBean(String accountId, SingerInfo singerInfo, String fileKey, PredefineBean predefineBean,ETemplateType templateType) {
+    private StandardSignerInfoBean assembleStandardSignerInfoBean(String accountId, SingerInfo singerInfo, String fileKey, PredefineBean predefineBean, ETemplateType templateType) {
         StandardSignerInfoBean signerInfoBean = new StandardSignerInfoBean();
         signerInfoBean.setAccountId(accountId);
 //                    signerInfoBean.setAuthorizationOrganizeId("");
@@ -383,7 +378,7 @@ public class SignedBizServiceImpl implements SignedBizService {
         SignInfoBeanV2 signInfoBeanV2 = new SignInfoBeanV2();
         //签署方式1-单页签署
         signInfoBeanV2.setSignType(1);
-        if (ETemplateType.TEMPLATE_FILL == templateType){
+        if (ETemplateType.TEMPLATE_FILL == templateType) {
             if (ESignType.MANUAL_KEY_WORD_SIGN == signType || ESignType.DEFAULT_KEY_WORD_SIGN == signType) {
                 String keyWord = predefineBean.getKeyWord();
                 signInfoBeanV2.setKey(keyWord != null ? keyWord : singerInfo.getKey());
@@ -401,7 +396,7 @@ public class SignedBizServiceImpl implements SignedBizService {
             signDocDetails.add(standardSignDocBean);
             signerInfoBean.setSignDocDetails(signDocDetails);
             return signerInfoBean;
-        }else {
+        } else {
             signInfoBeanV2.setKey(singerInfo.getKey());
             signPos.add(signInfoBeanV2);
             standardSignDocBean.setSignPos(signPos);
@@ -420,29 +415,30 @@ public class SignedBizServiceImpl implements SignedBizService {
      * @param fileKey
      * @return
      */
-    private StandardSignerInfoBean assemblePartyAInfo(PredefineBean predefineBean, int partyASignType, String fileKey, String organizeNo,ETemplateType templateType) throws Exception{
+    private StandardSignerInfoBean assemblePartyAInfo(PredefineBean predefineBean, int partyASignType, String fileKey, String organizeNo, ETemplateType templateType) throws Exception {
         StandardSignerInfoBean partyA = new StandardSignerInfoBean();
         log.info("发起方（甲方）机构编码：{}", organizeNo);
         JSONObject innerOrgans = organizationsService.queryInnerOrgans(organizeNo);
-        log.info("甲方机构信息：{}",innerOrgans.toJSONString());
+        log.info("甲方机构信息：{}", innerOrgans.toJSONString());
         QueryInnerAccountsReq queryInnerAccountsReq = new QueryInnerAccountsReq();
         queryInnerAccountsReq.setOrganizeId(innerOrgans.getString("organizeId"));
         queryInnerAccountsReq.setPageSize("10");
         queryInnerAccountsReq.setPageIndex("1");
         JSONObject innerAccounts = organizationsService.queryInnerAccounts(queryInnerAccountsReq);
         String accounts = innerAccounts.getString("accounts");
-        log.info("甲方用户信息：{}",accounts);
+        log.info("甲方用户信息：{}", accounts);
         if (null != accounts) {
             List<StandardAccountListReturn> accountListReturns = JSON.parseArray(accounts, StandardAccountListReturn.class);
             StandardAccountListReturn accountReturn = CollectionUtils.firstElement(accountListReturns);
-            log.info("甲方用户id:{}", accountReturn.getAccountId());
-            //partyA.setAccountId("279e974f-577d-47fa-86cd-6672c617043a");
-            partyA.setAccountId(accountReturn.getAccountId());
-//            partyA.setAuthorizationOrganizeId();
-            partyA.setContactMobile(accountReturn.getMobile());
-            partyA.setAccountName(accountReturn.getName());
-            partyA.setUniqueId(accountReturn.getUniqueId());
-            partyA.setAccountId(accountReturn.getAccountId());
+            if (null != accountReturn){
+                partyA.setAccountId(accountReturn.getAccountId());
+                //partyA.setAccountId("279e974f-577d-47fa-86cd-6672c617043a");
+                //partyA.setAuthorizationOrganizeId();
+                partyA.setContactMobile(accountReturn.getMobile());
+                partyA.setAccountName(accountReturn.getName());
+                partyA.setUniqueId(accountReturn.getUniqueId());
+                partyA.setAccountId(accountReturn.getAccountId());
+            }
         }
         partyA.setAccountType(1);
         ESignType signType = EnumHelper.translate(ESignType.class, partyASignType);
@@ -463,7 +459,7 @@ public class SignedBizServiceImpl implements SignedBizService {
             //todo 甲方关键词
             signInfoBeanV2.setKey("甲方");
         }
-        if (ETemplateType.TEMPLATE_FILL == templateType){
+        if (ETemplateType.TEMPLATE_FILL == templateType) {
             //位置签署要匹配区域
             if (ESignType.MANUAL_COORDINATE_SIGN == signType || ESignType.DEFAULT_COORDINATE_SIGN == signType) {
                 List<Position> positions = predefineBean.getPositions();
@@ -533,7 +529,11 @@ public class SignedBizServiceImpl implements SignedBizService {
         getPageWithPermissionV2Model.setPageIndex(req.getPageNum());
         JSONObject result = signedService.getPageWithPermission(getPageWithPermissionV2Model);
         log.info("获取模板列表响应参数：{}", result);
-        if (result.getBoolean("success")) {
+        if (result.containsKey("errCode")) {
+            log.error("查询模板信息异常，{}", result);
+            return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), result.getString("msg"));
+        }
+        if (result.containsKey("success")) {
             String templateInfos = result.getString("templateInfos");
             Page page = new Page();
             page.setTotal(result.getInteger("totalCount"));
@@ -549,9 +549,13 @@ public class SignedBizServiceImpl implements SignedBizService {
     @LogAnnotation
     public ApiResponse getTemplateInfo(String templateId) {
         JSONObject templateInfo = signedService.getTemplateInfo(templateId);
-        Map<String,Integer> res = new HashMap<>();
+        Map<String, Integer> res = new HashMap<>();
         log.info("获取模板详细信息响应参数：{}", templateInfo);
-        if (templateInfo.getBoolean("success")) {
+        if (templateInfo.containsKey("errCode")) {
+            log.error("查询模板信息异常，{}", templateInfo);
+            return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), templateInfo.getString("msg"));
+        }
+        if (templateInfo.containsKey("success")) {
             String templateInfoString = templateInfo.getString("template");
             TemplateInfoBean templateInfoBean = JSON.parseObject(templateInfoString, TemplateInfoBean.class);
             List<TemplateFlowBean> templateFlows = templateInfoBean.getTemplateFlows();
@@ -559,11 +563,11 @@ public class SignedBizServiceImpl implements SignedBizService {
             Optional<PredefineBean> any = predefineList.stream().filter(predefineBean -> null != predefineBean.getPositions()).findAny();
             if (any.isPresent()) {
                 //有坐标
-                res.put("flag",1);
+                res.put("flag", 1);
                 return new ApiResponse(res);
             } else {
                 //无坐标
-                res.put("flag",0);
+                res.put("flag", 0);
                 return new ApiResponse(res);
             }
         } else {

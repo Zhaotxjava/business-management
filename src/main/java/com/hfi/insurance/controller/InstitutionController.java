@@ -2,6 +2,7 @@ package com.hfi.insurance.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.hfi.insurance.common.ApiResponse;
+import com.hfi.insurance.common.PageDto;
 import com.hfi.insurance.enums.ErrorCodeEnum;
 import com.hfi.insurance.model.ExcelSheetPO;
 import com.hfi.insurance.model.InstitutionInfo;
@@ -60,26 +61,28 @@ public class InstitutionController {
     @ApiOperation("更新机构信息")
     public ApiResponse updateInstitutionInfo(@RequestBody InstitutionInfoAddReq req) {
         // 1> 基础数据校验
-        log.info("更新机构信息参数：{}", req);
-        if (StringUtils.isEmpty(req.getNumber())) {
+        if (StringUtils.isBlank(req.getOrgInstitutionCode())){
+            return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(),"组织机构编码不能为空");
+        }
+        if (StringUtils.isBlank(req.getNumber())) {
             return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(), "机构编码不能为空");
         }
-        if (StringUtils.isEmpty(req.getLegalIdCard())) {
+        if (StringUtils.isBlank(req.getLegalIdCard())) {
             return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(), "法人身份证不能为空");
         }
-        if (StringUtils.isEmpty(req.getLegalPhone())) {
+        if (StringUtils.isBlank(req.getLegalPhone())) {
             return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(), "法人手机号不能为空");
         }
-        if (StringUtils.isEmpty(req.getLegalName())) {
+        if (StringUtils.isBlank(req.getLegalName())) {
             return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(), "法人姓名不能为空");
         }
-        if (StringUtils.isEmpty(req.getContactName())) {
+        if (StringUtils.isBlank(req.getContactName())) {
             return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(), "联系人姓名不能为空");
         }
-        if (StringUtils.isEmpty(req.getContactIdCard())) {
+        if (StringUtils.isBlank(req.getContactIdCard())) {
             return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(), "联系人身份证不能为空");
         }
-        if (StringUtils.isEmpty(req.getContactPhone())) {
+        if (StringUtils.isBlank(req.getContactPhone())) {
             return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(), "联系人手机号不能为空");
         }
         return institutionInfoService.updateInstitutionInfo(req);

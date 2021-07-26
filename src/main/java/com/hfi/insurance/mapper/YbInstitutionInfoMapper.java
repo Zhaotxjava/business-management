@@ -4,6 +4,7 @@ import com.hfi.insurance.model.InstitutionInfo;
 import com.hfi.insurance.model.YbInstitutionInfo;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.hfi.insurance.model.dto.OrgTdQueryReq;
+import com.hfi.insurance.model.dto.res.InstitutionInfoRes;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
@@ -27,5 +28,5 @@ public interface YbInstitutionInfoMapper extends BaseMapper<YbInstitutionInfo> {
                                                          @Param("pageNum") int pageNum,
                                                          @Param("pageSize") int pageSize);
 
-    List<YbInstitutionInfo>  selectOrgForCreateFlow(OrgTdQueryReq req);
+    List<InstitutionInfoRes>  selectOrgForCreateFlow(OrgTdQueryReq req);
 }

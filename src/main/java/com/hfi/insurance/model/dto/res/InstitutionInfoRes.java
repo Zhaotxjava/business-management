@@ -1,38 +1,23 @@
-package com.hfi.insurance.model;
+package com.hfi.insurance.model.dto.res;
 
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.experimental.Accessors;
 
-import java.io.Serializable;
 import java.util.Date;
 
 /**
- * <p>
- * 定点机构信息
- * </p>
- *
- * @author ChenZX
- * @since 2021-07-05
+ * @Author ChenZX
+ * @Date 2021/7/26 16:14
+ * @Description:
  */
 @Data
-@EqualsAndHashCode(callSuper = false)
-@Accessors(chain = true)
-@ApiModel("机构信息")
-public class YbInstitutionInfo implements Serializable {
-
-    private static final long serialVersionUID=1L;
+public class InstitutionInfoRes{
 
     /**
      * 机构编号
      */
     @ApiModelProperty("机构编号")
-    @TableId(value = "number")
     private String number;
 
     /**
@@ -107,12 +92,15 @@ public class YbInstitutionInfo implements Serializable {
     @ApiModelProperty("天印系统机构标记")
     private String organizeId;
 
+    private String area;
+
+    private String level;
+
+    private String profit;
+
     @JsonFormat(pattern ="yyyy-MM-dd HH:mm:ss", timezone = "GMT+08:00")
     private Date createTime;
 
-    @TableField("update_time")
     @JsonFormat(pattern ="yyyy-MM-dd HH:mm:ss", timezone = "GMT+08:00")
     private Date updateTime;
-
-
 }

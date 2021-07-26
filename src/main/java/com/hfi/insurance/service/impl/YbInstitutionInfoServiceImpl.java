@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.hfi.insurance.aspect.anno.LogAnnotation;
 import com.hfi.insurance.common.ApiResponse;
+import com.hfi.insurance.common.PageDto;
 import com.hfi.insurance.enums.ErrorCodeEnum;
 import com.hfi.insurance.mapper.YbInstitutionInfoMapper;
 import com.hfi.insurance.mapper.YbOrgTdMapper;
@@ -14,6 +15,7 @@ import com.hfi.insurance.model.YbInstitutionInfo;
 import com.hfi.insurance.model.YbOrgTd;
 import com.hfi.insurance.model.dto.InstitutionInfoAddReq;
 import com.hfi.insurance.model.dto.OrgTdQueryReq;
+import com.hfi.insurance.model.dto.res.InstitutionInfoRes;
 import com.hfi.insurance.service.IYbInstitutionInfoService;
 import com.hfi.insurance.service.OrganizationsService;
 import lombok.extern.slf4j.Slf4j;
@@ -80,13 +82,13 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
 
     @Override
     @LogAnnotation
-    public Page<YbInstitutionInfo> getOrgTdListForCreateFlow(OrgTdQueryReq req) {
+    public Page<InstitutionInfoRes> getOrgTdListForCreateFlow(OrgTdQueryReq req) {
         Integer pageNum = req.getPageNum();
         req.setPageNum(pageNum - 1);
-        List<YbInstitutionInfo> ybInstitutionInfos = institutionInfoMapper.selectOrgForCreateFlow(req);
+        List<InstitutionInfoRes> ybInstitutionInfos = institutionInfoMapper.selectOrgForCreateFlow(req);
         QueryWrapper<YbInstitutionInfo> queryWrapper = new QueryWrapper<>();
         Integer total = institutionInfoMapper.selectCount(queryWrapper);
-        Page<YbInstitutionInfo> page = new Page<>(req.getPageNum(),req.getPageSize());
+        Page<InstitutionInfoRes> page = new Page<>(req.getPageNum(),req.getPageSize());
         page.setRecords(ybInstitutionInfos);
         page.setTotal(total);
         return page;
@@ -103,7 +105,28 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
     @Override
     @LogAnnotation
     public ApiResponse updateInstitutionInfo(InstitutionInfoAddReq req) {
-        YbInstitutionInfo cacheInfo = this.getInstitutionInfo(req.getNumber());
+        String number = req.getNumber();
+        //1.往yb_institution_info表添加记录
+        YbInstitutionInfo cacheInfo = this.getInstitutionInfo(number);
+        QueryWrapper<YbOrgTd> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("AKB020",number);
+        YbOrgTd orgTd = orgTdMapper.selectOne(queryWrapper);
+        if (null == orgTd){
+            return new ApiResponse(ErrorCodeEnum.SYSTEM_ERROR.getCode(),"机构不存在!");
+        }
+        if (null == cacheInfo){
+            YbInstitutionInfo institutionInfo = new YbInstitutionInfo();
+            institutionInfo.setNumber(number)
+                    .setInstitutionName(orgTd.getAkb021())
+                    .setContactIdCard(req.getContactIdCard())
+                    .setContactName(req.getContactName())
+                    .setContactPhone(req.getContactPhone())
+                    .setLegalIdCard(req.getLegalIdCard())
+                    .setLegalName(req.getLegalName())
+                    .setLegalPhone(req.getLegalPhone())
+                    .setOrgInstitutionCode(req.getOrgInstitutionCode());
+            institutionInfoMapper.insert(institutionInfo);
+        }
         // 2>通过天印系统查询联系人是否已存在于系统，不存在则调用创建用户接口，得到用户的唯一编码，存在则直接跳到第4步
         boolean accountExist = true;
         boolean organExist = true;
@@ -168,7 +191,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
             }
         }
         // 3>调用天印系统查询该机构是否已存在系统，不存在则调用创建外部机构接口，存在则调用更新外部机构信息接口
-        JSONObject organObj = organizationsService.queryOrgans("", req.getNumber());
+        JSONObject organObj = organizationsService.queryOrgans("", number);
         if (organObj.containsKey("errCode")) {
             if ("-1".equals(organObj.getString("errCode"))) {
                 organExist = false;
@@ -179,7 +202,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         }
         InstitutionInfo institutionInfo = new InstitutionInfo();
         BeanUtils.copyProperties(req, institutionInfo);
-        institutionInfo.setInstitutionName(cacheInfo.getInstitutionName());
+        institutionInfo.setInstitutionName(orgTd.getAkb021());
         if (!organExist) { //不存在则创建机构
             institutionInfo.setAccountId(defaultAccountId); //创建默认经办人
             JSONObject resultObj = organizationsService.createOrgans(institutionInfo);

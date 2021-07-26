@@ -1,6 +1,7 @@
 package com.hfi.insurance.common;
 
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 import lombok.Setter;
 
 import java.util.List;
@@ -10,10 +11,10 @@ import java.util.List;
  * @Date 2021/7/23 19:36
  * @Description:
  */
-@Setter
+@Data
 public class PageDto<T> {
     @ApiModelProperty(value = "总记录数")
-    private Long total;
+    private Integer total;
 
     @ApiModelProperty(value = "总页数")
     private Integer totalPages;

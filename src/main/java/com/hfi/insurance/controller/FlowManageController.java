@@ -1,6 +1,7 @@
 package com.hfi.insurance.controller;
 
 import com.alibaba.fastjson.JSONObject;
+import com.hfi.insurance.aspect.anno.LogAnnotation;
 import com.hfi.insurance.common.ApiResponse;
 import com.hfi.insurance.enums.ErrorCodeEnum;
 import com.hfi.insurance.model.sign.req.CreateSignFlowReq;
@@ -65,6 +66,7 @@ public class FlowManageController {
 
     @PostMapping("createSignFlows")
     @ApiOperation("发起签署-创建流程")
+    @LogAnnotation
     public ApiResponse createSignFlows(@RequestBody CreateSignFlowReq req){
         ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         if (requestAttributes != null){
