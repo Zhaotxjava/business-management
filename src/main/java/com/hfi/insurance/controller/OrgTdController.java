@@ -1,7 +1,6 @@
 package com.hfi.insurance.controller;
 
 
-import com.alibaba.fastjson.JSON;
 import com.hfi.insurance.common.ApiResponse;
 import com.hfi.insurance.model.dto.OrgTdQueryReq;
 import com.hfi.insurance.service.IYbInstitutionInfoService;
@@ -9,11 +8,10 @@ import com.hfi.insurance.service.IYbOrgTdService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
@@ -39,7 +37,18 @@ public class OrgTdController {
     @PostMapping("getOrgTdInfo")
     @ApiOperation("查询签署机构信息")
     public ApiResponse getOrgTdInfo(@RequestBody OrgTdQueryReq req){
-        log.info("查询签署机构信息入参：{}", JSON.toJSONString(req));
+        if (CollectionUtils.isEmpty(req.getInstitutionTypes())){
+            return new ApiResponse("机构类型不能为空！");
+        }
+        if (CollectionUtils.isEmpty(req.getInstitutionLevels())){
+            return new ApiResponse("机构等级不能为空！");
+        }
+        if (CollectionUtils.isEmpty(req.getAreas())){
+            return new ApiResponse("区域不能为空！");
+        }
+        if (CollectionUtils.isEmpty(req.getProfits())){
+            return new ApiResponse("营利类型不能为空！");
+        }
         return new ApiResponse(institutionInfoService.getOrgTdListForCreateFlow(req));
     }
 }

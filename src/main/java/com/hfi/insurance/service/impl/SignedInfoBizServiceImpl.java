@@ -3,6 +3,7 @@ package com.hfi.insurance.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.hfi.insurance.aspect.anno.LogAnnotation;
 import com.hfi.insurance.common.ApiResponse;
 import com.hfi.insurance.enums.ErrorCodeEnum;
 import com.hfi.insurance.model.YbFlowInfo;
@@ -47,6 +48,7 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
     private IYbInstitutionInfoService institutionInfoService;
 
     @Override
+    @LogAnnotation
     public ApiResponse getSignedRecord(GetRecordInfoReq req) {
         Page<YbFlowInfo> flowInfoPage = flowInfoService.getSignedRecord(req);
         Page<SignRecordsRes> signRecordsResPage = new Page<>();
@@ -88,6 +90,7 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
     }
 
     @Override
+    @LogAnnotation
     public ApiResponse getSignUrls(GetSignUrlsReq req) {
         JSONObject signUrls = signedService.getSignUrls(req);
         log.info("获取签署地址列表响应参数：{}", signUrls);
@@ -101,6 +104,7 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
     }
 
     @Override
+    @LogAnnotation
     public ApiResponse getPreviewUrl(String fileKey, String docId) {
         JSONObject previewUrl = signedService.getPreviewUrl(fileKey, docId);
         log.info("获取文档预览的URL响应参数：{}", previewUrl);

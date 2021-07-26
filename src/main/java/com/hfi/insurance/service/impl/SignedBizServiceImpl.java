@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.benmanes.caffeine.cache.Cache;
+import com.hfi.insurance.aspect.anno.LogAnnotation;
 import com.hfi.insurance.common.ApiResponse;
 import com.hfi.insurance.enums.ESignType;
 import com.hfi.insurance.enums.ETemplateType;
@@ -81,6 +82,7 @@ public class SignedBizServiceImpl implements SignedBizService {
 //    private Cache<String, String> caffeineCache;
 
     @Override
+    @LogAnnotation
     public ApiResponse createSignFlow(CreateSignFlowReq req, HttpSession session) {
         String organizeNo = (String) session.getAttribute("areaCode");
         String institutionNumber = (String) session.getAttribute("number");
@@ -524,6 +526,7 @@ public class SignedBizServiceImpl implements SignedBizService {
     }
 
     @Override
+    @LogAnnotation
     public ApiResponse getPageWithPermission(GetPageWithPermissionReq req) {
         GetPageWithPermissionV2Model getPageWithPermissionV2Model = new GetPageWithPermissionV2Model();
         BeanUtils.copyProperties(req, getPageWithPermissionV2Model);
@@ -543,6 +546,7 @@ public class SignedBizServiceImpl implements SignedBizService {
     }
 
     @Override
+    @LogAnnotation
     public ApiResponse getTemplateInfo(String templateId) {
         JSONObject templateInfo = signedService.getTemplateInfo(templateId);
         Map<String,Integer> res = new HashMap<>();

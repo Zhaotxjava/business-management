@@ -1,6 +1,7 @@
 package com.hfi.insurance.config;
 
 import com.baomidou.mybatisplus.extension.plugins.PaginationInterceptor;
+import com.hfi.insurance.aspect.LogAspect;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,5 +27,11 @@ public class PageConfig {
     @Bean
     public PaginationInterceptor paginationInterceptor() {
         return new PaginationInterceptor();
+    }
+
+    //日志切面
+    @Bean
+    public LogAspect logAspect(){
+        return new LogAspect();
     }
 }

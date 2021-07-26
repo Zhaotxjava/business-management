@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.hfi.insurance.aspect.anno.LogAnnotation;
 import com.hfi.insurance.common.ApiResponse;
 import com.hfi.insurance.enums.ErrorCodeEnum;
 import com.hfi.insurance.mapper.YbInstitutionInfoMapper;
@@ -52,6 +53,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
     private OrganizationsService organizationsService;
 
     @Override
+    @LogAnnotation
     public Page<YbInstitutionInfo> getInstitutionInfoList(String number, String institutionName, int current, int limit) {
         ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         HttpServletRequest request = requestAttributes.getRequest();
@@ -77,6 +79,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
     }
 
     @Override
+    @LogAnnotation
     public Page<YbInstitutionInfo> getOrgTdListForCreateFlow(OrgTdQueryReq req) {
         Integer pageNum = req.getPageNum();
         req.setPageNum(pageNum - 1);
@@ -90,6 +93,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
     }
 
     @Override
+    @LogAnnotation
     public YbInstitutionInfo getInstitutionInfo(String number) {
         QueryWrapper<YbInstitutionInfo> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("number",number);
@@ -97,6 +101,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
     }
 
     @Override
+    @LogAnnotation
     public ApiResponse updateInstitutionInfo(InstitutionInfoAddReq req) {
         YbInstitutionInfo cacheInfo = this.getInstitutionInfo(req.getNumber());
         // 2>通过天印系统查询联系人是否已存在于系统，不存在则调用创建用户接口，得到用户的唯一编码，存在则直接跳到第4步
