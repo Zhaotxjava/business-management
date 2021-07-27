@@ -62,3 +62,6 @@ logging:
         insurance: debug
   file:
     path: logs
+
+mybatis-plus:
+  mapper-locations: classpath*:com/hfi/insurance/mapper/**/*.xml
