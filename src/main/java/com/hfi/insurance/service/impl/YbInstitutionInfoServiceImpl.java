@@ -63,6 +63,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         //填充yb_institution_info的数据
         QueryWrapper<YbOrgTd> queryWrapper = new QueryWrapper<>();
         String institutionNumber = (String) session.getAttribute("number");
+        log.info("从session中获取机构编号：{}",institutionNumber);
 //        if (StringUtils.isNotBlank(institutionNumber)){
 //            queryWrapper.like("number",institutionNumber);
 //        }
