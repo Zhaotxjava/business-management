@@ -13,11 +13,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -33,6 +29,8 @@ public class InstitutionInfoController {
 
     @Value("${redirect.url}")
     private String redirectUrl;
+    @Value("${redirect.ybUrl}")
+    private String redirectYbUrl;
 
     @Resource
     private InstitutionInfoService institutionInfoService;
@@ -55,6 +53,7 @@ public class InstitutionInfoController {
                         @RequestParam(name = "platid", required = false) String platid,
                         @RequestParam(name = "loginaccount", required = false) String loginaccount,
                         Model model, HttpServletRequest request) {
+        log.info("hospitalid={},platid={},loginaccount={}", hospitalid, platid, loginaccount);
         model.addAttribute("number", hospitalid); //医院编码
         model.addAttribute("areaCode", platid); ///统筹区编码
         //默认外部机构
@@ -76,11 +75,7 @@ public class InstitutionInfoController {
 //        session.setAttribute("areaCode",platid);
 //        session.setAttribute("number",hospitalid);
         log.info("host={}", request.getHeader("host"));
-        if (request.getHeader("host").indexOf("172.16.29.54") >= 0) {
-            return "redirect:http://172.16.29.54:18080/e-contract/#?flag=" + flag + "&token=" + token;
-        } else {
-            return "redirect:" + redirectUrl + "?flag=" + flag + "&token=" + token;
-        }
+        return "redirect:" + redirectUrl + "?flag=" + flag + "&token=" + token;
     }
 
 
@@ -90,6 +85,7 @@ public class InstitutionInfoController {
                               @RequestParam(name = "loginaccount", required = false) String loginaccount,
                               Model model, HttpServletRequest request) {
         //application/x-www-form-urlencoded;charset=UTF-8
+        log.info("hospitalid={},platid={},loginaccount={}", hospitalid, platid, loginaccount);
         model.addAttribute("number", hospitalid); //医院编码
         model.addAttribute("areaCode", platid); ///统筹区编码
         //默认外部机构
@@ -106,11 +102,7 @@ public class InstitutionInfoController {
         jsonObject.put("loginAccount", loginaccount);
         caffeineCache.put(token, jsonObject.toJSONString());
         log.info("host={}", request.getHeader("host"));
-        if (request.getHeader("host").indexOf("172.16.29.54") > 0) {
-            return "redirect:http://172.16.29.54:18080/e-contract/#?flag=" + flag + "&token=" + token;
-        } else {
-            return "redirect:" + redirectUrl + "?flag=" + flag + "&token=" + token;
-        }
+        return "redirect:" + redirectYbUrl + "?flag=" + flag + "&token=" + token;
     }
 
 
