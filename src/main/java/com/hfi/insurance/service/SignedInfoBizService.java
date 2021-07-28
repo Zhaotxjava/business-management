@@ -11,7 +11,7 @@ import com.hfi.insurance.model.sign.req.GetSignUrlsReq;
  */
 public interface SignedInfoBizService {
 
-    ApiResponse getSignedRecord(GetRecordInfoReq req);
+    ApiResponse getSignedRecord(String token,GetRecordInfoReq req);
 
     ApiResponse getSignUrls(GetSignUrlsReq req);
 

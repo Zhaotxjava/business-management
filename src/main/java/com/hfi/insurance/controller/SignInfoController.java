@@ -3,12 +3,14 @@ package com.hfi.insurance.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.hfi.insurance.common.ApiResponse;
+import com.hfi.insurance.enums.ErrorCodeEnum;
 import com.hfi.insurance.model.sign.req.GetRecordInfoReq;
 import com.hfi.insurance.model.sign.req.GetSignUrlsReq;
 import com.hfi.insurance.service.SignedInfoBizService;
 import com.hfi.insurance.service.SignedService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * <p>
@@ -40,8 +43,12 @@ public class SignInfoController {
 
     @ApiOperation("获取签署流程记录")
     @PostMapping("/getSignInfoRecord")
-    public ApiResponse getSignInfoRecord(@RequestBody GetRecordInfoReq req){
-        return signedInfoBizService.getSignedRecord(req);
+    public ApiResponse getSignInfoRecord(@RequestBody GetRecordInfoReq req, HttpServletRequest request){
+        String token = request.getHeader("token");
+        if (StringUtils.isBlank(token)) {
+            return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(), ErrorCodeEnum.PARAM_ERROR.getMessage());
+        }
+        return signedInfoBizService.getSignedRecord(token,req);
     }
 
     @GetMapping("getSignDetail/{signFlowId}")

@@ -3,6 +3,7 @@ package com.hfi.insurance.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.github.benmanes.caffeine.cache.Cache;
 import com.hfi.insurance.aspect.anno.LogAnnotation;
 import com.hfi.insurance.common.ApiResponse;
 import com.hfi.insurance.enums.ErrorCodeEnum;
@@ -20,11 +21,13 @@ import com.hfi.insurance.service.IYbInstitutionInfoService;
 import com.hfi.insurance.service.SignedInfoBizService;
 import com.hfi.insurance.service.SignedService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -47,20 +50,34 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
     @Resource
     private IYbInstitutionInfoService institutionInfoService;
 
+    @Resource
+    private Cache<String, String> caffeineCache;
+
     @Override
     @LogAnnotation
-    public ApiResponse getSignedRecord(GetRecordInfoReq req) {
-        Page<YbFlowInfo> flowInfoPage = flowInfoService.getSignedRecord(req);
+    public ApiResponse getSignedRecord(String token,GetRecordInfoReq req) {
+        String jsonStr = caffeineCache.asMap().get(token);
+        log.info("用户信息:{}",jsonStr);
+        if (StringUtils.isBlank(jsonStr)){
+            return new ApiResponse(ErrorCodeEnum.TOKEN_EXPIRED.getCode(),ErrorCodeEnum.TOKEN_EXPIRED.getMessage());
+        }
+        JSONObject jsonObject = JSON.parseObject(jsonStr);
+        String institutionNumber = jsonObject.getString("number");
+        Page<YbFlowInfo> flowInfoPage = flowInfoService.getSignedRecord(institutionNumber,req);
         Page<SignRecordsRes> signRecordsResPage = new Page<>();
         BeanUtils.copyProperties(flowInfoPage, signRecordsResPage);
         List<YbFlowInfo> flowInfos = flowInfoPage.getRecords();
-        //todo 优化
-        List<SignRecordsRes> recordRes = flowInfos.stream().map(ybFlowInfo -> {
+        List<SignRecordsRes> recordResList = new ArrayList<>();
+        for(YbFlowInfo ybFlowInfo : flowInfos){
             SignRecordsRes recordsRes = new SignRecordsRes();
             BeanUtils.copyProperties(ybFlowInfo, recordsRes);
             String flowId = ybFlowInfo.getSignFlowId();
             JSONObject signDetail = signedService.getSignDetail(Integer.valueOf(flowId));
             log.info("流程id：{}，详情：{}", flowId, signDetail);
+            if (signDetail.containsKey("errCode")) {
+                log.error("查询流程详情错误，错误原因：{}",signDetail.getString("msg"));
+                break;
+            }
             String singers = signDetail.getString("signers");
             List<SingerInfoRes> singerInfos = JSON.parseArray(singers, SingerInfoRes.class);
             String signDocDetails = signDetail.getString("signDocDetails");
@@ -83,9 +100,9 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
                 }
             }
             recordsRes.setRecentHandleTime(ybFlowInfo.getHandleTime());
-            return recordsRes;
-        }).collect(Collectors.toList());
-        signRecordsResPage.setRecords(recordRes);
+            recordResList.add(recordsRes);
+        }
+        signRecordsResPage.setRecords(recordResList);
         return new ApiResponse(signRecordsResPage);
     }
 

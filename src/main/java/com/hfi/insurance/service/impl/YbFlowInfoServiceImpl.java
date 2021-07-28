@@ -22,8 +22,10 @@ import org.springframework.stereotype.Service;
 public class YbFlowInfoServiceImpl extends ServiceImpl<YbFlowInfoMapper, YbFlowInfo> implements IYbFlowInfoService {
 
     @Override
-    public Page<YbFlowInfo> getSignedRecord(GetRecordInfoReq req) {
+    public Page<YbFlowInfo> getSignedRecord(String institutionNumber,GetRecordInfoReq req) {
         QueryWrapper<YbFlowInfo> queryWrapper = new QueryWrapper<>();
+        //SqlUtils---concatLike
+        queryWrapper.likeLeft("number",institutionNumber);
         if (StringUtils.isNotBlank(req.getSubject())) {
             queryWrapper.like("subject", req.getSubject());
         }
