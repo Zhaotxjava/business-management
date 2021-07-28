@@ -56,16 +56,22 @@ public class InstitutionInfoController {
         }
         ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         HttpServletRequest request = requestAttributes.getRequest();
-        HttpSession session =  request.getSession();
-        session.setAttribute("areaCode",platid);
-        session.setAttribute("number",hospitalid);
+        HttpSession session = request.getSession();
+        session.setAttribute("areaCode", platid);
+        session.setAttribute("number", hospitalid);
 //        caffeineCache.put("areaCode", platid);
 //        caffeineCache.put("number", hospitalid);
-        return "redirect:" + redirectUrl + "?number=" + hospitalid + "&areaCode=" + platid + "&flag=" + flag;
+        log.info("referer={}", request.getHeader("referer"));
+        if (request.getHeader("referer").indexOf("172.16.29.54") > 0) {
+            return "redirect:http://172.16.29.54:18080/insuranceInfoServer/home?number=" + hospitalid + "&areaCode=" + platid + "&flag=" + flag;
+        } else {
+            return "redirect:" + redirectUrl + "?number=" + hospitalid + "&areaCode=" + platid + "&flag=" + flag;
+        }
+
     }
 
     @PostMapping("home")
-    public String index(String hospitalid, String platid, HttpServletRequest request, Model model,HttpSession session) {
+    public String index(String hospitalid, String platid, HttpServletRequest request, Model model, HttpSession session) {
         //application/x-www-form-urlencoded;charset=UTF-8
         model.addAttribute("number", hospitalid); //医院编码
         model.addAttribute("areaCode", platid); ///统筹区编码
@@ -74,11 +80,16 @@ public class InstitutionInfoController {
         if (StringUtils.isNotBlank(platid)) {
             flag = 1;
         }
-        session.setAttribute("areaCode",platid);
-        session.setAttribute("number",hospitalid);
+        session.setAttribute("areaCode", platid);
+        session.setAttribute("number", hospitalid);
 //        caffeineCache.put("areaCode", platid);
 //        caffeineCache.put("number", hospitalid);
-        return "redirect:" + redirectUrl + "?number=" + hospitalid + "&areaCode=" + platid + "&flag=" + flag;
+        log.info("referer={}", request.getHeader("referer"));
+        if (request.getHeader("referer").indexOf("172.16.29.54") > 0) {
+            return "redirect:http://172.16.29.54:18080/insuranceInfoServer/home?number=" + hospitalid + "&areaCode=" + platid + "&flag=" + flag;
+        } else {
+            return "redirect:" + redirectUrl + "?number=" + hospitalid + "&areaCode=" + platid + "&flag=" + flag;
+        }
     }
 
 
