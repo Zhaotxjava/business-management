@@ -62,6 +62,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
 //        HttpSession session =  request.getSession();
 //        String institutionNumber = (String) session.getAttribute("number");
         String jsonStr = caffeineCache.asMap().get(token);
+        log.info("token:{}",token);
         if (StringUtils.isBlank(jsonStr)){
             return new ApiResponse(ErrorCodeEnum.TOKEN_EXPIRED.getCode(),ErrorCodeEnum.TOKEN_EXPIRED.getMessage());
         }

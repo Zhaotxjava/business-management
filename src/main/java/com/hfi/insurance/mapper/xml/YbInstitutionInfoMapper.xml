@@ -48,10 +48,10 @@
                 and org.AKB020 like concat(#{institutionNumber} , '%')
             </if>
             <if test="institutionName != null and institutionName != ''">
-                and org.AKB021 = #{institutionName}
+                and org.AKB021 like concat ('%',#{institutionName},'%')
             </if>
             <if test="number != null and number != ''">
-                and org.AKB020 = #{number}
+                and org.AKB020 like concat ('%',#{number},'%')
             </if>
         </where>
         limit #{pageNum},#{pageSize}
@@ -65,10 +65,10 @@
                 and org.AKB020 like concat(#{institutionNumber} , '%')
             </if>
             <if test="institutionName != null and institutionName != ''">
-                and org.AKB021 = #{institutionName}
+                and org.AKB021 like concat ('%',#{institutionName},'%')
             </if>
             <if test="number != null and number != ''">
-                and org.AKB020 = #{number}
+                and org.AKB020 like concat ('%',#{number},'%')
             </if>
         </where>
     </select>
