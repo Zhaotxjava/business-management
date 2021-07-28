@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
 import java.util.Map;
@@ -53,7 +54,7 @@ public class InstitutionInfoController {
     public String index(@RequestParam(name = "hospitalid", required = true) String hospitalid,
                         @RequestParam(name = "platid", required = false) String platid,
                         @RequestParam(name = "loginaccount") String loginaccount,
-                        Model model) {
+                        Model model, HttpServletRequest request) {
         model.addAttribute("number", hospitalid); //医院编码
         model.addAttribute("areaCode", platid); ///统筹区编码
         //默认外部机构
@@ -74,16 +75,20 @@ public class InstitutionInfoController {
 //        HttpSession session =  request.getSession();
 //        session.setAttribute("areaCode",platid);
 //        session.setAttribute("number",hospitalid);
-        return "redirect:" + redirectUrl + "?flag=" + flag + "&token=" + token;
+        log.info("referer={}", request.getHeader("referer"));
+        if (request.getHeader("referer").indexOf("172.16.29.54") > 0) {
+            return "redirect:http://172.16.29.54:18080/e-contract/#?flag=" + flag + "&token=" + token;
+        } else {
+            return "redirect:" + redirectUrl + "?flag=" + flag + "&token=" + token;
+        }
     }
-
 
 
     @PostMapping("home")
     public String indexToProd(@RequestParam(name = "hospitalid") String hospitalid,
                               @RequestParam(name = "platid", required = false) String platid,
                               @RequestParam(name = "loginaccount") String loginaccount,
-                              Model model) {
+                              Model model, HttpServletRequest request) {
         //application/x-www-form-urlencoded;charset=UTF-8
         model.addAttribute("number", hospitalid); //医院编码
         model.addAttribute("areaCode", platid); ///统筹区编码
@@ -100,7 +105,12 @@ public class InstitutionInfoController {
         jsonObject.put("areaCode", platid);
         jsonObject.put("loginAccount", loginaccount);
         caffeineCache.put(token, jsonObject.toJSONString());
-        return "redirect:" + redirectUrl + "?flag=" + flag + "&token=" + token;
+        log.info("referer={}", request.getHeader("referer"));
+        if (request.getHeader("referer").indexOf("172.16.29.54") > 0) {
+            return "redirect:http://172.16.29.54:18080/e-contract/#?flag=" + flag + "&token=" + token;
+        } else {
+            return "redirect:" + redirectUrl + "?flag=" + flag + "&token=" + token;
+        }
     }
 
 
