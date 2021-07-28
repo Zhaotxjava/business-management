@@ -68,12 +68,6 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         JSONObject jsonObject = JSON.parseObject(jsonStr);
         String institutionNumber = jsonObject.getString("number");
         log.info("从token中获取机构编号：{}",institutionNumber);
-        String organizeNo = jsonObject.getString("areaCode");
-        log.info("从token中获取区域号：{}",organizeNo);
-        if (StringUtils.isBlank(institutionNumber)){
-            institutionNumber = organizeNo;
-        }
-        QueryWrapper<YbOrgTd> queryWrapper = new QueryWrapper<>();
 //        if (StringUtils.isNotBlank(institutionNumber)){
 //            queryWrapper.like("number",institutionNumber);
 //        }
@@ -84,7 +78,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
 //            queryWrapper.eq("institution_name",institutionName);
 //        }
         List<YbInstitutionInfo> ybInstitutionInfos = institutionInfoMapper.selectInstitutionInfoAndOrg(institutionNumber,number, institutionName, current-1, limit);
-        Integer total = orgTdMapper.selectCount(queryWrapper);
+        int total = institutionInfoMapper.selectCountInstitutionInfoAndOrg(institutionNumber,number, institutionName);
         Page<YbInstitutionInfo> page = new Page<>(current,limit);
         page.setRecords(ybInstitutionInfos);
         page.setTotal(total);
@@ -97,8 +91,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         Integer pageNum = req.getPageNum();
         req.setPageNum(pageNum - 1);
         List<InstitutionInfoRes> ybInstitutionInfos = institutionInfoMapper.selectOrgForCreateFlow(req);
-        QueryWrapper<YbInstitutionInfo> queryWrapper = new QueryWrapper<>();
-        Integer total = institutionInfoMapper.selectCount(queryWrapper);
+        int total = institutionInfoMapper.selectCountOrgForCreateFlow(req);
         Page<InstitutionInfoRes> page = new Page<>(req.getPageNum(),req.getPageSize());
         page.setRecords(ybInstitutionInfos);
         page.setTotal(total);

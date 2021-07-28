@@ -4,6 +4,7 @@ swagger:
 
 redirect:
   url: http://192.20.97.35:18080/e-contract/#
+  ybUrl: http://172.16.29.54:18080/e-contract/#
 
 file:
   path: C:\Users\hengtian\Desktop\医保定点机构列表20210607.xlsx

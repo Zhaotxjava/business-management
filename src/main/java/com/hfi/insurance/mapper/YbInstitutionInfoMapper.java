@@ -28,5 +28,11 @@ public interface YbInstitutionInfoMapper extends BaseMapper<YbInstitutionInfo> {
                                                          @Param("pageNum") int pageNum,
                                                          @Param("pageSize") int pageSize);
 
+    int selectCountInstitutionInfoAndOrg(@Param("institutionNumber")String institutionNumber,
+                                         @Param("number") String number,
+                                         @Param("institutionName") String institutionName);
+
     List<InstitutionInfoRes>  selectOrgForCreateFlow(OrgTdQueryReq req);
+
+    int selectCountOrgForCreateFlow(OrgTdQueryReq req);
 }
