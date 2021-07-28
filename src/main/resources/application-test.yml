@@ -15,7 +15,7 @@ file:
     url: /opt/app/insurance-info-server/service/demo
 #天印系统接口配置
 esignpro:
-  url: http://172.16.80.191:8088
+  url: http://192.20.97.42:8086
   projectId: 1001001
   secret: c5505d7831bc626e92c175052956c7fc
 
