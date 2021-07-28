@@ -43,7 +43,7 @@ public class InstitutionController {
     @PostMapping("getInstitutionInfoList")
     @ApiOperation("分页查询外部机构信息")
     public ApiResponse getInstitutionInfoList(@RequestBody InstitutionInfoQueryReq req, HttpServletRequest httpRequest) {
-        String token = httpRequest.getParameter("token");
+        String token = httpRequest.getHeader("token");
         if (StringUtils.isBlank(token)) {
             return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(), ErrorCodeEnum.PARAM_ERROR.getMessage());
         }

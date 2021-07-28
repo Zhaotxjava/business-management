@@ -68,7 +68,7 @@ public class FlowManageController {
 //        }else {
 //            return new ApiResponse(ErrorCodeEnum.SYSTEM_ERROR);
 //        }
-        String token = request.getParameter("token");
+        String token = request.getHeader("token");
         if (StringUtils.isNotBlank(token)){
             return signedBizService.createSignFlow(req,token);
         }else {
