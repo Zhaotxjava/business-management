@@ -70,6 +70,7 @@ public class InstitutionInfoController {
         jsonObject.put("areaCode", platid);
         jsonObject.put("loginAccount", loginaccount);
         caffeineCache.put(token, jsonObject.toJSONString());
+        log.info("生成token={}", token);
 //        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
 //        HttpServletRequest request = requestAttributes.getRequest();
 //        HttpSession session =  request.getSession();
@@ -106,6 +107,7 @@ public class InstitutionInfoController {
         jsonObject.put("areaCode", platid);
         jsonObject.put("loginAccount", loginaccount);
         caffeineCache.put(token, jsonObject.toJSONString());
+        log.info("生成token={}", token);
         log.info("host={}", request.getHeader("host"));
         return "redirect:" + redirectYbUrl + "?flag=" + flag + "&token=" + token;
     }
