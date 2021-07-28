@@ -9,7 +9,8 @@ public enum ErrorCodeEnum {
     PARAM_ERROR("50901", "参数错误"),
     NETWORK_ERROR("50904", "对方服务器连接失败"),
     DATA_NOT_READY_ERROR("50905", "数据还未准备结束"),
-    RESPONES_ERROR("50906", "接口响应错误");
+    RESPONES_ERROR("50906", "接口响应错误"),
+    TOKEN_EXPIRED("50907", "token已经过期，请重新登录！！");
 
     /**
      * 枚举值

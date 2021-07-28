@@ -1,34 +1,26 @@
 package com.hfi.insurance.controller;
 
-import com.alibaba.fastjson.JSONObject;
 import com.hfi.insurance.aspect.anno.LogAnnotation;
 import com.hfi.insurance.common.ApiResponse;
 import com.hfi.insurance.enums.ErrorCodeEnum;
 import com.hfi.insurance.model.sign.req.CreateSignFlowReq;
 import com.hfi.insurance.model.sign.req.GetPageWithPermissionReq;
-import com.hfi.insurance.model.sign.req.GetPageWithPermissionV2Model;
-import com.hfi.insurance.model.sign.req.GetSignUrlsReq;
-import com.hfi.insurance.model.sign.req.StandardCreateFlowBO;
 import com.hfi.insurance.service.SignedBizService;
 import com.hfi.insurance.service.SignedService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpRequest;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 
 /**
  * @Author ChenZX
@@ -67,14 +59,20 @@ public class FlowManageController {
     @PostMapping("createSignFlows")
     @ApiOperation("发起签署-创建流程")
     @LogAnnotation
-    public ApiResponse createSignFlows(@RequestBody CreateSignFlowReq req){
-        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-        if (requestAttributes != null){
-            HttpServletRequest request = requestAttributes.getRequest();
-            HttpSession session =  request.getSession();
-            return signedBizService.createSignFlow(req,session);
+    public ApiResponse createSignFlows(@RequestBody CreateSignFlowReq req,HttpServletRequest request){
+//        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+//        if (requestAttributes != null){
+//            HttpServletRequest request = requestAttributes.getRequest();
+//            HttpSession session =  request.getSession();
+//            return signedBizService.createSignFlow(req,session);
+//        }else {
+//            return new ApiResponse(ErrorCodeEnum.SYSTEM_ERROR);
+//        }
+        String token = request.getParameter("token");
+        if (StringUtils.isNotBlank(token)){
+            return signedBizService.createSignFlow(req,token);
         }else {
-            return new ApiResponse(ErrorCodeEnum.SYSTEM_ERROR);
+            return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(),ErrorCodeEnum.PARAM_ERROR.getMessage());
         }
     }
 

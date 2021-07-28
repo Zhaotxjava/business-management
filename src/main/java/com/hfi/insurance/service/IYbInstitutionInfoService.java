@@ -29,7 +29,7 @@ public interface IYbInstitutionInfoService extends IService<YbInstitutionInfo> {
      * @param limit
      * @return
      */
-    Page<YbInstitutionInfo> getInstitutionInfoList(String number, String institutionName, int current, int limit);
+    ApiResponse getInstitutionInfoList(String token,String number, String institutionName, int current, int limit);
 
     Page<InstitutionInfoRes> getOrgTdListForCreateFlow(OrgTdQueryReq req);
 

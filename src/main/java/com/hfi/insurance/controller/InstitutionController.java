@@ -2,10 +2,8 @@ package com.hfi.insurance.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.hfi.insurance.common.ApiResponse;
-import com.hfi.insurance.common.PageDto;
 import com.hfi.insurance.enums.ErrorCodeEnum;
 import com.hfi.insurance.model.ExcelSheetPO;
-import com.hfi.insurance.model.InstitutionInfo;
 import com.hfi.insurance.model.YbInstitutionInfo;
 import com.hfi.insurance.model.dto.InstitutionInfoAddReq;
 import com.hfi.insurance.model.dto.InstitutionInfoQueryReq;
@@ -19,12 +17,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,10 +42,12 @@ public class InstitutionController {
 
     @PostMapping("getInstitutionInfoList")
     @ApiOperation("分页查询外部机构信息")
-    public ApiResponse getInstitutionInfoList(@RequestBody InstitutionInfoQueryReq req) {
-        Page<YbInstitutionInfo> page =
-                institutionInfoService.getInstitutionInfoList(req.getNumber(), req.getInstitutionName(), req.getPageNum(), req.getPageSize());
-        return new ApiResponse(page);
+    public ApiResponse getInstitutionInfoList(@RequestBody InstitutionInfoQueryReq req, HttpServletRequest httpRequest) {
+        String token = httpRequest.getParameter("token");
+        if (StringUtils.isBlank(token)) {
+            return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(), ErrorCodeEnum.PARAM_ERROR.getMessage());
+        }
+        return institutionInfoService.getInstitutionInfoList(token, req.getNumber(), req.getInstitutionName(), req.getPageNum(), req.getPageSize());
     }
 
     @PostMapping("getInstitutionInfoByNumber")
@@ -61,8 +60,8 @@ public class InstitutionController {
     @ApiOperation("更新机构信息")
     public ApiResponse updateInstitutionInfo(@RequestBody InstitutionInfoAddReq req) {
         // 1> 基础数据校验
-        if (StringUtils.isBlank(req.getOrgInstitutionCode())){
-            return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(),"组织机构编码不能为空");
+        if (StringUtils.isBlank(req.getOrgInstitutionCode())) {
+            return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(), "组织机构编码不能为空");
         }
         if (StringUtils.isBlank(req.getNumber())) {
             return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(), "机构编码不能为空");
@@ -89,7 +88,7 @@ public class InstitutionController {
     }
 
     @PostMapping("import")
-    public void importData(@RequestParam("file") MultipartFile multipartFile){
+    public void importData(@RequestParam("file") MultipartFile multipartFile) {
         List<ExcelSheetPO> excelSheetList = new ArrayList<>();
         try {
             excelSheetList = ImportExcelUtil.readExcel(multipartFile);

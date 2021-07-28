@@ -1,12 +1,13 @@
 package com.hfi.insurance.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.github.benmanes.caffeine.cache.Cache;
 import com.hfi.insurance.aspect.anno.LogAnnotation;
 import com.hfi.insurance.common.ApiResponse;
-import com.hfi.insurance.common.PageDto;
 import com.hfi.insurance.enums.ErrorCodeEnum;
 import com.hfi.insurance.mapper.YbInstitutionInfoMapper;
 import com.hfi.insurance.mapper.YbOrgTdMapper;
@@ -23,12 +24,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -54,16 +51,29 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
     @Autowired
     private OrganizationsService organizationsService;
 
+    @Resource
+    private Cache<String, String> caffeineCache;
+
     @Override
     @LogAnnotation
-    public Page<YbInstitutionInfo> getInstitutionInfoList(String number, String institutionName, int current, int limit) {
-        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-        HttpServletRequest request = requestAttributes.getRequest();
-        HttpSession session =  request.getSession();
-        //填充yb_institution_info的数据
+    public ApiResponse getInstitutionInfoList(String token,String number, String institutionName, int current, int limit) {
+//        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+//        HttpServletRequest request = requestAttributes.getRequest();
+//        HttpSession session =  request.getSession();
+//        String institutionNumber = (String) session.getAttribute("number");
+        String jsonStr = caffeineCache.asMap().get(token);
+        if (StringUtils.isBlank(jsonStr)){
+            return new ApiResponse(ErrorCodeEnum.TOKEN_EXPIRED.getCode(),ErrorCodeEnum.TOKEN_EXPIRED.getMessage());
+        }
+        JSONObject jsonObject = JSON.parseObject(jsonStr);
+        String institutionNumber = jsonObject.getString("number");
+        log.info("从token中获取机构编号：{}",institutionNumber);
+        String organizeNo = jsonObject.getString("areaCode");
+        log.info("从token中获取区域号：{}",organizeNo);
+        if (StringUtils.isBlank(institutionNumber)){
+            institutionNumber = organizeNo;
+        }
         QueryWrapper<YbOrgTd> queryWrapper = new QueryWrapper<>();
-        String institutionNumber = (String) session.getAttribute("number");
-        log.info("从session中获取机构编号：{}",institutionNumber);
 //        if (StringUtils.isNotBlank(institutionNumber)){
 //            queryWrapper.like("number",institutionNumber);
 //        }
@@ -78,7 +88,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         Page<YbInstitutionInfo> page = new Page<>(current,limit);
         page.setRecords(ybInstitutionInfos);
         page.setTotal(total);
-        return page;
+        return new ApiResponse(page);
     }
 
     @Override

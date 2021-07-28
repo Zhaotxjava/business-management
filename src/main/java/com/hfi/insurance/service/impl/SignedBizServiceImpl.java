@@ -42,6 +42,8 @@ import com.hfi.insurance.service.SignedBizService;
 import com.hfi.insurance.service.SignedService;
 import com.hfi.insurance.utils.EnumHelper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -78,13 +80,22 @@ public class SignedBizServiceImpl implements SignedBizService {
     @Resource
     private IYbInstitutionInfoService institutionInfoService;
 
-//    @Resource
-//    private Cache<String, String> caffeineCache;
+    @Resource
+    private Cache<String, String> caffeineCache;
 
     @Override
-    public ApiResponse createSignFlow(CreateSignFlowReq req, HttpSession session) {
-        String organizeNo = (String) session.getAttribute("areaCode");
-        String institutionNumber = (String) session.getAttribute("number");
+    public ApiResponse createSignFlow(CreateSignFlowReq req, String token) {
+        String jsonStr = caffeineCache.asMap().get(token);
+        if (StringUtils.isBlank(jsonStr)){
+            return new ApiResponse(ErrorCodeEnum.TOKEN_EXPIRED.getCode(),ErrorCodeEnum.TOKEN_EXPIRED.getMessage());
+        }
+        JSONObject jsonObject = JSON.parseObject(jsonStr);
+        String institutionNumber = jsonObject.getString("number");
+        log.info("从token中获取机构编号：{}",institutionNumber);
+        String organizeNo = jsonObject.getString("areaCode");
+        log.info("从token中获取区域号：{}",organizeNo);
+//        String organizeNo = (String) session.getAttribute("areaCode");
+//        String institutionNumber = (String) session.getAttribute("number");
         ETemplateType templateType = EnumHelper.translate(ETemplateType.class, req.getTemplateType());
         //填充模板的形式发起签署
         if (ETemplateType.TEMPLATE_FILL == templateType) {

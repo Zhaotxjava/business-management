@@ -15,7 +15,7 @@ import javax.servlet.http.HttpSession;
  */
 public interface SignedBizService {
 
-    ApiResponse createSignFlow(CreateSignFlowReq req, HttpSession httpSession);
+    ApiResponse createSignFlow(CreateSignFlowReq req, String token);
 
     ApiResponse getPageWithPermission(GetPageWithPermissionReq req);
 
