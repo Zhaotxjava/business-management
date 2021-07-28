@@ -45,7 +45,7 @@
         <where>
              org.BKB012 = '1' and org.AAA027 like '3301%'
             <if test="institutionNumber != null and institutionNumber != ''">
-                and org.AKB020 like concat('%', #{institutionNumber} , '%')
+                and org.AKB020 like concat(#{institutionNumber} , '%')
             </if>
             <if test="institutionName != null and institutionName != ''">
                 and org.AKB021 = #{institutionName}
@@ -62,7 +62,7 @@
         <where>
             org.BKB012 = '1' and org.AAA027 like '3301%'
             <if test="institutionNumber != null and institutionNumber != ''">
-                and org.AKB020 like concat('%', #{institutionNumber} , '%')
+                and org.AKB020 like concat(#{institutionNumber} , '%')
             </if>
             <if test="institutionName != null and institutionName != ''">
                 and org.AKB021 = #{institutionName}
