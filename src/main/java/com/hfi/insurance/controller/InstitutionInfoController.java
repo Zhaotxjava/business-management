@@ -52,8 +52,9 @@ public class InstitutionInfoController {
     public String index(@RequestParam(name = "hospitalid", required = false) String hospitalid,
                         @RequestParam(name = "platid", required = false) String platid,
                         @RequestParam(name = "loginaccount", required = false) String loginaccount,
+                        @RequestParam(name = "ntv", required = false) String ntv,
                         Model model, HttpServletRequest request) {
-        log.info("hospitalid={},platid={},loginaccount={}", hospitalid, platid, loginaccount);
+        log.info("hospitalid={},platid={},loginaccount={}，ntv={}", hospitalid, platid, loginaccount, ntv);
         model.addAttribute("number", hospitalid); //医院编码
         model.addAttribute("areaCode", platid); ///统筹区编码
         //默认外部机构
@@ -75,7 +76,11 @@ public class InstitutionInfoController {
 //        session.setAttribute("areaCode",platid);
 //        session.setAttribute("number",hospitalid);
         log.info("host={}", request.getHeader("host"));
-        return "redirect:" + redirectUrl + "?flag=" + flag + "&token=" + token;
+        if (StringUtils.isNotEmpty(ntv)) {
+            return "redirect:" + redirectYbUrl + "?flag=" + flag + "&token=" + token;
+        } else {
+            return "redirect:" + redirectUrl + "?flag=" + flag + "&token=" + token;
+        }
     }
 
 
