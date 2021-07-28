@@ -51,9 +51,9 @@ public class InstitutionInfoController {
     }
 
     @GetMapping("home")
-    public String index(@RequestParam(name = "hospitalid", required = true) String hospitalid,
+    public String index(@RequestParam(name = "hospitalid", required = false) String hospitalid,
                         @RequestParam(name = "platid", required = false) String platid,
-                        @RequestParam(name = "loginaccount") String loginaccount,
+                        @RequestParam(name = "loginaccount", required = false) String loginaccount,
                         Model model, HttpServletRequest request) {
         model.addAttribute("number", hospitalid); //医院编码
         model.addAttribute("areaCode", platid); ///统筹区编码
@@ -85,9 +85,9 @@ public class InstitutionInfoController {
 
 
     @PostMapping("home")
-    public String indexToProd(@RequestParam(name = "hospitalid") String hospitalid,
+    public String indexToProd(@RequestParam(name = "hospitalid", required = false) String hospitalid,
                               @RequestParam(name = "platid", required = false) String platid,
-                              @RequestParam(name = "loginaccount") String loginaccount,
+                              @RequestParam(name = "loginaccount", required = false) String loginaccount,
                               Model model, HttpServletRequest request) {
         //application/x-www-form-urlencoded;charset=UTF-8
         model.addAttribute("number", hospitalid); //医院编码
