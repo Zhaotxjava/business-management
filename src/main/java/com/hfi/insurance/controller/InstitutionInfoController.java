@@ -75,8 +75,8 @@ public class InstitutionInfoController {
 //        HttpSession session =  request.getSession();
 //        session.setAttribute("areaCode",platid);
 //        session.setAttribute("number",hospitalid);
-        log.info("referer={}", request.getHeader("referer"));
-        if (request.getHeader("referer").indexOf("172.16.29.54") > 0) {
+        log.info("host={}", request.getHeader("host"));
+        if (request.getHeader("host").indexOf("172.16.29.54") >= 0) {
             return "redirect:http://172.16.29.54:18080/e-contract/#?flag=" + flag + "&token=" + token;
         } else {
             return "redirect:" + redirectUrl + "?flag=" + flag + "&token=" + token;
@@ -105,8 +105,8 @@ public class InstitutionInfoController {
         jsonObject.put("areaCode", platid);
         jsonObject.put("loginAccount", loginaccount);
         caffeineCache.put(token, jsonObject.toJSONString());
-        log.info("referer={}", request.getHeader("referer"));
-        if (request.getHeader("referer").indexOf("172.16.29.54") > 0) {
+        log.info("host={}", request.getHeader("host"));
+        if (request.getHeader("host").indexOf("172.16.29.54") > 0) {
             return "redirect:http://172.16.29.54:18080/e-contract/#?flag=" + flag + "&token=" + token;
         } else {
             return "redirect:" + redirectUrl + "?flag=" + flag + "&token=" + token;
