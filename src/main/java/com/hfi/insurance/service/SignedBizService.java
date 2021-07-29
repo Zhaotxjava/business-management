@@ -17,7 +17,7 @@ public interface SignedBizService {
 
     ApiResponse createSignFlow(CreateSignFlowReq req, String token);
 
-    ApiResponse getPageWithPermission(GetPageWithPermissionReq req);
+    ApiResponse getPageWithPermission(GetPageWithPermissionReq req,String token);
 
     ApiResponse getTemplateInfo(String templateId);
 }

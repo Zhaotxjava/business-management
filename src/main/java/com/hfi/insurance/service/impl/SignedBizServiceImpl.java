@@ -534,10 +534,25 @@ public class SignedBizServiceImpl implements SignedBizService {
 
     @Override
     @LogAnnotation
-    public ApiResponse getPageWithPermission(GetPageWithPermissionReq req) {
+    public ApiResponse getPageWithPermission(GetPageWithPermissionReq req,String token) {
+        String jsonStr = caffeineCache.asMap().get(token);
+        if (StringUtils.isBlank(jsonStr)){
+            return new ApiResponse(ErrorCodeEnum.TOKEN_EXPIRED.getCode(),ErrorCodeEnum.TOKEN_EXPIRED.getMessage());
+        }
+        JSONObject jsonObject = JSON.parseObject(jsonStr);
+        String organizeNo = jsonObject.getString("areaCode");
+        log.info("从token中获取区域号：{}",organizeNo);
+        JSONObject innerOrgans = organizationsService.queryInnerOrgans(organizeNo);
+        if (innerOrgans.containsKey("errCode")) {
+            log.error("查询内部机构信息信息异常，{}", innerOrgans);
+            return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), innerOrgans.getString("msg"));
+        }
         GetPageWithPermissionV2Model getPageWithPermissionV2Model = new GetPageWithPermissionV2Model();
         BeanUtils.copyProperties(req, getPageWithPermissionV2Model);
         getPageWithPermissionV2Model.setPageIndex(req.getPageNum());
+        String innerOrganId = innerOrgans.getString("organizeId");
+        log.info("内部机构id：{}",innerOrganId);
+        req.setDepartmentId(innerOrganId);
         JSONObject result = signedService.getPageWithPermission(getPageWithPermissionV2Model);
         log.info("获取模板列表响应参数：{}", result);
         if (result.containsKey("errCode")) {

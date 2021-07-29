@@ -36,7 +36,7 @@ public class SignedServiceImpl implements SignedService {
     @Override
     public JSONObject getPageWithPermission(GetPageWithPermissionV2Model getPageWithPermissionV2Model) {
         Map<String, String> headMap = new HashMap<>();
-        getPageWithPermissionV2Model.setAccountId("279e974f-577d-47fa-86cd-6672c617043a");
+//        getPageWithPermissionV2Model.setAccountId("279e974f-577d-47fa-86cd-6672c617043a");
         convertHead(headMap,JSON.toJSONString(getPageWithPermissionV2Model));
         String result = HttpUtil.doPost(url + "/esignpro/rest/template/api/getPageWithPermission", headMap, JSON.toJSONString(getPageWithPermissionV2Model));
         return convertResult(result);

@@ -211,7 +211,7 @@ public class OrganizationsServiceImpl implements OrganizationsService {
         param.put("organizeNo",organizeNo);
         convertHead(headMap, "");
         String result = HttpUtil.doGet(url + "/V1/organizations/innerOrgans/query", headMap, param);
-        log.info("根据机构编号【{}】查询机构信息接口响应{}", organizeNo, result);
+        log.info("根据机构编号【{}】查询内部机构信息接口响应{}", organizeNo, result);
         return convertResult(result);
     }
 }

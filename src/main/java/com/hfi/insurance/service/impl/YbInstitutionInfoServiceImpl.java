@@ -131,6 +131,14 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
                     .setLegalPhone(req.getLegalPhone())
                     .setOrgInstitutionCode(req.getOrgInstitutionCode());
             institutionInfoMapper.insert(institutionInfo);
+        } else {
+            //判断法人信息是否已更新
+            if(StringUtils.isNotEmpty(cacheInfo.getOrganizeId()) && (!StringUtils.equals(req.getLegalIdCard(),cacheInfo.getLegalIdCard())
+                || !StringUtils.equals(req.getLegalName(),cacheInfo.getLegalName())
+                || !StringUtils.equals(req.getLegalPhone(),cacheInfo.getLegalPhone()))){
+                log.error("法人信息已变更，系统暂不支持接口");
+                return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), "法人信息已变更，系统暂不支持接口更新");
+            }
         }
         // 2>通过天印系统查询联系人是否已存在于系统，不存在则调用创建用户接口，得到用户的唯一编码，存在则直接跳到第4步
         boolean accountExist = true;
@@ -162,11 +170,11 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
             defaultAccountId = resultObj.getString("accountId");
         } else {
             defaultAccountId = accountObj.getString("accountId");
-            JSONObject resultObj = organizationsService.updateAccounts(defaultAccountId, req.getLegalName(), req.getLegalIdCard(), req.getLegalPhone());
+            /*JSONObject resultObj = organizationsService.updateAccounts(defaultAccountId, req.getLegalName(), req.getLegalIdCard(), req.getLegalPhone());
             if (resultObj.containsKey("errCode")) {
                 log.error("更新外部用户（法人）信息异常，{}", resultObj);
                 return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
-            }
+            }*/
         }
         if (!isSameAccount) {
             log.info("法人和经办人信息不一致，再创建联系人为经办人");
@@ -219,7 +227,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         } else {
             //更新机构信息
             organizeId = organObj.getString("organizeId");
-            if (defaultAccountId.equals(organObj.getString("agentAccountId"))) {
+            if (!defaultAccountId.equals(organObj.getString("agentAccountId"))) {
                 log.error("法人信息已变更，系统暂不支持接口");
                 return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), "法人信息已变更，系统暂不支持接口更新");
             }

@@ -40,8 +40,13 @@ public class FlowManageController {
 
     @PostMapping("getTemplate")
     @ApiOperation("分页查询模板列表")
-    public ApiResponse getTemplate(@RequestBody GetPageWithPermissionReq req){
-        return signedBizService.getPageWithPermission(req);
+    public ApiResponse getTemplate(@RequestBody GetPageWithPermissionReq req,HttpServletRequest request){
+        String token = request.getHeader("token");
+        if (StringUtils.isNotBlank(token)){
+            return signedBizService.getPageWithPermission(req,token);
+        }else {
+            return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(),ErrorCodeEnum.PARAM_ERROR.getMessage());
+        }
     }
 
     @GetMapping("getTemplateDetailInfo")
