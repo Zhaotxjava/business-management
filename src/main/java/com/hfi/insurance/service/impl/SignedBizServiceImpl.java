@@ -10,14 +10,11 @@ import com.hfi.insurance.common.ApiResponse;
 import com.hfi.insurance.enums.ESignType;
 import com.hfi.insurance.enums.ETemplateType;
 import com.hfi.insurance.enums.ErrorCodeEnum;
-import com.hfi.insurance.mapper.YbFlowInfoMapper;
-import com.hfi.insurance.model.InstitutionInfo;
 import com.hfi.insurance.model.YbFlowInfo;
 import com.hfi.insurance.model.YbInstitutionInfo;
+import com.hfi.insurance.model.sign.InstitutionBaseInfo;
 import com.hfi.insurance.model.sign.Position;
 import com.hfi.insurance.model.sign.PredefineBean;
-import com.hfi.insurance.model.sign.SignatoryBean;
-import com.hfi.insurance.model.sign.StandardDepartment;
 import com.hfi.insurance.model.sign.TemplateFlowBean;
 import com.hfi.insurance.model.sign.TemplateFormBean;
 import com.hfi.insurance.model.sign.TemplateInfoBean;
@@ -36,20 +33,17 @@ import com.hfi.insurance.model.sign.req.TemplateUseParam;
 import com.hfi.insurance.model.sign.res.StandardAccountListReturn;
 import com.hfi.insurance.service.IYbFlowInfoService;
 import com.hfi.insurance.service.IYbInstitutionInfoService;
-import com.hfi.insurance.service.IYbOrgTdService;
 import com.hfi.insurance.service.OrganizationsService;
 import com.hfi.insurance.service.SignedBizService;
 import com.hfi.insurance.service.SignedService;
 import com.hfi.insurance.utils.EnumHelper;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -84,6 +78,7 @@ public class SignedBizServiceImpl implements SignedBizService {
     private Cache<String, String> caffeineCache;
 
     @Override
+    @LogAnnotation
     public ApiResponse createSignFlow(CreateSignFlowReq req, String token) {
         String jsonStr = caffeineCache.asMap().get(token);
         if (StringUtils.isBlank(jsonStr)){
@@ -100,10 +95,10 @@ public class SignedBizServiceImpl implements SignedBizService {
         //填充模板的形式发起签署
         if (ETemplateType.TEMPLATE_FILL == templateType) {
             List<SingerInfo> singerInfos = req.getSingerInfos();
-            Map<String, List<InstitutionInfo>> flowNameInstitutionMap = new HashMap<>();
+            Map<String, List<InstitutionBaseInfo>> flowNameInstitutionMap = new HashMap<>();
             Map<Integer, String> flowNameSizeMap = new LinkedHashMap<>(16);
             List<String> institutionNames = new ArrayList<>();
-            List<InstitutionInfo> institutionInfos = new ArrayList<>();
+            List<InstitutionBaseInfo> institutionInfos = new ArrayList<>();
             singerInfos.forEach(singerInfo -> {
                 int size = singerInfo.getInstitutionInfoList().size();
                 flowNameSizeMap.put(size, singerInfo.getFlowName());
@@ -136,12 +131,12 @@ public class SignedBizServiceImpl implements SignedBizService {
                 List<StandardSignerInfoBean> singerList = new ArrayList<>();
                 //填充乙丙丁方签署信息
                 for (SingerInfo singerInfo : req.getSingerInfos()) {
-                    List<InstitutionInfo> institutionInfoList = singerInfo.getInstitutionInfoList();
+                    List<InstitutionBaseInfo> institutionInfoList = singerInfo.getInstitutionInfoList();
                     //获取签署机构名称
-                    String singerNames = institutionInfoList.stream().map(InstitutionInfo::getInstitutionName)
+                    String singerNames = institutionInfoList.stream().map(InstitutionBaseInfo::getInstitutionName)
                             .collect(Collectors.joining(","));
                     institutionNames.add(singerNames);
-                    InstitutionInfo institution = null;
+                    InstitutionBaseInfo institution = null;
                     String flowName = singerInfo.getFlowName();
                     if (flowName.equals(maxSizeFlowName)) {
                         institution = institutionInfoList.get(i);
@@ -189,7 +184,7 @@ public class SignedBizServiceImpl implements SignedBizService {
                     return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(),signFlows.getString("msg"));
                 }
                 String signFlowId = signFlows.getString("signFlowId");
-                List<InstitutionInfo> distinctInstitutions = institutionInfos.stream().distinct().collect(Collectors.toList());
+                List<InstitutionBaseInfo> distinctInstitutions = institutionInfos.stream().distinct().collect(Collectors.toList());
                 List<YbFlowInfo> flowInfoList = new ArrayList<>();
                 String singerName = String.join(",", institutionNames);
                 String subject = req.getTemplateId() + "-" + System.currentTimeMillis();
@@ -221,7 +216,7 @@ public class SignedBizServiceImpl implements SignedBizService {
             }
         } else if (ETemplateType.FILE_UPLOAD == templateType) {
             List<String> institutionNames = new ArrayList<>();
-            List<InstitutionInfo> institutionInfos = new ArrayList<>();
+            List<InstitutionBaseInfo> institutionInfos = new ArrayList<>();
             StandardCreateFlowBO standardCreateFlow = new StandardCreateFlowBO();
             //文档信息
             List<FlowDocBean> signDocs = new ArrayList<>();
@@ -233,12 +228,12 @@ public class SignedBizServiceImpl implements SignedBizService {
             List<StandardSignerInfoBean> singerList = new ArrayList<>();
             //填充乙丙丁方签署信息
             for (SingerInfo singerInfo : req.getSingerInfos()) {
-                List<InstitutionInfo> institutionInfoList = singerInfo.getInstitutionInfoList();
+                List<InstitutionBaseInfo> institutionInfoList = singerInfo.getInstitutionInfoList();
                 //获取签署机构名称
-                String singerNames = institutionInfoList.stream().map(InstitutionInfo::getInstitutionName)
+                String singerNames = institutionInfoList.stream().map(InstitutionBaseInfo::getInstitutionName)
                         .collect(Collectors.joining(","));
                 institutionNames.add(singerNames);
-                InstitutionInfo institution = null;
+                InstitutionBaseInfo institution = null;
                 String flowName = singerInfo.getFlowName();
 
                 institution = CollectionUtils.firstElement(institutionInfoList);
@@ -278,7 +273,7 @@ public class SignedBizServiceImpl implements SignedBizService {
                 return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(),signFlows.getString("msg"));
             }
             String signFlowId = signFlows.getString("signFlowId");
-            List<InstitutionInfo> distinctInstitutions = institutionInfos.stream().distinct().collect(Collectors.toList());
+            List<InstitutionBaseInfo> distinctInstitutions = institutionInfos.stream().distinct().collect(Collectors.toList());
             List<YbFlowInfo> flowInfoList = new ArrayList<>();
             String singerName = String.join(",", institutionNames);
             String subject = req.getTemplateId() + "-" + System.currentTimeMillis();
@@ -325,7 +320,7 @@ public class SignedBizServiceImpl implements SignedBizService {
      * @return
      */
     private FlowDocBean assembleSignDocs(CreateSignFlowReq req, TemplateInfoBean templateInfo,
-                                         Map<String, List<InstitutionInfo>> flowNameInstitutionMap,
+                                         Map<String, List<InstitutionBaseInfo>> flowNameInstitutionMap,
                                          String maxSizeFlowName, int i) {
         FlowDocBean flowDocBean = new FlowDocBean();
         TemplateUseParam templateUseParam = new TemplateUseParam();
@@ -338,7 +333,7 @@ public class SignedBizServiceImpl implements SignedBizService {
             String formName = templateForm.getFormName();
             String flowName = formName.substring(0, 2);
             log.info("文本域名称：{}", flowName);
-            List<InstitutionInfo> institutionInfos = flowNameInstitutionMap.get(flowName);
+            List<InstitutionBaseInfo> institutionInfos = flowNameInstitutionMap.get(flowName);
 
             if (!CollectionUtils.isEmpty(institutionInfos)) {
                 if (flowName.equals(maxSizeFlowName)) {
@@ -552,7 +547,7 @@ public class SignedBizServiceImpl implements SignedBizService {
         getPageWithPermissionV2Model.setPageIndex(req.getPageNum());
         String innerOrganId = innerOrgans.getString("organizeId");
         log.info("内部机构id：{}",innerOrganId);
-        req.setDepartmentId(innerOrganId);
+        getPageWithPermissionV2Model.setDepartmentId(innerOrganId);
         JSONObject result = signedService.getPageWithPermission(getPageWithPermissionV2Model);
         log.info("获取模板列表响应参数：{}", result);
         if (result.containsKey("errCode")) {
@@ -567,7 +562,7 @@ public class SignedBizServiceImpl implements SignedBizService {
             page.setRecords(data);
             return new ApiResponse(page);
         } else {
-            return new ApiResponse(ErrorCodeEnum.RESPONES_ERROR);
+            return new ApiResponse(ErrorCodeEnum.RESPONES_ERROR.getCode(),ErrorCodeEnum.RESPONES_ERROR.getMessage());
         }
     }
 

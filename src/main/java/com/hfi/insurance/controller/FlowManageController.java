@@ -11,6 +11,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -31,6 +32,7 @@ import javax.servlet.http.HttpServletRequest;
 @RestController
 @RequestMapping(value = "/sign")
 @Api(tags = {"【批量发起接口】"})
+@CrossOrigin
 public class FlowManageController {
     @Resource
     private SignedService signedService;
@@ -63,7 +65,6 @@ public class FlowManageController {
 
     @PostMapping("createSignFlows")
     @ApiOperation("发起签署-创建流程")
-    @LogAnnotation
     public ApiResponse createSignFlows(@RequestBody CreateSignFlowReq req,HttpServletRequest request){
 //        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
 //        if (requestAttributes != null){
