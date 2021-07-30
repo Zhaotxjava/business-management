@@ -30,6 +30,7 @@ import com.hfi.insurance.model.sign.req.StandardSignDocBean;
 import com.hfi.insurance.model.sign.req.StandardSignerInfoBean;
 import com.hfi.insurance.model.sign.req.TemplateFormValueParam;
 import com.hfi.insurance.model.sign.req.TemplateUseParam;
+import com.hfi.insurance.model.sign.res.OrganizedReturn;
 import com.hfi.insurance.model.sign.res.StandardAccountListReturn;
 import com.hfi.insurance.service.IYbFlowInfoService;
 import com.hfi.insurance.service.IYbInstitutionInfoService;
@@ -143,19 +144,17 @@ public class SignedBizServiceImpl implements SignedBizService {
                     } else {
                         institution = CollectionUtils.firstElement(institutionInfoList);
                     }
-                    String accountId = "";
                     if (institution != null) {
                         institutionInfos.add(institution);
                         YbInstitutionInfo institutionInfo = institutionInfoService.getInstitutionInfo(institution.getNumber());
                         if (institutionInfo != null) {
-                            accountId = institutionInfo.getAccountId();
+                            PredefineBean predefineBean = flowNamePredefineMap.get(flowName);
+                            log.info("位置信息：{}", JSON.toJSONString(predefineBean));
+                            //填充签署人信息
+                            StandardSignerInfoBean signerInfoBean = assembleStandardSignerInfoBean(institutionInfo, singerInfo, fileKey, predefineBean, templateType);
+                            singerList.add(signerInfoBean);
                         }
                     }
-                    PredefineBean predefineBean = flowNamePredefineMap.get(flowName);
-                    log.info("位置信息：{}", JSON.toJSONString(predefineBean));
-                    //填充签署人信息
-                    StandardSignerInfoBean signerInfoBean = assembleStandardSignerInfoBean(accountId, singerInfo, fileKey, predefineBean, templateType);
-                    singerList.add(signerInfoBean);
                 }
                 //填充甲方信息
                 PredefineBean predefineBeanA = flowNamePredefineMap.get("甲方");
@@ -188,6 +187,7 @@ public class SignedBizServiceImpl implements SignedBizService {
                 List<YbFlowInfo> flowInfoList = new ArrayList<>();
                 String singerName = String.join(",", institutionNames);
                 String subject = req.getTemplateId() + "-" + System.currentTimeMillis();
+                Date now = new Date();
                 distinctInstitutions.forEach(institutionInfo -> {
                     YbFlowInfo flowInfo = new YbFlowInfo();
                     flowInfo.setInitiator(initiatorName)
@@ -196,6 +196,7 @@ public class SignedBizServiceImpl implements SignedBizService {
                             .setSubject(subject)
                             .setCopyViewers(singerName)
                             .setSignFlowId(signFlowId)
+                            .setInitiatorTime(now)
                             .setAccountType(2)
                             .setFlowType("Common");
                     flowInfoList.add(flowInfo);
@@ -207,7 +208,7 @@ public class SignedBizServiceImpl implements SignedBizService {
                         .setSubject(subject)
                         .setCopyViewers(singerName)
                         .setSignFlowId(signFlowId)
-                        .setInitiatorTime(new Date())
+                        .setInitiatorTime(now)
                         .setUniqueId(partyA.getUniqueId())
                         .setAccountType(1)
                         .setFlowType("Common");
@@ -235,18 +236,15 @@ public class SignedBizServiceImpl implements SignedBizService {
                 institutionNames.add(singerNames);
                 InstitutionBaseInfo institution = null;
                 String flowName = singerInfo.getFlowName();
-
                 institution = CollectionUtils.firstElement(institutionInfoList);
-
-                String accountId = "";
                 if (institution != null) {
                     institutionInfos.add(institution);
                     YbInstitutionInfo institutionInfo = institutionInfoService.getInstitutionInfo(institution.getNumber());
-                    accountId = institutionInfo.getAccountId();
+                    //填充签署人信息
+                    StandardSignerInfoBean signerInfoBean = assembleStandardSignerInfoBean(institutionInfo, singerInfo, fileKey, null, templateType);
+                    singerList.add(signerInfoBean);
                 }
-                //填充签署人信息
-                StandardSignerInfoBean signerInfoBean = assembleStandardSignerInfoBean(accountId, singerInfo, fileKey, null, templateType);
-                singerList.add(signerInfoBean);
+
             }
             StandardSignerInfoBean partyA = null;
             try {
@@ -360,16 +358,16 @@ public class SignedBizServiceImpl implements SignedBizService {
     /**
      * 组装签署人信息(乙丙丁)
      *
-     * @param accountId
+     * @param institutionInfo
      * @param singerInfo
      * @param fileKey
      * @param predefineBean
      * @return
      */
-    private StandardSignerInfoBean assembleStandardSignerInfoBean(String accountId, SingerInfo singerInfo, String fileKey, PredefineBean predefineBean, ETemplateType templateType) {
+    private StandardSignerInfoBean assembleStandardSignerInfoBean(YbInstitutionInfo institutionInfo, SingerInfo singerInfo, String fileKey, PredefineBean predefineBean, ETemplateType templateType) {
         StandardSignerInfoBean signerInfoBean = new StandardSignerInfoBean();
-        signerInfoBean.setAccountId(accountId);
-//                    signerInfoBean.setAuthorizationOrganizeId("");
+        signerInfoBean.setAccountId(institutionInfo.getAccountId());
+        signerInfoBean.setAuthorizationOrganizeId(institutionInfo.getOrganizeId());
         signerInfoBean.setAccountType(singerInfo.getAccountType());
         ESignType signType = EnumHelper.translate(ESignType.class, singerInfo.getSignType());
         if (ESignType.DEFAULT_COORDINATE_SIGN == signType || ESignType.DEFAULT_KEY_WORD_SIGN == signType) {
@@ -439,7 +437,7 @@ public class SignedBizServiceImpl implements SignedBizService {
             if (null != accountReturn){
                 partyA.setAccountId(accountReturn.getAccountId());
                 //partyA.setAccountId("279e974f-577d-47fa-86cd-6672c617043a");
-                //partyA.setAuthorizationOrganizeId();
+                partyA.setAuthorizationOrganizeId(innerOrgans.getString("organizeId"));
                 partyA.setContactMobile(accountReturn.getMobile());
                 partyA.setAccountName(accountReturn.getName());
                 partyA.setUniqueId(accountReturn.getUniqueId());
