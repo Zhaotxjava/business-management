@@ -393,15 +393,17 @@ public class SignedBizServiceImpl implements SignedBizService {
 
         List<SignInfoBeanV2> signPos = new ArrayList<>();
         SignInfoBeanV2 signInfoBeanV2 = new SignInfoBeanV2();
-        //签署方式1-单页签署
-        signInfoBeanV2.setSignType(1);
+
         if (ETemplateType.TEMPLATE_FILL == templateType) {
             if (ESignType.MANUAL_KEY_WORD_SIGN == signType || ESignType.DEFAULT_KEY_WORD_SIGN == signType) {
                 signInfoBeanV2.setKey(flowName);
+                signInfoBeanV2.setSignType(4);
             }
             //位置签署要匹配区域
             if ((ESignType.MANUAL_COORDINATE_SIGN == signType || ESignType.DEFAULT_COORDINATE_SIGN == signType)) {
                 if (predefineBean != null){
+                    //签署方式1-单页签署
+                    signInfoBeanV2.setSignType(1);
                     List<Position> positions = predefineBean.getPositions();
                     Position position = CollectionUtils.firstElement(positions);
                     signInfoBeanV2.setPosX(Float.valueOf(position.getPosX()));
@@ -472,17 +474,17 @@ public class SignedBizServiceImpl implements SignedBizService {
 
         List<SignInfoBeanV2> signPos = new ArrayList<>();
         SignInfoBeanV2 signInfoBeanV2 = new SignInfoBeanV2();
-        //签署方式默认为0
-        signInfoBeanV2.setSignType(1);
         if (ESignType.MANUAL_KEY_WORD_SIGN == signType || ESignType.DEFAULT_KEY_WORD_SIGN == signType) {
-            //String keyWord = predefineBean.getKeyWord();
-            //todo 甲方关键词
+            //签署类型；1-单页签、2-多页签、3-骑缝章、4关键字签
+            signInfoBeanV2.setSignType(4);
             signInfoBeanV2.setKey("甲方");
         }
         if (ETemplateType.TEMPLATE_FILL == templateType) {
             //位置签署要匹配区域
             if (ESignType.MANUAL_COORDINATE_SIGN == signType || ESignType.DEFAULT_COORDINATE_SIGN == signType) {
                 if (predefineBean != null){
+                    //签署方式默认为0
+                    signInfoBeanV2.setSignType(1);
                     List<Position> positions = predefineBean.getPositions();
                     Position position = CollectionUtils.firstElement(positions);
                     signInfoBeanV2.setPosX(Float.valueOf(position.getPosX()));
