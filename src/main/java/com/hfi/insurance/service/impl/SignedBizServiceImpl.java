@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.hfi.insurance.aspect.anno.LogAnnotation;
 import com.hfi.insurance.common.ApiResponse;
+import com.hfi.insurance.common.BizServiceException;
 import com.hfi.insurance.enums.ESignType;
 import com.hfi.insurance.enums.ETemplateType;
 import com.hfi.insurance.enums.ErrorCodeEnum;
@@ -30,7 +31,6 @@ import com.hfi.insurance.model.sign.req.StandardSignDocBean;
 import com.hfi.insurance.model.sign.req.StandardSignerInfoBean;
 import com.hfi.insurance.model.sign.req.TemplateFormValueParam;
 import com.hfi.insurance.model.sign.req.TemplateUseParam;
-import com.hfi.insurance.model.sign.res.OrganizedReturn;
 import com.hfi.insurance.model.sign.res.StandardAccountListReturn;
 import com.hfi.insurance.service.IYbFlowInfoService;
 import com.hfi.insurance.service.IYbInstitutionInfoService;
@@ -114,6 +114,9 @@ public class SignedBizServiceImpl implements SignedBizService {
             String templateStr = templateInfoJson.getString("template");
             log.info("模板信息：{}", templateStr);
             TemplateInfoBean templateInfo = JSON.parseObject(templateStr, TemplateInfoBean.class);
+            if (templateInfo == null){
+                return new ApiResponse(ErrorCodeEnum.RESPONES_ERROR.getCode(),"模板信息为空！！");
+            }
             //乙方（3）* （丙方+丁方）
             for (int i = 0; i < maxSize; i++) {
                 StandardCreateFlowBO standardCreateFlow = new StandardCreateFlowBO();
@@ -151,7 +154,12 @@ public class SignedBizServiceImpl implements SignedBizService {
                             PredefineBean predefineBean = flowNamePredefineMap.get(flowName);
                             log.info("位置信息：{}", JSON.toJSONString(predefineBean));
                             //填充签署人信息
-                            StandardSignerInfoBean signerInfoBean = assembleStandardSignerInfoBean(institutionInfo, singerInfo, fileKey, predefineBean, templateType);
+                            StandardSignerInfoBean signerInfoBean = null;
+                            try {
+                                signerInfoBean = assembleStandardSignerInfoBean(institutionInfo, singerInfo, fileKey, predefineBean, templateType,flowName);
+                            } catch (BizServiceException e) {
+                                return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(),e.getMessage());
+                            }
                             singerList.add(signerInfoBean);
                         }
                     }
@@ -241,7 +249,12 @@ public class SignedBizServiceImpl implements SignedBizService {
                     institutionInfos.add(institution);
                     YbInstitutionInfo institutionInfo = institutionInfoService.getInstitutionInfo(institution.getNumber());
                     //填充签署人信息
-                    StandardSignerInfoBean signerInfoBean = assembleStandardSignerInfoBean(institutionInfo, singerInfo, fileKey, null, templateType);
+                    StandardSignerInfoBean signerInfoBean = null;
+                    try {
+                        signerInfoBean = assembleStandardSignerInfoBean(institutionInfo, singerInfo, fileKey, null, templateType,flowName);
+                    } catch (BizServiceException e) {
+                        return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(),e.getMessage());
+                    }
                     singerList.add(signerInfoBean);
                 }
 
@@ -252,7 +265,7 @@ public class SignedBizServiceImpl implements SignedBizService {
             } catch (Exception e) {
                 log.error("填充甲方信息失败：{}", e.getMessage());
                 e.printStackTrace();
-                return new ApiResponse(ErrorCodeEnum.SYSTEM_ERROR);
+                return new ApiResponse(ErrorCodeEnum.SYSTEM_ERROR.getCode(),e.getMessage());
             }
             singerList.add(partyA);
             //发起人姓名不能为空
@@ -364,14 +377,14 @@ public class SignedBizServiceImpl implements SignedBizService {
      * @param predefineBean
      * @return
      */
-    private StandardSignerInfoBean assembleStandardSignerInfoBean(YbInstitutionInfo institutionInfo, SingerInfo singerInfo, String fileKey, PredefineBean predefineBean, ETemplateType templateType) {
+    private StandardSignerInfoBean assembleStandardSignerInfoBean(YbInstitutionInfo institutionInfo, SingerInfo singerInfo, String fileKey, PredefineBean predefineBean, ETemplateType templateType,String flowName) throws BizServiceException {
         StandardSignerInfoBean signerInfoBean = new StandardSignerInfoBean();
         signerInfoBean.setAccountId(institutionInfo.getAccountId());
         signerInfoBean.setAuthorizationOrganizeId(institutionInfo.getOrganizeId());
         signerInfoBean.setAccountType(singerInfo.getAccountType());
         ESignType signType = EnumHelper.translate(ESignType.class, singerInfo.getSignType());
         if (ESignType.DEFAULT_COORDINATE_SIGN == signType || ESignType.DEFAULT_KEY_WORD_SIGN == signType) {
-            signerInfoBean.setAutoSign(false);
+            signerInfoBean.setAutoSign(true);
         }
         //签署文档信息;指定文档进行签署，未指定的文档将作为只读
         List<StandardSignDocBean> signDocDetails = new ArrayList<>();
@@ -384,16 +397,19 @@ public class SignedBizServiceImpl implements SignedBizService {
         signInfoBeanV2.setSignType(1);
         if (ETemplateType.TEMPLATE_FILL == templateType) {
             if (ESignType.MANUAL_KEY_WORD_SIGN == signType || ESignType.DEFAULT_KEY_WORD_SIGN == signType) {
-                String keyWord = predefineBean.getKeyWord();
-                signInfoBeanV2.setKey(keyWord != null ? keyWord : singerInfo.getKey());
+                signInfoBeanV2.setKey(flowName);
             }
             //位置签署要匹配区域
             if ((ESignType.MANUAL_COORDINATE_SIGN == signType || ESignType.DEFAULT_COORDINATE_SIGN == signType)) {
-                List<Position> positions = predefineBean.getPositions();
-                Position position = CollectionUtils.firstElement(positions);
-                signInfoBeanV2.setPosX(Float.valueOf(position.getPosX()));
-                signInfoBeanV2.setPosY(Float.valueOf(position.getPosY()));
-                signInfoBeanV2.setPosPage(position.getPageNo());
+                if (predefineBean != null){
+                    List<Position> positions = predefineBean.getPositions();
+                    Position position = CollectionUtils.firstElement(positions);
+                    signInfoBeanV2.setPosX(Float.valueOf(position.getPosX()));
+                    signInfoBeanV2.setPosY(Float.valueOf(position.getPosY()));
+                    signInfoBeanV2.setPosPage(position.getPageNo());
+                }else {
+                    throw new BizServiceException("手动关键字签署和静默关键字签署，模板位置信息不能为空！");
+                }
             }
             signPos.add(signInfoBeanV2);
             standardSignDocBean.setSignPos(signPos);
@@ -447,7 +463,7 @@ public class SignedBizServiceImpl implements SignedBizService {
         partyA.setAccountType(1);
         ESignType signType = EnumHelper.translate(ESignType.class, partyASignType);
         if (ESignType.DEFAULT_COORDINATE_SIGN == signType || ESignType.DEFAULT_KEY_WORD_SIGN == signType) {
-            partyA.setAutoSign(false);
+            partyA.setAutoSign(true);
         }
         //签署文档信息;指定文档进行签署，未指定的文档将作为只读
         List<StandardSignDocBean> signDocDetails = new ArrayList<>();
@@ -466,11 +482,16 @@ public class SignedBizServiceImpl implements SignedBizService {
         if (ETemplateType.TEMPLATE_FILL == templateType) {
             //位置签署要匹配区域
             if (ESignType.MANUAL_COORDINATE_SIGN == signType || ESignType.DEFAULT_COORDINATE_SIGN == signType) {
-                List<Position> positions = predefineBean.getPositions();
-                Position position = CollectionUtils.firstElement(positions);
-                signInfoBeanV2.setPosX(Float.valueOf(position.getPosX()));
-                signInfoBeanV2.setPosY(Float.valueOf(position.getPosY()));
-                signInfoBeanV2.setPosPage(position.getPageNo());
+                if (predefineBean != null){
+                    List<Position> positions = predefineBean.getPositions();
+                    Position position = CollectionUtils.firstElement(positions);
+                    signInfoBeanV2.setPosX(Float.valueOf(position.getPosX()));
+                    signInfoBeanV2.setPosY(Float.valueOf(position.getPosY()));
+                    signInfoBeanV2.setPosPage(position.getPageNo());
+                }else {
+                    throw new BizServiceException("手动坐标签署和静默坐标签署，模板位置信息不能为空！");
+                }
+
             }
             signPos.add(signInfoBeanV2);
             standardSignDocBean.setSignPos(signPos);
