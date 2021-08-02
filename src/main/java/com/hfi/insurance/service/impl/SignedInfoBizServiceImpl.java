@@ -76,7 +76,7 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
             log.info("流程id：{}，详情：{}", flowId, signDetail);
             if (signDetail.containsKey("errCode")) {
                 log.error("查询流程详情错误，错误原因：{}",signDetail.getString("msg"));
-                break;
+                continue;
             }
             String singers = signDetail.getString("signers");
             List<SingerInfoRes> singerInfos = JSON.parseArray(singers, SingerInfoRes.class);
@@ -103,6 +103,7 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
             recordResList.add(recordsRes);
         }
         signRecordsResPage.setRecords(recordResList);
+        signRecordsResPage.setTotal(recordResList.size());
         return new ApiResponse(signRecordsResPage);
     }
 

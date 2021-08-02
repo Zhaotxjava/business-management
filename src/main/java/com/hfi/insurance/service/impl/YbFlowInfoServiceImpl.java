@@ -25,7 +25,7 @@ public class YbFlowInfoServiceImpl extends ServiceImpl<YbFlowInfoMapper, YbFlowI
     public Page<YbFlowInfo> getSignedRecord(String institutionNumber,GetRecordInfoReq req) {
         QueryWrapper<YbFlowInfo> queryWrapper = new QueryWrapper<>();
         //SqlUtils---concatLike
-        queryWrapper.likeLeft("number",institutionNumber);
+        queryWrapper.likeRight("number",institutionNumber);
         if (StringUtils.isNotBlank(req.getSubject())) {
             queryWrapper.like("subject", req.getSubject());
         }
