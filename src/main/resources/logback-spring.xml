@@ -2,8 +2,10 @@
 
 <configuration debug="false">
 <!--定义日志文件的存储地址 勿在 LogBack 的配置中使用相对路径 -->
-<springProperty scope="context" name="app.name" source="spring.application.name" />
-<springProperty scope="context" name="log.path" source="logging.file.path"/>
+<property name="applicationName" value="insurance_info" />
+<property name="logs.dir" value="opt/app/${applicationName}/logs"/>
+<!--<springProperty scope="context" name="app.name" source="spring.application.name" />-->
+<!--<springProperty scope="context" name="log.path" source="logging.file.path"/>-->
 <property name="FILE_LOG_PATTERN" value="[%date{yyyy-MM-dd HH:mm:ss.SSS}] [%thread] [%-5level],[%X{traceid}],[%X{merreqip}],%logger{96}, [%line] - %msg%n"/>
 <property name="CONSOLE_LOG_PATTERN" value="%boldWhite([%date{yyyy-MM-dd HH:mm:ss.SSS}]) %green([%thread]) %highlight([%-5level]) %yellow([%X{traceid}] [%X{merreqip}]) %boldMagenta([%logger{96}-%line])  %cyan(%msg%n)"/>
 
