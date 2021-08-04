@@ -24,14 +24,14 @@ import java.util.concurrent.TimeUnit;
  * 那么我们没有执行的代码就是因为主线程不再跑任务而关闭导致的。
  * 可能这个不叫问题，因为在开发中我们主线程常常是一直开着的。
  */
-@SpringBootTest
+//@SpringBootTest
 class SpringbootThymeleafApplicationTests {
-    @Autowired
+    //@Autowired
     private OrganizationsService organizationsService;
-    @Autowired
+    //@Autowired
     private YbInstitutionInfoMapper institutionInfoMapper;
 
-    @Test
+    //@Test
     void contextLoads() {
         //第一个异步任务，常量任务
         CompletableFuture<String> first = CompletableFuture.completedFuture("hello world");
@@ -45,7 +45,7 @@ class SpringbootThymeleafApplicationTests {
 
 
     }
-    @Test
+    //@Test
     public void test(){
         QueryInnerAccountsReq req = new QueryInnerAccountsReq();
         req.setUniqueId("jianghua");
@@ -55,14 +55,14 @@ class SpringbootThymeleafApplicationTests {
         System.out.println(jsonObject.toJSONString());
     }
 
-    @Test
+    //@Test
     public void test2(){
 
         JSONObject jsonObject = organizationsService.queryInnerOrgans("330199");
         System.out.println(jsonObject.toJSONString());
     }
 
-    @Test
+    //@Test
     public void testSelectInstitutionInfoAndOrg(){
 //        List<YbInstitutionInfo> ybInstitutionInfos = institutionInfoMapper.selectInstitutionInfoAndOrg(null, null, 1, 10);
 //        System.out.println(ybInstitutionInfos.size());
