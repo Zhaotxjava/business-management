@@ -43,6 +43,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -80,7 +81,7 @@ public class SignedBizServiceImpl implements SignedBizService {
 
     @Override
     @LogAnnotation
-    public ApiResponse createSignFlow(CreateSignFlowReq req, String token) {
+    public ApiResponse createSignFlow(CreateSignFlowReq req, String token, MultipartFile file) {
         String jsonStr = caffeineCache.asMap().get(token);
         if (StringUtils.isBlank(jsonStr)) {
             return new ApiResponse(ErrorCodeEnum.TOKEN_EXPIRED.getCode(), ErrorCodeEnum.TOKEN_EXPIRED.getMessage());
@@ -235,7 +236,11 @@ public class SignedBizServiceImpl implements SignedBizService {
             //文档信息
             List<FlowDocBean> signDocs = new ArrayList<>();
             FlowDocBean flowDocBean = new FlowDocBean();
-            String fileKey = req.getFileKey();
+            JSONObject upload = signedService.upload(file);
+            if (upload.containsKey("errCode")) {
+                return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), upload.getString("msg"));
+            }
+            String fileKey = upload.getString("fileKey");
             flowDocBean.setDocFilekey(fileKey);
             signDocs.add(flowDocBean);
             standardCreateFlow.setSignDocs(signDocs);

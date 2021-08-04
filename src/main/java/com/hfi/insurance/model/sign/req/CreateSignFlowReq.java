@@ -17,8 +17,8 @@ public class CreateSignFlowReq {
     @ApiModelProperty(value = "文档类型 1-文件直传 2-填充模板")
     private Integer templateType;
 
-    @ApiModelProperty("文件fileKey 文件直传必传")
-    private String fileKey;
+//    @ApiModelProperty("文件fileKey 文件直传必传")
+//    private String fileKey;
 
     @ApiModelProperty("文档页数")
     private Integer pageNumber;
@@ -43,14 +43,6 @@ public class CreateSignFlowReq {
 
     public void setTemplateType(Integer templateType) {
         this.templateType = templateType;
-    }
-
-    public String getFileKey() {
-        return fileKey;
-    }
-
-    public void setFileKey(String fileKey) {
-        this.fileKey = fileKey;
     }
 
     public Integer getPageNumber() {

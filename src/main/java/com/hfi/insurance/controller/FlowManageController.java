@@ -1,6 +1,5 @@
 package com.hfi.insurance.controller;
 
-import com.hfi.insurance.aspect.anno.LogAnnotation;
 import com.hfi.insurance.common.ApiResponse;
 import com.hfi.insurance.enums.ErrorCodeEnum;
 import com.hfi.insurance.model.sign.req.CreateSignFlowReq;
@@ -65,7 +64,7 @@ public class FlowManageController {
 
     @PostMapping("createSignFlows")
     @ApiOperation("发起签署-创建流程")
-    public ApiResponse createSignFlows(@RequestBody CreateSignFlowReq req,HttpServletRequest request){
+    public ApiResponse createSignFlows(@RequestBody CreateSignFlowReq req,@RequestParam(value = "file",required = false) MultipartFile file,HttpServletRequest request){
 //        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
 //        if (requestAttributes != null){
 //            HttpServletRequest request = requestAttributes.getRequest();
@@ -76,7 +75,7 @@ public class FlowManageController {
 //        }
         String token = request.getHeader("token");
         if (StringUtils.isNotBlank(token)){
-            return signedBizService.createSignFlow(req,token);
+            return signedBizService.createSignFlow(req,token,file);
         }else {
             return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(),ErrorCodeEnum.PARAM_ERROR.getMessage());
         }

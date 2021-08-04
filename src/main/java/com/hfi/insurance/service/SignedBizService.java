@@ -3,10 +3,7 @@ package com.hfi.insurance.service;
 import com.hfi.insurance.common.ApiResponse;
 import com.hfi.insurance.model.sign.req.CreateSignFlowReq;
 import com.hfi.insurance.model.sign.req.GetPageWithPermissionReq;
-import com.hfi.insurance.model.sign.req.StandardCreateFlowBO;
-import org.springframework.http.HttpRequest;
-
-import javax.servlet.http.HttpSession;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * @Author ChenZX
@@ -15,7 +12,7 @@ import javax.servlet.http.HttpSession;
  */
 public interface SignedBizService {
 
-    ApiResponse createSignFlow(CreateSignFlowReq req, String token);
+    ApiResponse createSignFlow(CreateSignFlowReq req, String token, MultipartFile file);
 
     ApiResponse getPageWithPermission(GetPageWithPermissionReq req,String token);
 
