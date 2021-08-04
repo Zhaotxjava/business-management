@@ -5,8 +5,8 @@ swagger:
   enable: true
 
 redirect:
-  url: http://192.20.97.35:18080/e-contract/
-  ybUrl: http://172.16.29.54:18080/e-contract/
+  url: http://192.50.10.39:8097/e-contract/
+  ybUrl: http://192.50.10.39:8097/e-contract/
 
 file:
   path: /opt/app/insurance-info-server/service/医保定点机构列表20210607.xlsx
@@ -15,15 +15,15 @@ file:
     url: /opt/app/insurance-info-server/service/demo
 #天印系统接口配置
 esignpro:
-  url: http://192.20.97.42:8086
+  url: http://192.50.10.43:8088
   projectId: 1001001
-  secret: cfc6c99a34962a8aa62fc794d838e520
+  secret: c5505d7831bc626e92c175052956c7fc
 
 spring:
   datasource:
-    username: user_insurance_info
-    password: test_insurance
-    url: jdbc:mysql://192.20.97.37:3306/db_insurance_info?useUnicode\=true&characterEncoding\=utf-8&allowMultiQueries\=true
+    username: medical
+    password: Ybjd@2019!
+    url: jdbc:mysql://192.50.50.31:3306/db_insurance_info?useUnicode\=true&characterEncoding\=utf-8&allowMultiQueries\=true
     driver-class-name: com.mysql.jdbc.Driver
     hikari:
       connection-timeout: 10000
