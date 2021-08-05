@@ -1,6 +1,6 @@
 package com.hfi.insurance.model.sign.res;
 
-import com.alibaba.fastjson.annotation.JSONField;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -26,14 +26,14 @@ public class SignRecordsRes {
     private String signers;
 
     @ApiModelProperty("最近处理时间")
-    @JSONField(format = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date recentHandleTime;
 
     @ApiModelProperty("抄送方")
     private String copyViewers;
 
     @ApiModelProperty("发起时间")
-    @JSONField(format = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date initiateTime;
 
     @ApiModelProperty("流程ID")

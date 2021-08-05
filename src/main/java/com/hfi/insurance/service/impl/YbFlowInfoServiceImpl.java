@@ -39,11 +39,11 @@ public class YbFlowInfoServiceImpl extends ServiceImpl<YbFlowInfoMapper, YbFlowI
             queryWrapper.eq("flow_status", req.getFlowStatus());
         }
         if (StringUtils.isNotEmpty(req.getBeginInitiateTime())) {
-            queryWrapper.ge("create_time", req.getBeginInitiateTime());
+            queryWrapper.ge("initiator_time", req.getBeginInitiateTime());
         }
         if (StringUtils.isNotEmpty(req.getEndInitiateTime())) {
             //<=
-            queryWrapper.le("create_time", req.getEndInitiateTime());
+            queryWrapper.le("initiator_time", req.getEndInitiateTime());
         }
         Page<YbFlowInfo> page = new Page<>(req.getPageNum(), req.getPageSize());
 

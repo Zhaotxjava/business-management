@@ -125,7 +125,7 @@ public class SignedBizServiceImpl implements SignedBizService {
                 List<FlowDocBean> signDocs = new ArrayList<>();
                 FlowDocBean flowDocBean = null;
                 try {
-                    flowDocBean = assembleSignDocs(req, templateInfo, flowNameInstitutionMap, maxSizeFlowName, i,organizeNo);
+                    flowDocBean = assembleSignDocs(req, templateInfo, flowNameInstitutionMap, maxSizeFlowName, i, organizeNo);
                 } catch (BizServiceException e) {
                     return new ApiResponse(ErrorCodeEnum.RESPONES_ERROR.getCode(), e.getMessage());
                 }
@@ -342,7 +342,7 @@ public class SignedBizServiceImpl implements SignedBizService {
      */
     private FlowDocBean assembleSignDocs(CreateSignFlowReq req, TemplateInfoBean templateInfo,
                                          Map<String, List<InstitutionBaseInfo>> flowNameInstitutionMap,
-                                         String maxSizeFlowName,int i,
+                                         String maxSizeFlowName, int i,
                                          String areaCode) throws BizServiceException {
         FlowDocBean flowDocBean = new FlowDocBean();
         TemplateUseParam templateUseParam = new TemplateUseParam();
@@ -410,36 +410,41 @@ public class SignedBizServiceImpl implements SignedBizService {
         List<StandardSignDocBean> signDocDetails = new ArrayList<>();
         StandardSignDocBean standardSignDocBean = new StandardSignDocBean();
         standardSignDocBean.setDocFilekey(fileKey);
-
-        List<SignInfoBeanV2> signPos = new ArrayList<>();
-        SignInfoBeanV2 signInfoBeanV2 = new SignInfoBeanV2();
-
         if (ETemplateType.TEMPLATE_FILL == templateType) {
             if (ESignType.MANUAL_KEY_WORD_SIGN == signType || ESignType.DEFAULT_KEY_WORD_SIGN == signType) {
+                List<SignInfoBeanV2> signPos = new ArrayList<>();
+                SignInfoBeanV2 signInfoBeanV2 = new SignInfoBeanV2();
                 signInfoBeanV2.setKey(flowName);
                 signInfoBeanV2.setSignType(4);
+                signPos.add(signInfoBeanV2);
+                standardSignDocBean.setSignPos(signPos);
             }
             //位置签署要匹配区域
             if ((ESignType.MANUAL_COORDINATE_SIGN == signType || ESignType.DEFAULT_COORDINATE_SIGN == signType)) {
                 if (predefineBean != null) {
-                    //签署方式1-单页签署
-                    signInfoBeanV2.setSignType(1);
                     List<Position> positions = predefineBean.getPositions();
-                    Position position = CollectionUtils.firstElement(positions);
-                    signInfoBeanV2.setPosX(Float.valueOf(position.getPosX()));
-                    signInfoBeanV2.setPosY(Float.valueOf(position.getPosY()));
-                    signInfoBeanV2.setPosPage(position.getPageNo());
+                    List<SignInfoBeanV2> signPos = positions.stream().map(position -> {
+                        SignInfoBeanV2 signInfoBeanV2 = new SignInfoBeanV2();
+                        //签署方式1-单页签署
+                        signInfoBeanV2.setSignType(1);
+                        signInfoBeanV2.setPosX(Float.valueOf(position.getPosX()));
+                        signInfoBeanV2.setPosY(Float.valueOf(position.getPosY()));
+                        signInfoBeanV2.setPosPage(position.getPageNo());
+                        return signInfoBeanV2;
+                    }).collect(Collectors.toList());
+                    standardSignDocBean.setSignPos(signPos);
                 } else {
                     throw new BizServiceException("手动关键字签署和静默关键字签署，模板位置信息不能为空！");
                 }
             }
-            signPos.add(signInfoBeanV2);
-            standardSignDocBean.setSignPos(signPos);
             signDocDetails.add(standardSignDocBean);
             signerInfoBean.setSignDocDetails(signDocDetails);
             return signerInfoBean;
         } else {
+            List<SignInfoBeanV2> signPos = new ArrayList<>();
+            SignInfoBeanV2 signInfoBeanV2 = new SignInfoBeanV2();
             signInfoBeanV2.setKey(singerInfo.getKey());
+            signInfoBeanV2.setSignType(4);
             signPos.add(signInfoBeanV2);
             standardSignDocBean.setSignPos(signPos);
             signDocDetails.add(standardSignDocBean);

@@ -99,6 +99,7 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
                     recordsRes.setAccountId(institutionInfo.getAccountId());
                 }
             }
+            recordsRes.setInitiateTime(ybFlowInfo.getInitiatorTime());
             recordsRes.setRecentHandleTime(ybFlowInfo.getHandleTime());
             recordResList.add(recordsRes);
         }
@@ -108,8 +109,9 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
     }
 
     @Override
-    @LogAnnotation
+    //@LogAnnotation
     public ApiResponse getSignUrls(GetSignUrlsReq req) {
+        log.info("获取签署地址列表请求参数：{}", JSON.toJSONString(req));
         JSONObject signUrls = signedService.getSignUrls(req);
         log.info("获取签署地址列表响应参数：{}", signUrls);
         if (signUrls.getBoolean("success")) {

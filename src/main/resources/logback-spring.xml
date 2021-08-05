@@ -1,138 +1,141 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <configuration debug="false">
-<!--定义日志文件的存储地址 勿在 LogBack 的配置中使用相对路径 -->
-<property name="applicationName" value="insurance_info" />
-<property name="logs.dir" value="opt/app/${applicationName}/logs"/>
-<!--<springProperty scope="context" name="app.name" source="spring.application.name" />-->
-<!--<springProperty scope="context" name="log.path" source="logging.file.path"/>-->
-<property name="FILE_LOG_PATTERN" value="[%date{yyyy-MM-dd HH:mm:ss.SSS}] [%thread] [%-5level],[%X{traceid}],[%X{merreqip}],%logger{96}, [%line] - %msg%n"/>
-<property name="CONSOLE_LOG_PATTERN" value="%boldWhite([%date{yyyy-MM-dd HH:mm:ss.SSS}]) %green([%thread]) %highlight([%-5level]) %yellow([%X{traceid}] [%X{merreqip}]) %boldMagenta([%logger{96}-%line])  %cyan(%msg%n)"/>
+    <include resource="org/springframework/boot/logging/logback/base.xml"/>
+    <!--定义日志文件的存储地址 勿在 LogBack 的配置中使用相对路径 -->
+    <property name="app.name" value="insurance_info"/>
+    <property name="logs.dir" value="logs"/>
+    <!--<springProperty scope="context" name="app.name" source="spring.application.name" />-->
+    <!--<springProperty scope="context" name="log.path" source="logging.file.path"/>-->
+    <property name="FILE_LOG_PATTERN"
+              value="[%date{yyyy-MM-dd HH:mm:ss.SSS}] [%thread] [%-5level],[%X{traceid}],[%X{merreqip}],%logger{96}, [%line] - %msg%n"/>
+    <property name="CONSOLE_LOG_PATTERN"
+              value="%boldWhite([%date{yyyy-MM-dd HH:mm:ss.SSS}]) %green([%thread]) %highlight([%-5level]) %yellow([%X{traceid}] [%X{merreqip}]) %boldMagenta([%logger{96}-%line])  %cyan(%msg%n)"/>
 
-<!-- 控制台输出 -->
-<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-    <!--此日志appender是为开发使用，只配置最底级别，控制台输出的日志级别是大于或等于此级别的日志信息-->
-<!--    <filter class="ch.qos.logback.classic.filter.ThresholdFilter">-->
-<!--        <level>debug</level>-->
-<!--    </filter>-->
-    <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-        <pattern>${CONSOLE_LOG_PATTERN}</pattern>
-        <charset>UTF-8</charset>
-    </encoder>
-</appender>
+    <!-- 控制台输出 -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <!--此日志appender是为开发使用，只配置最底级别，控制台输出的日志级别是大于或等于此级别的日志信息-->
+        <!--    <filter class="ch.qos.logback.classic.filter.ThresholdFilter">-->
+        <!--        <level>debug</level>-->
+        <!--    </filter>-->
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
 
-<!-- 按文件大小区分的滚动日志 -->
-<appender name="ALL-OUT" class="ch.qos.logback.core.rolling.RollingFileAppender">
-    <file>${log.path}/${app.name}.log</file>
-    <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-        <!-- rollover daily -->
-        <fileNamePattern>${log.path}/${app.name}-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
-        <maxFileSize>100MB</maxFileSize>
-        <maxHistory>60</maxHistory>
-        <totalSizeCap>3000MB</totalSizeCap>
-    </rollingPolicy>
-    <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-        <pattern>${FILE_LOG_PATTERN}</pattern>
-        <charset>UTF-8</charset>
-    </encoder>
-</appender>
+    <!-- 按文件大小区分的滚动日志 -->
+    <appender name="ALL-OUT" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${logs.dir}/${app.name}.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!-- rollover daily -->
+            <fileNamePattern>${logs.dir}/${app.name}-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>100MB</maxFileSize>
+            <maxHistory>60</maxHistory>
+            <totalSizeCap>3000MB</totalSizeCap>
+        </rollingPolicy>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
 
-<!-- 按照每天生成日志文件 -->
-<appender name="INFO-OUT" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <!-- 按照每天生成日志文件 -->
+    <appender name="INFO-OUT" class="ch.qos.logback.core.rolling.RollingFileAppender">
 
-    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-        <!--日志文件输出的文件名 -->
-        <FileNamePattern>${log.path}/%d{yyyyMMdd}/${app.name}.%d{yyyy-MM-dd}.info.log</FileNamePattern>
-        <!--日志文件保留天数 -->
-        <MaxHistory>90</MaxHistory>
-    </rollingPolicy>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!--日志文件输出的文件名 -->
+            <FileNamePattern>${logs.dir}/%d{yyyyMMdd}/${app.name}.%d{yyyy-MM-dd}.info.log</FileNamePattern>
+            <!--日志文件保留天数 -->
+            <MaxHistory>90</MaxHistory>
+        </rollingPolicy>
 
-    <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-        <pattern>${FILE_LOG_PATTERN}</pattern>
-        <charset>UTF-8</charset>
-    </encoder>
-    <filter class="ch.qos.logback.classic.filter.LevelFilter">
-        <level>INFO</level>
-        <onMatch>ACCEPT</onMatch>
-        <onMismatch>DENY</onMismatch>
-    </filter>
-</appender>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>INFO</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
 
-<!-- 按照每天生成日志文件 -->
-<appender name="WARN-OUT" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <!-- 按照每天生成日志文件 -->
+    <appender name="WARN-OUT" class="ch.qos.logback.core.rolling.RollingFileAppender">
 
-    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-        <!--日志文件输出的文件名 -->
-        <FileNamePattern>${log.path}/%d{yyyyMMdd}/${app.name}.%d{yyyy-MM-dd}.warn.log</FileNamePattern>
-        <!--日志文件保留天数 -->
-        <MaxHistory>90</MaxHistory>
-    </rollingPolicy>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!--日志文件输出的文件名 -->
+            <FileNamePattern>${logs.dir}/%d{yyyyMMdd}/${app.name}.%d{yyyy-MM-dd}.warn.log</FileNamePattern>
+            <!--日志文件保留天数 -->
+            <MaxHistory>90</MaxHistory>
+        </rollingPolicy>
 
-    <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-        <pattern>${FILE_LOG_PATTERN}</pattern>
-        <charset>UTF-8</charset>
-    </encoder>
-    <filter class="ch.qos.logback.classic.filter.LevelFilter">
-        <level>WARN</level>
-        <onMatch>ACCEPT</onMatch>
-        <onMismatch>DENY</onMismatch>
-    </filter>
-</appender>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>WARN</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
 
-<appender name="ERROR-OUT" class="ch.qos.logback.core.rolling.RollingFileAppender">
-    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-        <!--日志文件输出的文件名 -->
-        <fileNamePattern>${log.path}/%d{yyyyMMdd}/${app.name}.%d{yyyy-MM-dd}.error.log</fileNamePattern>
-        <!--日志文件保留天数 -->
-        <MaxHistory>90</MaxHistory>
-    </rollingPolicy>
-    <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-        <pattern>${FILE_LOG_PATTERN}</pattern>
-        <charset>UTF-8</charset>
-    </encoder>
-    <filter class="ch.qos.logback.classic.filter.LevelFilter">
-        <level>ERROR</level>
-        <onMatch>ACCEPT</onMatch>
-        <onMismatch>DENY</onMismatch>
-    </filter>
-</appender>
+    <appender name="ERROR-OUT" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!--日志文件输出的文件名 -->
+            <fileNamePattern>${logs.dir}/%d{yyyyMMdd}/${app.name}.%d{yyyy-MM-dd}.error.log</fileNamePattern>
+            <!--日志文件保留天数 -->
+            <MaxHistory>90</MaxHistory>
+        </rollingPolicy>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
 
-<appender name="DEBUG-OUT" class="ch.qos.logback.core.rolling.RollingFileAppender">
-    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-        <!--日志文件输出的文件名 -->
-        <fileNamePattern>${log.path}/%d{yyyyMMdd}/${app.name}.%d{yyyy-MM-dd}.debug.log</fileNamePattern>
-        <!--日志文件保留天数 -->
-        <MaxHistory>90</MaxHistory>
-    </rollingPolicy>
-    <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-        <pattern>${FILE_LOG_PATTERN}</pattern>
-        <charset>UTF-8</charset>
-    </encoder>
-    <filter class="ch.qos.logback.classic.filter.LevelFilter">
-        <level>DEBUG</level>
-        <onMatch>ACCEPT</onMatch>
-        <onMismatch>DENY</onMismatch>
-    </filter>
-</appender>
-    <logger name="org.springframework" level="INFO" />
-    <logger name="net.sf.ehcache" level="WARN" />
-    <logger name="org.apache" level="INFO" />
-    <logger name="org.quartz.core" level="INFO" />
-    <logger name="org.springframework.web.servlet.view.JstlView" level="DEBUG" />
+    <appender name="DEBUG-OUT" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!--日志文件输出的文件名 -->
+            <fileNamePattern>${logs.dir}/%d{yyyyMMdd}/${app.name}.%d{yyyy-MM-dd}.debug.log</fileNamePattern>
+            <!--日志文件保留天数 -->
+            <MaxHistory>90</MaxHistory>
+        </rollingPolicy>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>DEBUG</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+    <logger name="org.springframework" level="INFO"/>
+    <logger name="net.sf.ehcache" level="WARN"/>
+    <logger name="org.apache" level="INFO"/>
+    <logger name="org.quartz.core" level="INFO"/>
+    <logger name="org.springframework.web.servlet.view.JstlView" level="DEBUG"/>
     <logger name="httpclient.wire" level="WARN"/>
     <logger name="springfox" level="WARN"/>
     <logger name="LoggingInterceptor" level="WARN"/>
     <logger name="org.springframework.context" level="WARN"/>
 
-<!-- 日志输出级别 -->
-<root level="INFO">
-    <appender-ref ref="STDOUT" />
-    <appender-ref ref="ALL-OUT" />
-    <appender-ref ref="INFO-OUT" />
-    <appender-ref ref="WARN-OUT" />
-    <appender-ref ref="ERROR-OUT" />
-    <appender-ref ref="DEBUG-OUT" />
-</root>
-<!--日志异步到数据库 -->
+    <!-- 日志输出级别 -->
+    <root level="INFO">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="ALL-OUT"/>
+        <appender-ref ref="INFO-OUT"/>
+        <appender-ref ref="WARN-OUT"/>
+        <appender-ref ref="ERROR-OUT"/>
+        <appender-ref ref="DEBUG-OUT"/>
+    </root>
+    <!--日志异步到数据库 -->
 
 </configuration>
