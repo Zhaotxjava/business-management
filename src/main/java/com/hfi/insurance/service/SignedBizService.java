@@ -12,7 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
  */
 public interface SignedBizService {
 
-    ApiResponse createSignFlow(CreateSignFlowReq req, String token, MultipartFile file);
+    ApiResponse createSignFlow(CreateSignFlowReq req, String token);
 
     ApiResponse getPageWithPermission(GetPageWithPermissionReq req,String token);
 

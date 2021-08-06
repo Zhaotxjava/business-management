@@ -81,7 +81,7 @@ public class FlowManageController {
 
     @PostMapping("createSignFlows")
     @ApiOperation("发起签署-创建流程")
-    public ApiResponse createSignFlows(@RequestBody CreateSignFlowReq req, @RequestParam(value = "file", required = false) MultipartFile file, HttpServletRequest request) {
+    public ApiResponse createSignFlows(@RequestBody CreateSignFlowReq req, HttpServletRequest request) {
 //        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
 //        if (requestAttributes != null){
 //            HttpServletRequest request = requestAttributes.getRequest();
@@ -92,7 +92,7 @@ public class FlowManageController {
 //        }
         String token = request.getHeader("token");
         if (StringUtils.isNotBlank(token)) {
-            return signedBizService.createSignFlow(req, token, file);
+            return signedBizService.createSignFlow(req, token);
         } else {
             return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(), ErrorCodeEnum.PARAM_ERROR.getMessage());
         }

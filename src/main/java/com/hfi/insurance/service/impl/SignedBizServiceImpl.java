@@ -81,7 +81,7 @@ public class SignedBizServiceImpl implements SignedBizService {
 
     @Override
     @LogAnnotation
-    public ApiResponse createSignFlow(CreateSignFlowReq req, String token, MultipartFile file) {
+    public ApiResponse createSignFlow(CreateSignFlowReq req, String token) {
         String jsonStr = caffeineCache.asMap().get(token);
         if (StringUtils.isBlank(jsonStr)) {
             return new ApiResponse(ErrorCodeEnum.TOKEN_EXPIRED.getCode(), ErrorCodeEnum.TOKEN_EXPIRED.getMessage());
@@ -240,11 +240,7 @@ public class SignedBizServiceImpl implements SignedBizService {
             //文档信息
             List<FlowDocBean> signDocs = new ArrayList<>();
             FlowDocBean flowDocBean = new FlowDocBean();
-            JSONObject upload = signedService.upload(file);
-            if (upload.containsKey("errCode")) {
-                return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), upload.getString("msg"));
-            }
-            String fileKey = upload.getString("fileKey");
+            String fileKey = req.getFileKey();
             flowDocBean.setDocFilekey(fileKey);
             signDocs.add(flowDocBean);
             standardCreateFlow.setSignDocs(signDocs);
@@ -545,7 +541,7 @@ public class SignedBizServiceImpl implements SignedBizService {
                     List<SignInfoBeanV2> signPos = assembleSignPoList(predefineBeanA,1,"ORGANIZE");
                     standardSignDocBean.setSignPos(signPos);
                 } else if (legalPredefineBeanA != null && !isOrgTdFlag) {
-                    List<SignInfoBeanV2> signPos = assembleSignPoList(legalPredefineBeanA, 1, "LEGAL");
+                    List<SignInfoBeanV2> signPos = assembleSignPoList(legalPredefineBeanA, 1, null);
                     standardSignDocBean.setSignPos(signPos);
                 } else {
                     throw new BizServiceException("手动坐标签署和静默坐标签署，模板位置信息不能为空！");
