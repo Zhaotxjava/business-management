@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <configuration scan="true" scanPeriod="60 seconds">
-    <property name="applicationName" value="insurance-info-server"/>
-    <property name="logs.dir" value="opt/app/${applicationName}/logs"/>
+    <springProperty scope="context" name="applicationName" source="logging.application-name" />
+    <springProperty scope="context" name="logs.dir" source="logging.dir"/>
+    <property name="applicationName" value="${applicationName}" />
+    <property name="logs.dir" value="${logs.dir}"/>
     <!--统一日志格式 [本机IP][时间][logTraceID][上游IP][方法名]-具体应用日志 上游ip暂时为空-->
     <property name="Log_Pattern"
               value="[%date{ISO8601}],[%p],[${applicationName}],[%X{logTraceID}],[%X{merReqIp}],[%t]:%C:%L,%m %n"/>

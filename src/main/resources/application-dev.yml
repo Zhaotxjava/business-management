@@ -54,6 +54,8 @@ spring:
       max-file-size: 50MB
       max-request-size: 100MB
 logging:
+  application-name: insurance-info-server
+  dir: logs
   level:
     com:
       hfi:
