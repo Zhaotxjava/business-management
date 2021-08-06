@@ -5,8 +5,8 @@ swagger:
   enable: true
 
 redirect:
-  url: http://192.50.10.39:8097/e-contract/
-  ybUrl: http://192.50.10.39:8097/e-contract/
+  url: ../e-contract/#
+  ybUrl: ../e-contract/#
 
 file:
   path: /opt/app/insurance-info-server/service/医保定点机构列表20210607.xlsx
