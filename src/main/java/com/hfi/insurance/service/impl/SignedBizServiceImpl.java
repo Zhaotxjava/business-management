@@ -242,6 +242,7 @@ public class SignedBizServiceImpl implements SignedBizService {
             FlowDocBean flowDocBean = new FlowDocBean();
             String fileKey = req.getFileKey();
             flowDocBean.setDocFilekey(fileKey);
+            flowDocBean.setDocName("测试协议1.pdf");
             signDocs.add(flowDocBean);
             standardCreateFlow.setSignDocs(signDocs);
             List<StandardSignerInfoBean> singerList = new ArrayList<>();
@@ -396,24 +397,25 @@ public class SignedBizServiceImpl implements SignedBizService {
      * @return
      */
     private StandardSignerInfoBean assembleStandardSignerInfoBean(YbInstitutionInfo institutionInfo, SingerInfo singerInfo, String fileKey, Map<String, PredefineBean> flowNamePredefineMap, ETemplateType templateType, String flowName) throws BizServiceException {
-        PredefineBean predefineBean = flowNamePredefineMap.get(flowName);
-        log.info("位置信息：{}", JSON.toJSONString(predefineBean));
         StandardSignerInfoBean signerInfoBean = new StandardSignerInfoBean();
         signerInfoBean.setAccountId(institutionInfo.getAccountId());
         signerInfoBean.setAuthorizationOrganizeId(institutionInfo.getOrganizeId());
         signerInfoBean.setAccountType(singerInfo.getAccountType());
         signerInfoBean.setLegalSignFlag(1);
-        ESignType signType = EnumHelper.translate(ESignType.class, singerInfo.getSignType());
-        if (ESignType.DEFAULT_COORDINATE_SIGN == signType || ESignType.DEFAULT_KEY_WORD_SIGN == signType) {
-            signerInfoBean.setAutoSign(true);
-        } else {
-            signerInfoBean.setAutoSign(false);
-        }
-        //签署文档信息;指定文档进行签署，未指定的文档将作为只读
+        //签署文档信息
         List<StandardSignDocBean> signDocDetails = new ArrayList<>();
         StandardSignDocBean standardSignDocBean = new StandardSignDocBean();
         standardSignDocBean.setDocFilekey(fileKey);
         if (ETemplateType.TEMPLATE_FILL == templateType) {
+            log.info("模板填充发起");
+            PredefineBean predefineBean = flowNamePredefineMap.get(flowName);
+            log.info("位置信息：{}", JSON.toJSONString(predefineBean));
+            ESignType signType = EnumHelper.translate(ESignType.class, singerInfo.getSignType());
+            if (ESignType.DEFAULT_COORDINATE_SIGN == signType || ESignType.DEFAULT_KEY_WORD_SIGN == signType) {
+                signerInfoBean.setAutoSign(true);
+            } else {
+                signerInfoBean.setAutoSign(false);
+            }
             if (ESignType.MANUAL_KEY_WORD_SIGN == signType || ESignType.DEFAULT_KEY_WORD_SIGN == signType) {
                 List<SignInfoBeanV2> signPos = new ArrayList<>();
                 SignInfoBeanV2 signInfoBeanV2 = new SignInfoBeanV2();
@@ -460,11 +462,18 @@ public class SignedBizServiceImpl implements SignedBizService {
             signerInfoBean.setSignDocDetails(signDocDetails);
             return signerInfoBean;
         } else {
+            log.info("文件直传发起");
             List<SignInfoBeanV2> signPos = new ArrayList<>();
             SignInfoBeanV2 signInfoBeanV2 = new SignInfoBeanV2();
             signInfoBeanV2.setKey(singerInfo.getKey());
             signInfoBeanV2.setSignType(4);
+            signInfoBeanV2.setSignIdentity("ORGANIZE");
+            SignInfoBeanV2 legalSignInfoBeanV2 = new SignInfoBeanV2();
+            legalSignInfoBeanV2.setKey(singerInfo.getKey() + "法人");
+            legalSignInfoBeanV2.setSignType(4);
             signPos.add(signInfoBeanV2);
+            signPos.add(legalSignInfoBeanV2);
+            signInfoBeanV2.setSignIdentity("LEGAL");
             standardSignDocBean.setSignPos(signPos);
             signDocDetails.add(standardSignDocBean);
             signerInfoBean.setSignDocDetails(signDocDetails);
@@ -493,8 +502,6 @@ public class SignedBizServiceImpl implements SignedBizService {
         JSONObject innerAccounts = organizationsService.queryInnerAccounts(queryInnerAccountsReq);
         String accounts = innerAccounts.getString("accounts");
         log.info("甲方用户信息：{}", accounts);
-        PredefineBean predefineBeanA = flowNamePredefineMap.get("甲方");
-        PredefineBean legalPredefineBeanA = flowNamePredefineMap.get("甲方法人");
         if (null != accounts) {
             List<StandardAccountListReturn> accountListReturns = JSON.parseArray(accounts, StandardAccountListReturn.class);
             StandardAccountListReturn accountReturn = CollectionUtils.firstElement(accountListReturns);
@@ -514,28 +521,30 @@ public class SignedBizServiceImpl implements SignedBizService {
         }
         partyA.setAccountType(1);
         ESignType signType = EnumHelper.translate(ESignType.class, partyASignType);
-        if (ESignType.DEFAULT_COORDINATE_SIGN == signType || ESignType.DEFAULT_KEY_WORD_SIGN == signType) {
-            partyA.setAutoSign(true);
-        } else {
-            partyA.setAutoSign(false);
-        }
         //签署文档信息;指定文档进行签署，未指定的文档将作为只读
         List<StandardSignDocBean> signDocDetails = new ArrayList<>();
         StandardSignDocBean standardSignDocBean = new StandardSignDocBean();
         standardSignDocBean.setDocFilekey(fileKey);
 
-
-        if (ESignType.MANUAL_KEY_WORD_SIGN == signType || ESignType.DEFAULT_KEY_WORD_SIGN == signType) {
-            List<SignInfoBeanV2> signPos = new ArrayList<>();
-            SignInfoBeanV2 signInfoBeanV2 = new SignInfoBeanV2();
-            //签署类型；1-单页签、2-多页签、3-骑缝章、4关键字签
-            signInfoBeanV2.setSignType(4);
-            signInfoBeanV2.setKey("甲方");
-            signPos.add(signInfoBeanV2);
-            standardSignDocBean.setSignPos(signPos);
-        }
+        //模板填充发起
         if (ETemplateType.TEMPLATE_FILL == templateType) {
+            if (ESignType.DEFAULT_COORDINATE_SIGN == signType || ESignType.DEFAULT_KEY_WORD_SIGN == signType) {
+                partyA.setAutoSign(true);
+            } else {
+                partyA.setAutoSign(false);
+            }
+            if (ESignType.MANUAL_KEY_WORD_SIGN == signType || ESignType.DEFAULT_KEY_WORD_SIGN == signType) {
+                List<SignInfoBeanV2> signPos = new ArrayList<>();
+                SignInfoBeanV2 signInfoBeanV2 = new SignInfoBeanV2();
+                //签署类型；1-单页签、2-多页签、3-骑缝章、4关键字签
+                signInfoBeanV2.setSignType(4);
+                signInfoBeanV2.setKey("甲方");
+                signPos.add(signInfoBeanV2);
+                standardSignDocBean.setSignPos(signPos);
+            }
             //位置签署要匹配区域
+            PredefineBean predefineBeanA = flowNamePredefineMap.get("甲方");
+            PredefineBean legalPredefineBeanA = flowNamePredefineMap.get("甲方法人");
             if (ESignType.MANUAL_COORDINATE_SIGN == signType || ESignType.DEFAULT_COORDINATE_SIGN == signType) {
                 if (predefineBeanA != null && isOrgTdFlag) {
                     List<SignInfoBeanV2> signPos = assembleSignPoList(predefineBeanA,1,"ORGANIZE");
@@ -548,8 +557,21 @@ public class SignedBizServiceImpl implements SignedBizService {
                 }
 
             }
-
-
+            signDocDetails.add(standardSignDocBean);
+            partyA.setSignDocDetails(signDocDetails);
+        }else {
+            //文件直传发起
+            List<SignInfoBeanV2> signPos = new ArrayList<>();
+            SignInfoBeanV2 signInfoBeanV2 = new SignInfoBeanV2();
+            signInfoBeanV2.setKey("甲方");
+            signInfoBeanV2.setSignType(4);
+            signInfoBeanV2.setSignIdentity("ORGANIZE");
+            SignInfoBeanV2 legalSignInfoBeanV2 = new SignInfoBeanV2();
+            legalSignInfoBeanV2.setKey("甲方法人");
+            legalSignInfoBeanV2.setSignType(4);
+            signPos.add(signInfoBeanV2);
+            signPos.add(legalSignInfoBeanV2);
+            standardSignDocBean.setSignPos(signPos);
             signDocDetails.add(standardSignDocBean);
             partyA.setSignDocDetails(signDocDetails);
         }

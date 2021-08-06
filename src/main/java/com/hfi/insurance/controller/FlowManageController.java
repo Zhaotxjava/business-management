@@ -75,8 +75,12 @@ public class FlowManageController {
     @ApiOperation("上传文件")
     public String uploadFile(@RequestParam("file") MultipartFile file) {
         JSONObject upload = signedService.upload(file);
-        String fileKey = upload.getString("fileKey");
-        return JSON.toJSONString(new ApiResponse(fileKey));
+        if (upload.containsKey("errCode")) {
+            return JSON.toJSONString(new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), upload.getString("msg")));
+        }
+//        String fileKey = upload.getString("fileKey");
+        upload.put("fileName",file.getOriginalFilename());
+        return JSON.toJSONString(new ApiResponse(upload));
     }
 
     @PostMapping("createSignFlows")
