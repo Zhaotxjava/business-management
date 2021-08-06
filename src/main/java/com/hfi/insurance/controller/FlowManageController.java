@@ -1,5 +1,7 @@
 package com.hfi.insurance.controller;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.hfi.insurance.common.ApiResponse;
 import com.hfi.insurance.enums.ErrorCodeEnum;
 import com.hfi.insurance.model.sign.req.CreateSignFlowReq;
@@ -41,30 +43,45 @@ public class FlowManageController {
 
     @PostMapping("getTemplate")
     @ApiOperation("分页查询模板列表")
-    public ApiResponse getTemplate(@RequestBody GetPageWithPermissionReq req,HttpServletRequest request){
+    public ApiResponse getTemplate(@RequestBody GetPageWithPermissionReq req, HttpServletRequest request) {
         String token = request.getHeader("token");
-        if (StringUtils.isNotBlank(token)){
-            return signedBizService.getPageWithPermission(req,token);
-        }else {
-            return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(),ErrorCodeEnum.PARAM_ERROR.getMessage());
+        if (StringUtils.isNotBlank(token)) {
+            return signedBizService.getPageWithPermission(req, token);
+        } else {
+            return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(), ErrorCodeEnum.PARAM_ERROR.getMessage());
         }
     }
 
     @GetMapping("getTemplateDetailInfo")
     @ApiOperation("获取模板详细信息")
-    public ApiResponse getTemplateDetailInfo(@RequestParam("templateId") String templateId){
+    public ApiResponse getTemplateDetailInfo(@RequestParam("templateId") String templateId) {
         return signedBizService.getTemplateInfo(templateId);
     }
 
-    @PostMapping("upload")
+//    @PostMapping("upload")
+//    @ApiOperation("上传文件")
+//    public void uploadFile(@RequestParam("file") MultipartFile file, HttpServletResponse response){
+//        JSONObject upload = signedService.upload(file);
+//        String fileKey = upload.getString("fileKey");
+//        response.setContentType("text/html; charset=utf-8");
+//        try {
+//            response.getWriter().write(fileKey);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
+
+    @PostMapping(value = "upload", produces = "text/html;charset=UTF-8")
     @ApiOperation("上传文件")
-    public ApiResponse uploadFile(@RequestParam("file") MultipartFile file){
-        return new ApiResponse(signedService.upload(file));
+    public String uploadFile(@RequestParam("file") MultipartFile file) {
+        JSONObject upload = signedService.upload(file);
+        String fileKey = upload.getString("fileKey");
+        return JSON.toJSONString(new ApiResponse(fileKey));
     }
 
     @PostMapping("createSignFlows")
     @ApiOperation("发起签署-创建流程")
-    public ApiResponse createSignFlows(@RequestBody CreateSignFlowReq req,@RequestParam(value = "file",required = false) MultipartFile file,HttpServletRequest request){
+    public ApiResponse createSignFlows(@RequestBody CreateSignFlowReq req, @RequestParam(value = "file", required = false) MultipartFile file, HttpServletRequest request) {
 //        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
 //        if (requestAttributes != null){
 //            HttpServletRequest request = requestAttributes.getRequest();
@@ -74,13 +91,12 @@ public class FlowManageController {
 //            return new ApiResponse(ErrorCodeEnum.SYSTEM_ERROR);
 //        }
         String token = request.getHeader("token");
-        if (StringUtils.isNotBlank(token)){
-            return signedBizService.createSignFlow(req,token,file);
-        }else {
-            return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(),ErrorCodeEnum.PARAM_ERROR.getMessage());
+        if (StringUtils.isNotBlank(token)) {
+            return signedBizService.createSignFlow(req, token, file);
+        } else {
+            return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(), ErrorCodeEnum.PARAM_ERROR.getMessage());
         }
     }
-
 
 
 }

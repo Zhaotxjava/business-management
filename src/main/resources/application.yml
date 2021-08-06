@@ -7,13 +7,13 @@ spring:
     name: insurance_info
   profiles:
     active: dev
-  thymeleaf:
-    enabled: true  #开启thymeleaf视图解析
-    encoding: utf-8  #编码
-    prefix: classpath:/templates/  #前缀
-    cache: false  #是否使用缓存
-    mode: HTML  #严格的HTML语法模式
-    suffix: .html  #后缀名
+#  thymeleaf:
+#    enabled: true  #开启thymeleaf视图解析
+#    encoding: utf-8  #编码
+#    prefix: classpath:/templates/  #前缀
+#    cache: false  #是否使用缓存
+#    mode: HTML  #严格的HTML语法模式
+#    suffix: .html  #后缀名
   jackson:
     # 设置属性命名策略,对应jackson下PropertyNamingStrategy中的常量值，SNAKE_CASE-返回的json驼峰式转下划线，json body下划线传到后端自动转驼峰式
     property-naming-strategy: LOWER_CAMEL_CASE
