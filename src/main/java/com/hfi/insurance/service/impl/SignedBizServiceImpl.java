@@ -408,8 +408,6 @@ public class SignedBizServiceImpl implements SignedBizService {
         standardSignDocBean.setDocFilekey(fileKey);
         if (ETemplateType.TEMPLATE_FILL == templateType) {
             log.info("模板填充发起");
-            PredefineBean predefineBean = flowNamePredefineMap.get(flowName);
-            log.info("位置信息：{}", JSON.toJSONString(predefineBean));
             ESignType signType = EnumHelper.translate(ESignType.class, singerInfo.getSignType());
             if (ESignType.DEFAULT_COORDINATE_SIGN == signType || ESignType.DEFAULT_KEY_WORD_SIGN == signType) {
                 signerInfoBean.setAutoSign(true);
@@ -424,11 +422,15 @@ public class SignedBizServiceImpl implements SignedBizService {
                 signPos.add(signInfoBeanV2);
                 standardSignDocBean.setSignPos(signPos);
             }
+            PredefineBean predefineBean = flowNamePredefineMap.get(flowName);
+            log.info("机构章签署位置信息：{}", JSON.toJSONString(predefineBean));
+            PredefineBean legalPredefineBean = flowNamePredefineMap.get(flowName + "法人");
+            log.info("法人章签署位置信息：{}", JSON.toJSONString(legalPredefineBean));
             //位置签署要匹配区域
             if ((ESignType.MANUAL_COORDINATE_SIGN == signType || ESignType.DEFAULT_COORDINATE_SIGN == signType)) {
-                if (predefineBean != null) {
+                if (predefineBean != null && legalPredefineBean != null) {
                     List<Position> positions = predefineBean.getPositions();
-                    PredefineBean legalPredefineBean = flowNamePredefineMap.get(flowName + "法人");
+
                     List<Position> legalPositions = legalPredefineBean.getPositions();
                     List<SignInfoBeanV2> signPoList = new ArrayList<>();
                     List<SignInfoBeanV2> signPos = positions.stream().map(position -> {
