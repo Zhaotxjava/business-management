@@ -20,6 +20,9 @@ public class CreateSignFlowReq {
     @ApiModelProperty("文件fileKey 文件直传必传")
     private String fileKey;
 
+    @ApiModelProperty("文件名称")
+    private String fileName;
+
     @ApiModelProperty("文档页数")
     private Integer pageNumber;
 
@@ -75,5 +78,13 @@ public class CreateSignFlowReq {
 
     public void setFileKey(String fileKey) {
         this.fileKey = fileKey;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
     }
 }

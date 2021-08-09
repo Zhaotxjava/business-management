@@ -16,6 +16,7 @@ import com.hfi.insurance.model.YbInstitutionInfo;
 import com.hfi.insurance.model.sign.InstitutionBaseInfo;
 import com.hfi.insurance.model.sign.Position;
 import com.hfi.insurance.model.sign.PredefineBean;
+import com.hfi.insurance.model.sign.Seal;
 import com.hfi.insurance.model.sign.TemplateFlowBean;
 import com.hfi.insurance.model.sign.TemplateFormBean;
 import com.hfi.insurance.model.sign.TemplateInfoBean;
@@ -174,17 +175,17 @@ public class SignedBizServiceImpl implements SignedBizService {
 //                PredefineBean predefineBeanA = flowNamePredefineMap.get("甲方");
                 //填充甲方信息
                 StandardSignerInfoBean partyA = null;
-                StandardSignerInfoBean legalPartyA = null;
+                //StandardSignerInfoBean legalPartyA = null;
                 try {
-                    partyA = assemblePartyAInfo(flowNamePredefineMap, req.getPartyASignType(), fileKey, organizeNo, templateType, true);
-                    legalPartyA = assemblePartyAInfo(flowNamePredefineMap, req.getPartyASignType(), fileKey, organizeNo, templateType, false);
+                    partyA = assemblePartyAInfo(flowNamePredefineMap, req.getPartyASignType(), fileKey, organizeNo, templateType);
+                    //legalPartyA = assemblePartyAInfo(flowNamePredefineMap, req.getPartyASignType(), fileKey, organizeNo, templateType, false);
                 } catch (Exception e) {
                     log.error("填充甲方信息失败：{}", e.getMessage());
                     e.printStackTrace();
                     return new ApiResponse(ErrorCodeEnum.RESPONES_ERROR.getCode(), e.getMessage());
                 }
                 singerList.add(partyA);
-                singerList.add(legalPartyA);
+                //singerList.add(legalPartyA);
                 //发起人姓名不能为空
                 String initiatorName = partyA.getAccountName();
                 standardCreateFlow.setInitiatorName(initiatorName);
@@ -242,7 +243,7 @@ public class SignedBizServiceImpl implements SignedBizService {
             FlowDocBean flowDocBean = new FlowDocBean();
             String fileKey = req.getFileKey();
             flowDocBean.setDocFilekey(fileKey);
-            flowDocBean.setDocName("测试协议1.pdf");
+            flowDocBean.setDocName(req.getFileName());
             signDocs.add(flowDocBean);
             standardCreateFlow.setSignDocs(signDocs);
             List<StandardSignerInfoBean> singerList = new ArrayList<>();
@@ -272,7 +273,7 @@ public class SignedBizServiceImpl implements SignedBizService {
             }
             StandardSignerInfoBean partyA = null;
             try {
-                partyA = assemblePartyAInfo(null, req.getPartyASignType(), fileKey, organizeNo, templateType,true);
+                partyA = assemblePartyAInfo(null, req.getPartyASignType(), fileKey, organizeNo, templateType);
             } catch (Exception e) {
                 log.error("填充甲方信息失败：{}", e.getMessage());
                 e.printStackTrace();
@@ -492,30 +493,33 @@ public class SignedBizServiceImpl implements SignedBizService {
      * @param fileKey
      * @return
      */
-    private StandardSignerInfoBean assemblePartyAInfo(Map<String, PredefineBean> flowNamePredefineMap, int partyASignType, String fileKey, String organizeNo, ETemplateType templateType, boolean isOrgTdFlag) throws Exception {
+    private StandardSignerInfoBean assemblePartyAInfo(Map<String, PredefineBean> flowNamePredefineMap, int partyASignType, String fileKey, String organizeNo, ETemplateType templateType) throws Exception {
         StandardSignerInfoBean partyA = new StandardSignerInfoBean();
+        partyA.setLegalSignFlag(1);
         log.info("发起方（甲方）机构编码：{}", organizeNo);
         JSONObject innerOrgans = organizationsService.queryInnerOrgans(organizeNo);
         log.info("甲方机构信息：{}", innerOrgans.toJSONString());
         QueryInnerAccountsReq queryInnerAccountsReq = new QueryInnerAccountsReq();
-        queryInnerAccountsReq.setOrganizeId(innerOrgans.getString("organizeId"));
+        String organizeId = innerOrgans.getString("organizeId");
+        queryInnerAccountsReq.setOrganizeId(organizeId);
         queryInnerAccountsReq.setPageSize("10");
         queryInnerAccountsReq.setPageIndex("1");
         JSONObject innerAccounts = organizationsService.queryInnerAccounts(queryInnerAccountsReq);
         String accounts = innerAccounts.getString("accounts");
         log.info("甲方用户信息：{}", accounts);
+        // 填充印章信息
+        JSONObject innerOrgansSeals = signedService.getInnerOrgansSeals(organizeId, organizeNo);
+        if (innerOrgansSeals.containsKey("errCode")){
+            throw new BizServiceException(innerOrgansSeals.getString("msg"));
+        }
+        String innerOrgansSealsStr = innerOrgansSeals.getString("seals");
+        List<Seal> sealList = JSON.parseArray(innerOrgansSealsStr, Seal.class);
+        Map<Integer, String> sealTypeAndSealIdMap = sealList.stream().collect(Collectors.toMap(Seal::getSubSealTypeId, Seal::getSealId));
         if (null != accounts) {
             List<StandardAccountListReturn> accountListReturns = JSON.parseArray(accounts, StandardAccountListReturn.class);
             StandardAccountListReturn accountReturn = CollectionUtils.firstElement(accountListReturns);
             if (null != accountReturn) {
                 partyA.setAccountId(accountReturn.getAccountId());
-                //partyA.setAccountId("279e974f-577d-47fa-86cd-6672c617043a");
-                if (isOrgTdFlag) {
-                    partyA.setAuthorizationOrganizeId(innerOrgans.getString("organizeId"));
-                    //partyA.setLegalSignFlag(0);
-                } else {
-                    partyA.setLegalSignFlag(0);
-                }
                 partyA.setContactMobile(accountReturn.getMobile());
                 partyA.setAccountName(accountReturn.getName());
                 partyA.setUniqueId(accountReturn.getUniqueId());
@@ -548,16 +552,39 @@ public class SignedBizServiceImpl implements SignedBizService {
             PredefineBean predefineBeanA = flowNamePredefineMap.get("甲方");
             PredefineBean legalPredefineBeanA = flowNamePredefineMap.get("甲方法人");
             if (ESignType.MANUAL_COORDINATE_SIGN == signType || ESignType.DEFAULT_COORDINATE_SIGN == signType) {
-                if (predefineBeanA != null && isOrgTdFlag) {
-                    List<SignInfoBeanV2> signPos = assembleSignPoList(predefineBeanA,1,"ORGANIZE");
-                    standardSignDocBean.setSignPos(signPos);
-                } else if (legalPredefineBeanA != null && !isOrgTdFlag) {
-                    List<SignInfoBeanV2> signPos = assembleSignPoList(legalPredefineBeanA, 1, null);
-                    standardSignDocBean.setSignPos(signPos);
-                } else {
-                    throw new BizServiceException("手动坐标签署和静默坐标签署，模板位置信息不能为空！");
-                }
+                if (predefineBeanA != null && legalPredefineBeanA != null) {
+                    List<Position> positions = predefineBeanA.getPositions();
 
+                    List<Position> legalPositions = legalPredefineBeanA.getPositions();
+                    List<SignInfoBeanV2> signPoList = new ArrayList<>();
+                    List<SignInfoBeanV2> signPos = positions.stream().map(position -> {
+                        SignInfoBeanV2 signInfoBeanV2 = new SignInfoBeanV2();
+                        //签署方式1-单页签署
+                        signInfoBeanV2.setSignType(1);
+                        signInfoBeanV2.setPosX(Float.valueOf(position.getPosX()));
+                        signInfoBeanV2.setPosY(Float.valueOf(position.getPosY()));
+                        signInfoBeanV2.setPosPage(position.getPageNo());
+                        signInfoBeanV2.setSignIdentity("ORGANIZE");
+                        signInfoBeanV2.setSealId(sealTypeAndSealIdMap.get(1));
+                        return signInfoBeanV2;
+                    }).collect(Collectors.toList());
+                    List<SignInfoBeanV2> legalSignPos = legalPositions.stream().map(position -> {
+                        SignInfoBeanV2 signInfoBeanV2 = new SignInfoBeanV2();
+                        //签署方式1-单页签署
+                        signInfoBeanV2.setSignType(1);
+                        signInfoBeanV2.setPosX(Float.valueOf(position.getPosX()));
+                        signInfoBeanV2.setPosY(Float.valueOf(position.getPosY()));
+                        signInfoBeanV2.setPosPage(position.getPageNo());
+                        signInfoBeanV2.setSignIdentity("LEGAL");
+                        signInfoBeanV2.setSealId(sealTypeAndSealIdMap.get(3));
+                        return signInfoBeanV2;
+                    }).collect(Collectors.toList());
+                    signPoList.addAll(signPos);
+                    signPoList.addAll(legalSignPos);
+                    standardSignDocBean.setSignPos(signPoList);
+                } else {
+                    throw new BizServiceException("手动关键字签署和静默关键字签署，模板位置信息不能为空！");
+                }
             }
             signDocDetails.add(standardSignDocBean);
             partyA.setSignDocDetails(signDocDetails);

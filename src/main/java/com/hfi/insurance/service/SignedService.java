@@ -84,5 +84,13 @@ public interface SignedService {
      */
     JSONObject getPreviewUrl(String fileKey, String docId);
 
+    /**
+     * 查询内部机构印章列表
+     * @param organizeId
+     * @param organizeNo
+     * @return
+     */
+    JSONObject getInnerOrgansSeals(String organizeId,String organizeNo);
+
 
 }

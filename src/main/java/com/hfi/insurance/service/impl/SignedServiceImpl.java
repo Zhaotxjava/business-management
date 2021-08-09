@@ -129,7 +129,22 @@ public class SignedServiceImpl implements SignedService {
         Map<String,String> urlParams = new HashMap<>(16);
         urlParams.put("fileKey",fileKey);
         urlParams.put("docId",docId);
-        String s = HttpUtil.doGet(url + " /V1/signDocs/getPreviewUrl", headMap, urlParams);
+        String s = HttpUtil.doGet(url + "/V1/signDocs/getPreviewUrl", headMap, urlParams);
+        return convertResult(s);
+    }
+
+    @Override
+    public JSONObject getInnerOrgansSeals(String organizeId, String organizeNo) {
+        Map<String, String> headMap = new HashMap<>();
+        convertHead(headMap,"");
+        Map<String,String> urlParams = new HashMap<>(16);
+        urlParams.put("organizeId",organizeId);
+        urlParams.put("organizeNo",organizeNo);
+        urlParams.put("pageIndex","1");
+        urlParams.put("pageSize","10");
+        urlParams.put("showSealBase64","false");
+        urlParams.put("status","5");
+        String s = HttpUtil.doGet(url + "/V1/seals/innerOrgansSeals/list", headMap, urlParams);
         return convertResult(s);
     }
 
