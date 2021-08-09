@@ -17,6 +17,7 @@ import com.hfi.insurance.model.sign.InstitutionBaseInfo;
 import com.hfi.insurance.model.sign.Position;
 import com.hfi.insurance.model.sign.PredefineBean;
 import com.hfi.insurance.model.sign.Seal;
+import com.hfi.insurance.model.sign.SealUser;
 import com.hfi.insurance.model.sign.TemplateFlowBean;
 import com.hfi.insurance.model.sign.TemplateFormBean;
 import com.hfi.insurance.model.sign.TemplateInfoBean;
@@ -32,7 +33,6 @@ import com.hfi.insurance.model.sign.req.StandardSignDocBean;
 import com.hfi.insurance.model.sign.req.StandardSignerInfoBean;
 import com.hfi.insurance.model.sign.req.TemplateFormValueParam;
 import com.hfi.insurance.model.sign.req.TemplateUseParam;
-import com.hfi.insurance.model.sign.res.StandardAccountListReturn;
 import com.hfi.insurance.service.IYbFlowInfoService;
 import com.hfi.insurance.service.IYbInstitutionInfoService;
 import com.hfi.insurance.service.OrganizationsService;
@@ -44,7 +44,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -495,35 +494,36 @@ public class SignedBizServiceImpl implements SignedBizService {
      */
     private StandardSignerInfoBean assemblePartyAInfo(Map<String, PredefineBean> flowNamePredefineMap, int partyASignType, String fileKey, String organizeNo, ETemplateType templateType) throws Exception {
         StandardSignerInfoBean partyA = new StandardSignerInfoBean();
-        partyA.setLegalSignFlag(1);
+//        partyA.setLegalSignFlag(1);
         log.info("发起方（甲方）机构编码：{}", organizeNo);
         JSONObject innerOrgans = organizationsService.queryInnerOrgans(organizeNo);
         log.info("甲方机构信息：{}", innerOrgans.toJSONString());
         QueryInnerAccountsReq queryInnerAccountsReq = new QueryInnerAccountsReq();
         String organizeId = innerOrgans.getString("organizeId");
+        partyA.setAuthorizationOrganizeId(organizeId);
         queryInnerAccountsReq.setOrganizeId(organizeId);
         queryInnerAccountsReq.setPageSize("10");
         queryInnerAccountsReq.setPageIndex("1");
-        JSONObject innerAccounts = organizationsService.queryInnerAccounts(queryInnerAccountsReq);
-        String accounts = innerAccounts.getString("accounts");
-        log.info("甲方用户信息：{}", accounts);
         // 填充印章信息
         JSONObject innerOrgansSeals = signedService.getInnerOrgansSeals(organizeId, organizeNo);
+        log.info("甲方印章信息：{}",innerOrgansSeals);
         if (innerOrgansSeals.containsKey("errCode")){
             throw new BizServiceException(innerOrgansSeals.getString("msg"));
         }
         String innerOrgansSealsStr = innerOrgansSeals.getString("seals");
         List<Seal> sealList = JSON.parseArray(innerOrgansSealsStr, Seal.class);
         Map<Integer, String> sealTypeAndSealIdMap = sealList.stream().collect(Collectors.toMap(Seal::getSubSealTypeId, Seal::getSealId));
-        if (null != accounts) {
-            List<StandardAccountListReturn> accountListReturns = JSON.parseArray(accounts, StandardAccountListReturn.class);
-            StandardAccountListReturn accountReturn = CollectionUtils.firstElement(accountListReturns);
-            if (null != accountReturn) {
-                partyA.setAccountId(accountReturn.getAccountId());
-                partyA.setContactMobile(accountReturn.getMobile());
-                partyA.setAccountName(accountReturn.getName());
-                partyA.setUniqueId(accountReturn.getUniqueId());
-            }
+        JSONObject sealInfos = signedService.getSealInfos(sealTypeAndSealIdMap.get(1));
+        log.info("印章管理员信息：{}",sealInfos);
+        if (innerOrgansSeals.containsKey("errCode")){
+            throw new BizServiceException(innerOrgansSeals.getString("msg"));
+        }
+        String sealUsers = sealInfos.getString("sealUsers");
+        List<SealUser> sealUserList = JSON.parseArray(sealUsers, SealUser.class);
+        SealUser sealUser = CollectionUtils.firstElement(sealUserList);
+        if (sealUser != null){
+            partyA.setAccountId(sealUser.getAccountId());
+            partyA.setAccountName(sealUser.getAccountName());
         }
         partyA.setAccountType(1);
         ESignType signType = EnumHelper.translate(ESignType.class, partyASignType);
@@ -554,7 +554,6 @@ public class SignedBizServiceImpl implements SignedBizService {
             if (ESignType.MANUAL_COORDINATE_SIGN == signType || ESignType.DEFAULT_COORDINATE_SIGN == signType) {
                 if (predefineBeanA != null && legalPredefineBeanA != null) {
                     List<Position> positions = predefineBeanA.getPositions();
-
                     List<Position> legalPositions = legalPredefineBeanA.getPositions();
                     List<SignInfoBeanV2> signPoList = new ArrayList<>();
                     List<SignInfoBeanV2> signPos = positions.stream().map(position -> {
@@ -564,7 +563,7 @@ public class SignedBizServiceImpl implements SignedBizService {
                         signInfoBeanV2.setPosX(Float.valueOf(position.getPosX()));
                         signInfoBeanV2.setPosY(Float.valueOf(position.getPosY()));
                         signInfoBeanV2.setPosPage(position.getPageNo());
-                        signInfoBeanV2.setSignIdentity("ORGANIZE");
+//                        signInfoBeanV2.setSignIdentity("ORGANIZE");
                         signInfoBeanV2.setSealId(sealTypeAndSealIdMap.get(1));
                         return signInfoBeanV2;
                     }).collect(Collectors.toList());
@@ -575,7 +574,7 @@ public class SignedBizServiceImpl implements SignedBizService {
                         signInfoBeanV2.setPosX(Float.valueOf(position.getPosX()));
                         signInfoBeanV2.setPosY(Float.valueOf(position.getPosY()));
                         signInfoBeanV2.setPosPage(position.getPageNo());
-                        signInfoBeanV2.setSignIdentity("LEGAL");
+//                        signInfoBeanV2.setSignIdentity("LEGAL");
                         signInfoBeanV2.setSealId(sealTypeAndSealIdMap.get(3));
                         return signInfoBeanV2;
                     }).collect(Collectors.toList());

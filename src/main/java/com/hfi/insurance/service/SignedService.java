@@ -92,5 +92,12 @@ public interface SignedService {
      */
     JSONObject getInnerOrgansSeals(String organizeId,String organizeNo);
 
+    /**
+     * 查询内部印章详细数据
+     * @param sealId
+     * @return
+     */
+    JSONObject getSealInfos(String sealId);
+
 
 }

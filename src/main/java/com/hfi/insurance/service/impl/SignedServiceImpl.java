@@ -148,6 +148,16 @@ public class SignedServiceImpl implements SignedService {
         return convertResult(s);
     }
 
+    @Override
+    public JSONObject getSealInfos(String sealId) {
+        Map<String, String> headMap = new HashMap<>();
+        convertHead(headMap,"");
+        Map<String,String> urlParams = new HashMap<>(16);
+        urlParams.put("sealId",sealId);
+        String s = HttpUtil.doGet(url + "/V1/seals/query", headMap, urlParams);
+        return convertResult(s);
+    }
+
     private void convertHead(Map<String, String> headMap, String message) {
         headMap.put("x-timevale-project-id", projectId);
         String signature = HmacSHA256Utils.hmacSha256(message, secret);
