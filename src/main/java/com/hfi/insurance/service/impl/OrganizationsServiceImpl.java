@@ -214,4 +214,17 @@ public class OrganizationsServiceImpl implements OrganizationsService {
         log.info("根据机构编号【{}】查询内部机构信息接口响应{}", organizeNo, result);
         return convertResult(result);
     }
+
+    @Override
+    public String queryByOrgName(String organizeName) {
+        Map<String,String> headMap = new HashMap<>();
+
+        JSONObject jsonObject = new JSONObject();
+//        jsonObject.put("organizeName", organizeName);
+        jsonObject.put("pageIndex", 1);
+        jsonObject.put("pageSize", 20);
+        convertHead(headMap, jsonObject.toJSONString());
+        String result = HttpUtil.doPost(url + "/V1/organizations/outerOrgans/queryByOrgname?pageIndex=1&pageSize=30", headMap, jsonObject.toJSONString());
+       return result;
+    }
 }

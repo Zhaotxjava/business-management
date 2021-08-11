@@ -17,6 +17,8 @@ import com.hfi.insurance.model.YbOrgTd;
 import com.hfi.insurance.model.dto.InstitutionInfoAddReq;
 import com.hfi.insurance.model.dto.OrgTdQueryReq;
 import com.hfi.insurance.model.dto.res.InstitutionInfoRes;
+import com.hfi.insurance.model.sign.BindedAgentBean;
+import com.hfi.insurance.model.sign.QueryOuterOrgResult;
 import com.hfi.insurance.service.IYbInstitutionInfoService;
 import com.hfi.insurance.service.OrganizationsService;
 import lombok.extern.slf4j.Slf4j;
@@ -24,11 +26,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -92,6 +97,29 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         Integer pageNum = req.getPageNum();
         req.setPageNum(pageNum - 1);
         List<InstitutionInfoRes> ybInstitutionInfos = institutionInfoMapper.selectOrgForCreateFlow(req);
+        //添加保险公司
+        String orgInfoListStr = organizationsService.queryByOrgName("");
+        JSONObject object = JSONObject.parseObject(orgInfoListStr);
+        if ("0".equals(object.getString("errCode"))) {
+            String data = object.getString("data");
+            List<QueryOuterOrgResult> queryOuterOrgResults = JSON.parseArray(data, QueryOuterOrgResult.class);
+            List<InstitutionInfoRes> insuranceList = new ArrayList<>();
+            for(QueryOuterOrgResult result : queryOuterOrgResults){
+                BindedAgentBean bindedAgentBean = CollectionUtils.firstElement(result.getAgentAccounts());
+                String organizeNo = result.getOrganizeNo();
+                if (bindedAgentBean != null && organizeNo.startsWith("bx")) {
+                    InstitutionInfoRes res = new InstitutionInfoRes();
+                    res.setAccountId(bindedAgentBean.getAgentId());
+                    res.setContactName(bindedAgentBean.getAgentName());
+                    res.setOrganizeId(result.getOrganizeId());
+                    res.setNumber(organizeNo);
+                    res.setInstitutionName(result.getOrganizeName());
+                    insuranceList.add(res);
+                }
+            }
+            ybInstitutionInfos.addAll(insuranceList);
+        }
+
         int total = institutionInfoMapper.selectCountOrgForCreateFlow(req);
         Page<InstitutionInfoRes> page = new Page<>(req.getPageNum(),req.getPageSize());
         page.setRecords(ybInstitutionInfos);

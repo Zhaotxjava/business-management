@@ -139,7 +139,7 @@ public class SignedBizServiceImpl implements SignedBizService {
                     flowNamePredefineMap.put(templateFlowBean.getFlowName(), templateFlowBean.getPredefine());
                 });
                 List<StandardSignerInfoBean> singerList = new ArrayList<>();
-                //填充乙丙丁方签署信息
+                //todo 优化 填充乙丙丁方签署信息
                 for (SingerInfo singerInfo : req.getSingerInfos()) {
                     List<InstitutionBaseInfo> institutionInfoList = singerInfo.getInstitutionInfoList();
                     //获取签署机构名称
@@ -155,19 +155,23 @@ public class SignedBizServiceImpl implements SignedBizService {
                     }
                     if (institution != null) {
                         institutionInfos.add(institution);
-                        YbInstitutionInfo institutionInfo = institutionInfoService.getInstitutionInfo(institution.getNumber());
-                        if (institutionInfo != null) {
-//                            PredefineBean predefineBean = flowNamePredefineMap.get(flowName);
-//                            log.info("位置信息：{}", JSON.toJSONString(predefineBean));
-                            //填充签署人信息
-                            StandardSignerInfoBean signerInfoBean = null;
-                            try {
-                                signerInfoBean = assembleStandardSignerInfoBean(institutionInfo, singerInfo, fileKey, flowNamePredefineMap, templateType, flowName);
-                            } catch (BizServiceException e) {
-                                return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(), e.getMessage());
-                            }
-                            singerList.add(signerInfoBean);
+                        YbInstitutionInfo institutionInfo = new YbInstitutionInfo();
+                        if (institution.getAccountId() != null && institution.getOrganizeId()!=null) {
+                            institutionInfo.setOrganizeId(institution.getOrganizeId());
+                            institutionInfo.setAccountId(institution.getAccountId());
+                            institutionInfo.setNumber(institution.getNumber());
+                            institutionInfo.setInstitutionName(institution.getInstitutionName());
+                        }else {
+                            institutionInfo = institutionInfoService.getInstitutionInfo(institution.getNumber());
                         }
+                        //填充签署人信息
+                        StandardSignerInfoBean signerInfoBean = null;
+                        try {
+                            signerInfoBean = assembleStandardSignerInfoBean(institutionInfo, singerInfo, fileKey, flowNamePredefineMap, templateType, flowName);
+                        } catch (BizServiceException e) {
+                            return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(), e.getMessage());
+                        }
+                        singerList.add(signerInfoBean);
                     }
                 }
                 //填充甲方信息
@@ -258,7 +262,15 @@ public class SignedBizServiceImpl implements SignedBizService {
                 institution = CollectionUtils.firstElement(institutionInfoList);
                 if (institution != null) {
                     institutionInfos.add(institution);
-                    YbInstitutionInfo institutionInfo = institutionInfoService.getInstitutionInfo(institution.getNumber());
+                    YbInstitutionInfo institutionInfo = new YbInstitutionInfo();
+                    if (institution.getAccountId() != null && institution.getOrganizeId()!=null) {
+                        institutionInfo.setOrganizeId(institution.getOrganizeId());
+                        institutionInfo.setAccountId(institution.getAccountId());
+                        institutionInfo.setNumber(institution.getNumber());
+                        institutionInfo.setInstitutionName(institution.getInstitutionName());
+                    }else {
+                        institutionInfo = institutionInfoService.getInstitutionInfo(institution.getNumber());
+                    }
                     //填充签署人信息
                     StandardSignerInfoBean signerInfoBean = null;
                     try {

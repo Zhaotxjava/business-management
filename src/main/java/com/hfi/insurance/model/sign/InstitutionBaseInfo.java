@@ -14,6 +14,33 @@ public class InstitutionBaseInfo {
     private String number;
     @ApiModelProperty("机构名称")
     private String institutionName;
+    /**
+     * 天印系统经办人用户标识
+     */
+    @ApiModelProperty("天印系统经办人用户标识")
+    private String accountId;
+
+    /**
+     * 天印系统机构标记
+     */
+    @ApiModelProperty("天印系统机构标记")
+    private String organizeId;
+
+    public String getAccountId() {
+        return accountId;
+    }
+
+    public void setAccountId(String accountId) {
+        this.accountId = accountId;
+    }
+
+    public String getOrganizeId() {
+        return organizeId;
+    }
+
+    public void setOrganizeId(String organizeId) {
+        this.organizeId = organizeId;
+    }
 
     public String getNumber() {
         return number;

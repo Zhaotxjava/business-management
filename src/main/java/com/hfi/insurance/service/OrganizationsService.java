@@ -25,4 +25,6 @@ public interface OrganizationsService {
     JSONObject queryInnerAccounts(QueryInnerAccountsReq req);
 
     JSONObject queryInnerOrgans(String organizeNo);
+
+    String queryByOrgName(String organizeName);
 }
