@@ -418,6 +418,7 @@ public class SignedBizServiceImpl implements SignedBizService {
         signerInfoBean.setAuthorizationOrganizeId(institutionInfo.getOrganizeId());
         signerInfoBean.setAccountType(singerInfo.getAccountType());
         signerInfoBean.setLegalSignFlag(1);
+        signerInfoBean.setSignOrder(1);
         //签署文档信息
         List<StandardSignDocBean> signDocDetails = new ArrayList<>();
         StandardSignDocBean standardSignDocBean = new StandardSignDocBean();
@@ -510,6 +511,7 @@ public class SignedBizServiceImpl implements SignedBizService {
      */
     private StandardSignerInfoBean assemblePartyAInfo(Map<String, PredefineBean> flowNamePredefineMap, int partyASignType, String fileKey, String organizeNo, ETemplateType templateType) throws Exception {
         StandardSignerInfoBean partyA = new StandardSignerInfoBean();
+        partyA.setSignOrder(2);
 //        partyA.setLegalSignFlag(1);
         log.info("发起方（甲方）机构编码：{}", organizeNo);
         JSONObject innerOrgans = organizationsService.queryInnerOrgans(organizeNo);
