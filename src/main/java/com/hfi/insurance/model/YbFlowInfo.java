@@ -89,6 +89,8 @@ public class YbFlowInfo implements Serializable {
      */
     private String flowType;
 
+    private String fileKey;
+
     private Date createTime;
 
     private Date updateTime;

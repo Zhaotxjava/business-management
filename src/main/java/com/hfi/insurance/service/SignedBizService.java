@@ -17,4 +17,5 @@ public interface SignedBizService {
     ApiResponse getPageWithPermission(GetPageWithPermissionReq req,String token);
 
     ApiResponse getTemplateInfo(String templateId);
+
 }

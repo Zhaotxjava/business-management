@@ -66,7 +66,12 @@ public class SignInfoController {
     public ApiResponse getPreviewUrl(@RequestParam("fileKey") String fileKey,@RequestParam(value = "docId",required = false) String docId){
         return signedInfoBizService.getPreviewUrl(fileKey,docId);
     }
-    //查看
+
+    @GetMapping("getSignFlowDocUrls")
+    @ApiOperation("查看")
+    public ApiResponse getSignFlowDocUrls(@RequestParam("flowId") String flowId){
+        return signedInfoBizService.getSignFlowDocUrls(flowId);
+    }
 
     @PostMapping("getSignUrl")
     @ApiOperation("获取二维码")

@@ -9,7 +9,9 @@ import com.hfi.insurance.common.ApiResponse;
 import com.hfi.insurance.enums.ErrorCodeEnum;
 import com.hfi.insurance.model.YbFlowInfo;
 import com.hfi.insurance.model.YbInstitutionInfo;
+import com.hfi.insurance.model.sign.FinishDocUrlBean;
 import com.hfi.insurance.model.sign.StandardSignDetailSignDoc;
+import com.hfi.insurance.model.sign.req.FlowDocBean;
 import com.hfi.insurance.model.sign.req.GetRecordInfoReq;
 import com.hfi.insurance.model.sign.req.GetSignUrlsReq;
 import com.hfi.insurance.model.sign.res.SignRecordsRes;
@@ -80,9 +82,9 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
             }
             String singers = signDetail.getString("signers");
             List<SingerInfoRes> singerInfos = JSON.parseArray(singers, SingerInfoRes.class);
-            String signDocDetails = signDetail.getString("signDocDetails");
-            List<StandardSignDetailSignDoc> standardSignDetailSignDocs = JSON.parseArray(signDocDetails, StandardSignDetailSignDoc.class);
-            StandardSignDetailSignDoc signDetailSignDoc = CollectionUtils.firstElement(standardSignDetailSignDocs);
+            //String signDocDetails = signDetail.getString("signDocDetails");
+            //List<StandardSignDetailSignDoc> standardSignDetailSignDocs = JSON.parseArray(signDocDetails, StandardSignDetailSignDoc.class);
+            //StandardSignDetailSignDoc signDetailSignDoc = CollectionUtils.firstElement(standardSignDetailSignDocs);
             //匹配用户，填充信息
             String number = ybFlowInfo.getNumber();
             YbInstitutionInfo institutionInfo = institutionInfoService.getInstitutionInfo(number);
@@ -94,7 +96,7 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
                     recordsRes.setSubject(signDetail.getString("subject"));
                     recordsRes.setSignStatus(singerInfoRes.getSignStatus());
                     recordsRes.setFlowStatus(signDetail.getInteger("flowStatus"));
-                    recordsRes.setFileKey(signDetailSignDoc != null ? signDetailSignDoc.getFileKey() : "");
+//                    recordsRes.setFileKey();
                     recordsRes.setAccountType(2);
                     recordsRes.setAccountId(institutionInfo.getAccountId());
                 }
@@ -135,4 +137,18 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
             return new ApiResponse(ErrorCodeEnum.RESPONES_ERROR);
         }
     }
+
+    @Override
+    public ApiResponse getSignFlowDocUrls(String signFlowId) {
+        JSONObject signFlowDocUrls = signedService.getSignFlowDocUrls(signFlowId);
+        if (signFlowDocUrls.containsKey("errCode")) {
+            log.error("获取签署流程文档下载地址异常，{}", signFlowDocUrls);
+            return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), signFlowDocUrls.getString("msg"));
+        }
+        String signDocUrlListStr = signFlowDocUrls.getString("signDocUrlList");
+        List<FinishDocUrlBean> flowDocBeans = JSON.parseArray(signDocUrlListStr, FinishDocUrlBean.class);
+        List<String> urls = flowDocBeans.stream().map(FinishDocUrlBean::getDownloadDocUrl).collect(Collectors.toList());
+        return new ApiResponse(urls);
+    }
+
 }
