@@ -40,6 +40,7 @@ public final class DateUtil {
      * @throws
      */
     public static String getNowTimestampStr() {
-        return dateToStr(new Date(), "yyyy-MM-dd HH:mm:ss");
+//        return dateToStr(new Date(), "yyyy-MM-dd HH:mm:ss");
+        return dateToStr(new Date(), "yyyyMMddHHmmss");
     }
 }
