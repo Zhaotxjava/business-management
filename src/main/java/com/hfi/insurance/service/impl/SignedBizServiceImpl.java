@@ -38,6 +38,7 @@ import com.hfi.insurance.service.IYbInstitutionInfoService;
 import com.hfi.insurance.service.OrganizationsService;
 import com.hfi.insurance.service.SignedBizService;
 import com.hfi.insurance.service.SignedService;
+import com.hfi.insurance.utils.DateUtil;
 import com.hfi.insurance.utils.EnumHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -197,7 +198,9 @@ public class SignedBizServiceImpl implements SignedBizService {
                 standardCreateFlow.setInitiatorAccountId(partyA.getAccountId());
                 standardCreateFlow.setSigners(singerList);
                 //流程主题
-                standardCreateFlow.setSubject(req.getTemplateId() + "-" + System.currentTimeMillis());
+                Date now = new Date();
+                String subject = req.getTemplateId() + "-" + flowDocBean.getDocName() +"-"+DateUtil.getNowTimestampStr();
+                standardCreateFlow.setSubject(subject);
                 log.info("创建流程入参：{}", JSON.toJSONString(standardCreateFlow));
                 JSONObject signFlows = signedService.createSignFlows(standardCreateFlow);
                 log.info("创建流程出参：{}", JSON.toJSONString(signFlows));
@@ -208,8 +211,6 @@ public class SignedBizServiceImpl implements SignedBizService {
                 List<InstitutionBaseInfo> distinctInstitutions = institutionInfos.stream().distinct().collect(Collectors.toList());
                 List<YbFlowInfo> flowInfoList = new ArrayList<>();
                 String singerName = String.join(",", institutionNames);
-                String subject = req.getTemplateId() + "-" + System.currentTimeMillis();
-                Date now = new Date();
                 distinctInstitutions.forEach(institutionInfo -> {
                     YbFlowInfo flowInfo = new YbFlowInfo();
                     flowInfo.setInitiator(initiatorName)
@@ -301,7 +302,8 @@ public class SignedBizServiceImpl implements SignedBizService {
             standardCreateFlow.setInitiatorAccountId(partyA.getAccountId());
             standardCreateFlow.setSigners(singerList);
             //流程主题
-            standardCreateFlow.setSubject(req.getTemplateId() + "-" + System.currentTimeMillis());
+            String subject = req.getTemplateId() + "-" + req.getFileName() + "-" + DateUtil.getNowTimestampStr();
+            standardCreateFlow.setSubject(subject);
             log.info("创建流程入参：{}", JSON.toJSONString(standardCreateFlow));
             JSONObject signFlows = signedService.createSignFlows(standardCreateFlow);
             log.info("创建流程出参：{}", JSON.toJSONString(signFlows));
@@ -312,7 +314,6 @@ public class SignedBizServiceImpl implements SignedBizService {
             List<InstitutionBaseInfo> distinctInstitutions = institutionInfos.stream().distinct().collect(Collectors.toList());
             List<YbFlowInfo> flowInfoList = new ArrayList<>();
             String singerName = String.join(",", institutionNames);
-            String subject = req.getTemplateId() + "-" + System.currentTimeMillis();
             distinctInstitutions.forEach(institutionInfo -> {
                 YbFlowInfo flowInfo = new YbFlowInfo();
                 flowInfo.setInitiator(initiatorName)
