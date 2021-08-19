@@ -159,6 +159,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
                     .setLegalPhone(req.getLegalPhone())
                     .setOrgInstitutionCode(req.getOrgInstitutionCode());
             institutionInfoMapper.insert(institutionInfo);
+            cacheInfo = this.getInstitutionInfo(number);
         } else {
             //判断法人信息是否已更新
             if(StringUtils.isNotEmpty(cacheInfo.getOrganizeId()) && (!StringUtils.equals(req.getLegalIdCard(),cacheInfo.getLegalIdCard())
