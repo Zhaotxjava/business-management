@@ -268,7 +268,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         }
         if (!isSameAccount) {
             JSONObject resultObj = null;
-            if (StringUtils.isNotBlank(cacheInfo.getAccountId()) && !StringUtils.equals(cacheInfo.getAccountId(), accountId)) {
+            if (cacheInfo != null && StringUtils.isNotBlank(cacheInfo.getAccountId()) && !StringUtils.equals(cacheInfo.getAccountId(), accountId)) {
                 resultObj = organizationsService.unbindAgent(organizeId, institutionInfo.getNumber(), cacheInfo.getAccountId(), "");
                 if (resultObj.containsKey("errCode")) {
                     log.error("外部机构解绑经办人信息异常，{}", resultObj);
