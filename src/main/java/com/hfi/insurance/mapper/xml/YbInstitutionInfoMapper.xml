@@ -16,6 +16,7 @@
         <result column="contact_id_card" property="contactIdCard" />
         <result column="contact_phone" property="contactPhone" />
         <result column="account_id" property="accountId" />
+        <result column="legal_account_id" property="legalAccountId" />
         <result column="organize_id" property="organizeId" />
         <result column="create_time" property="createTime" />
         <result column="update_time" property="updateTime" />
@@ -23,7 +24,8 @@
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        number, institution_name, org_institution_code, legal_name, legal_card_type, legal_id_card, legal_phone, contact_name, contact_card_type, contact_id_card, contact_phone, account_id, organize_id, create_time, update_time
+        number, institution_name, org_institution_code, legal_name, legal_card_type, legal_id_card, legal_phone, contact_name,
+        contact_card_type, contact_id_card, contact_phone, account_id, legal_account_id, organize_id, create_time, update_time
     </sql>
     <select id="selectNumber" resultType="java.lang.String">
         select number from yb_institution_info

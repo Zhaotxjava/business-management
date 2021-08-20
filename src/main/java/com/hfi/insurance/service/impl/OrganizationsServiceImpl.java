@@ -220,7 +220,7 @@ public class OrganizationsServiceImpl implements OrganizationsService {
         Map<String,String> headMap = new HashMap<>();
 
         JSONObject jsonObject = new JSONObject();
-//        jsonObject.put("organizeName", organizeName);
+        jsonObject.put("organizeName", organizeName);
         jsonObject.put("pageIndex", 1);
         jsonObject.put("pageSize", 20);
         convertHead(headMap, jsonObject.toJSONString());

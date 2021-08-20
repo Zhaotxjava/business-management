@@ -285,6 +285,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         }
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         institutionInfo.setAccountId(accountId);
+        institutionInfo.setLegalAccountId(defaultAccountId);
         institutionInfo.setOrganizeId(organizeId);
         //institutionInfo.setOrganizeId("12312");
         institutionInfo.setUpdateTime(df.format(new Date()));

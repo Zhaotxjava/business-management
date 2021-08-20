@@ -13,9 +13,11 @@ import com.hfi.insurance.enums.ETemplateType;
 import com.hfi.insurance.enums.ErrorCodeEnum;
 import com.hfi.insurance.model.YbFlowInfo;
 import com.hfi.insurance.model.YbInstitutionInfo;
+import com.hfi.insurance.model.sign.BindedAgentBean;
 import com.hfi.insurance.model.sign.InstitutionBaseInfo;
 import com.hfi.insurance.model.sign.Position;
 import com.hfi.insurance.model.sign.PredefineBean;
+import com.hfi.insurance.model.sign.QueryOuterOrgResult;
 import com.hfi.insurance.model.sign.Seal;
 import com.hfi.insurance.model.sign.SealUser;
 import com.hfi.insurance.model.sign.TemplateFlowBean;
@@ -40,6 +42,7 @@ import com.hfi.insurance.service.SignedBizService;
 import com.hfi.insurance.service.SignedService;
 import com.hfi.insurance.utils.DateUtil;
 import com.hfi.insurance.utils.EnumHelper;
+import com.hfi.insurance.utils.StreamUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -156,18 +159,10 @@ public class SignedBizServiceImpl implements SignedBizService {
                     }
                     if (institution != null) {
                         institutionInfos.add(institution);
-                        YbInstitutionInfo institutionInfo = new YbInstitutionInfo();
-                        if (institution.getAccountId() != null && institution.getOrganizeId()!=null) {
-                            institutionInfo.setOrganizeId(institution.getOrganizeId());
-                            institutionInfo.setAccountId(institution.getAccountId());
-                            institutionInfo.setNumber(institution.getNumber());
-                            institutionInfo.setInstitutionName(institution.getInstitutionName());
-                        }else {
-                            institutionInfo = institutionInfoService.getInstitutionInfo(institution.getNumber());
-                        }
                         //填充签署人信息
                         StandardSignerInfoBean signerInfoBean = null;
                         try {
+                            YbInstitutionInfo institutionInfo = getInstitutionInfo(institution);
                             signerInfoBean = assembleStandardSignerInfoBean(institutionInfo, singerInfo, fileKey, flowNamePredefineMap, templateType, flowName);
                         } catch (BizServiceException e) {
                             return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(), e.getMessage());
@@ -199,7 +194,7 @@ public class SignedBizServiceImpl implements SignedBizService {
                 standardCreateFlow.setSigners(singerList);
                 //流程主题
                 Date now = new Date();
-                String subject = req.getTemplateId() + "-" + flowDocBean.getDocName() +"-"+DateUtil.getNowTimestampStr();
+                String subject = req.getTemplateId() + "-" + flowDocBean.getDocName() + "-" + DateUtil.getNowTimestampStr();
                 standardCreateFlow.setSubject(subject);
                 log.info("创建流程入参：{}", JSON.toJSONString(standardCreateFlow));
                 JSONObject signFlows = signedService.createSignFlows(standardCreateFlow);
@@ -265,18 +260,10 @@ public class SignedBizServiceImpl implements SignedBizService {
                 institution = CollectionUtils.firstElement(institutionInfoList);
                 if (institution != null) {
                     institutionInfos.add(institution);
-                    YbInstitutionInfo institutionInfo = new YbInstitutionInfo();
-                    if (institution.getAccountId() != null && institution.getOrganizeId()!=null) {
-                        institutionInfo.setOrganizeId(institution.getOrganizeId());
-                        institutionInfo.setAccountId(institution.getAccountId());
-                        institutionInfo.setNumber(institution.getNumber());
-                        institutionInfo.setInstitutionName(institution.getInstitutionName());
-                    }else {
-                        institutionInfo = institutionInfoService.getInstitutionInfo(institution.getNumber());
-                    }
                     //填充签署人信息
                     StandardSignerInfoBean signerInfoBean = null;
                     try {
+                        YbInstitutionInfo institutionInfo = getInstitutionInfo(institution);
                         signerInfoBean = assembleStandardSignerInfoBean(institutionInfo, singerInfo, fileKey, null, templateType, flowName);
                     } catch (BizServiceException e) {
                         return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(), e.getMessage());
@@ -349,6 +336,39 @@ public class SignedBizServiceImpl implements SignedBizService {
     }
 
     /**
+     * 获取机构信息
+     * @param institution
+     * @return
+     * @throws BizServiceException
+     */
+    private YbInstitutionInfo getInstitutionInfo(InstitutionBaseInfo institution) throws BizServiceException {
+        YbInstitutionInfo institutionInfo = institutionInfoService.getInstitutionInfo(institution.getNumber());
+        if (null == institutionInfo) {
+            String institutionName = institution.getInstitutionName();
+            String orgInfoListStr = organizationsService.queryByOrgName(institutionName);
+            log.info("*******机构名称*******：{}", institutionName);
+            log.info("外部机构详情：{}" , orgInfoListStr);
+            JSONObject object = JSONObject.parseObject(orgInfoListStr);
+            if ("0".equals(object.getString("errCode"))) {
+                String data = object.getString("data");
+                List<QueryOuterOrgResult> queryOuterOrgResults = JSON.parseArray(data, QueryOuterOrgResult.class);
+                queryOuterOrgResults = StreamUtils.filter(queryOuterOrgResults,queryOuterOrgResult -> institutionName.equals(queryOuterOrgResult.getOrganizeName()));
+                QueryOuterOrgResult result = StreamUtils.getFirst(queryOuterOrgResults);
+                BindedAgentBean bindedAgentBean = StreamUtils.getFirst(result.getAgentAccounts());
+                YbInstitutionInfo info = new YbInstitutionInfo();
+                info.setAccountId(bindedAgentBean != null ? bindedAgentBean.getAgentId() : null)
+                        .setOrganizeId(institution.getOrganizeId())
+                        .setInstitutionName(institutionName)
+                        .setLegalAccountId(result.getLegalAccountId());
+                institutionInfo = info;
+            }else {
+                throw new BizServiceException(object.getString("msg"));
+            }
+        }
+        return institutionInfo;
+    }
+
+    /**
      * 填充文档信息
      *
      * @param req
@@ -415,9 +435,11 @@ public class SignedBizServiceImpl implements SignedBizService {
      */
     private StandardSignerInfoBean assembleStandardSignerInfoBean(YbInstitutionInfo institutionInfo, SingerInfo singerInfo, String fileKey, Map<String, PredefineBean> flowNamePredefineMap, ETemplateType templateType, String flowName) throws BizServiceException {
         StandardSignerInfoBean signerInfoBean = new StandardSignerInfoBean();
-        signerInfoBean.setAccountId(institutionInfo.getAccountId());
+//        signerInfoBean.setAccountId(institutionInfo.getAccountId());
+        signerInfoBean.setAccountId(institutionInfo.getLegalAccountId());
         signerInfoBean.setAuthorizationOrganizeId(institutionInfo.getOrganizeId());
-        signerInfoBean.setAccountType(singerInfo.getAccountType());
+//        signerInfoBean.setAccountType(singerInfo.getAccountType());
+        signerInfoBean.setAccountType(2);
         signerInfoBean.setLegalSignFlag(1);
         signerInfoBean.setSignOrder(1);
         //签署文档信息
@@ -525,22 +547,22 @@ public class SignedBizServiceImpl implements SignedBizService {
         queryInnerAccountsReq.setPageIndex("1");
         // 填充印章信息
         JSONObject innerOrgansSeals = signedService.getInnerOrgansSeals(organizeId, organizeNo);
-        log.info("甲方印章信息：{}",innerOrgansSeals);
-        if (innerOrgansSeals.containsKey("errCode")){
+        log.info("甲方印章信息：{}", innerOrgansSeals);
+        if (innerOrgansSeals.containsKey("errCode")) {
             throw new BizServiceException(innerOrgansSeals.getString("msg"));
         }
         String innerOrgansSealsStr = innerOrgansSeals.getString("seals");
         List<Seal> sealList = JSON.parseArray(innerOrgansSealsStr, Seal.class);
         Map<Integer, String> sealTypeAndSealIdMap = sealList.stream().collect(Collectors.toMap(Seal::getSubSealTypeId, Seal::getSealId));
         JSONObject sealInfos = signedService.getSealInfos(sealTypeAndSealIdMap.get(1));
-        log.info("印章管理员信息：{}",sealInfos);
-        if (innerOrgansSeals.containsKey("errCode")){
+        log.info("印章管理员信息：{}", sealInfos);
+        if (innerOrgansSeals.containsKey("errCode")) {
             throw new BizServiceException(innerOrgansSeals.getString("msg"));
         }
         String sealUsers = sealInfos.getString("sealUsers");
         List<SealUser> sealUserList = JSON.parseArray(sealUsers, SealUser.class);
         SealUser sealUser = CollectionUtils.firstElement(sealUserList);
-        if (sealUser != null){
+        if (sealUser != null) {
             partyA.setAccountId(sealUser.getAccountId());
             partyA.setAccountName(sealUser.getAccountName());
         }
@@ -606,7 +628,7 @@ public class SignedBizServiceImpl implements SignedBizService {
             }
             signDocDetails.add(standardSignDocBean);
             partyA.setSignDocDetails(signDocDetails);
-        }else {
+        } else {
             //文件直传发起
             List<SignInfoBeanV2> signPos = new ArrayList<>();
             SignInfoBeanV2 signInfoBeanV2 = new SignInfoBeanV2();
@@ -627,6 +649,7 @@ public class SignedBizServiceImpl implements SignedBizService {
 
     /**
      * 填充位置信息
+     *
      * @param predefineBean
      * @param signType
      * @param signIdentity

@@ -25,6 +25,8 @@ public class InstitutionInfo {
     private String contactPhone;
     @ApiModelProperty("用户id")
     private String accountId;  //用户id
+    @ApiModelProperty("天印系统法人用户标识")
+    private String legalAccountId;
     private String organizeId;  //机构id
     private String updateTime;
 

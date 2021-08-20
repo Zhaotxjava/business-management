@@ -101,6 +101,9 @@ public class YbInstitutionInfo implements Serializable {
     @ApiModelProperty("天印系统经办人用户标识")
     private String accountId;
 
+    @ApiModelProperty("天印系统法人用户标识")
+    private String legalAccountId;
+
     /**
      * 天印系统机构标记
      */

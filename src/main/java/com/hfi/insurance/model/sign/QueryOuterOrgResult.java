@@ -19,4 +19,10 @@ public class QueryOuterOrgResult {
     private String organizeName;// 机构名称
 
     private String organizeNo;
+
+    private String legalAccountId;
+
+    private String legalMobile;
+
+    private String legalUniqueId;
 }
