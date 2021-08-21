@@ -8,6 +8,7 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.hfi.insurance.aspect.anno.LogAnnotation;
 import com.hfi.insurance.common.ApiResponse;
 import com.hfi.insurance.common.BizServiceException;
+import com.hfi.insurance.enums.EAccountType;
 import com.hfi.insurance.enums.ESignType;
 import com.hfi.insurance.enums.ETemplateType;
 import com.hfi.insurance.enums.ErrorCodeEnum;
@@ -23,6 +24,7 @@ import com.hfi.insurance.model.sign.SealUser;
 import com.hfi.insurance.model.sign.TemplateFlowBean;
 import com.hfi.insurance.model.sign.TemplateFormBean;
 import com.hfi.insurance.model.sign.TemplateInfoBean;
+import com.hfi.insurance.model.sign.req.CopyViewerInfoBean;
 import com.hfi.insurance.model.sign.req.CreateSignFlowReq;
 import com.hfi.insurance.model.sign.req.FlowDocBean;
 import com.hfi.insurance.model.sign.req.GetPageWithPermissionReq;
@@ -125,8 +127,10 @@ public class SignedBizServiceImpl implements SignedBizService {
             //乙方（3）* （丙方+丁方）(1) =3 (个流程)
             for (int i = 0; i < maxSize; i++) {
                 StandardCreateFlowBO standardCreateFlow = new StandardCreateFlowBO();
-                //文档信息
+                //1、文档信息
                 List<FlowDocBean> signDocs = new ArrayList<>();
+                //2、抄送人信息集合
+                List<CopyViewerInfoBean> copyViewerInfoBeans = new ArrayList<>();
                 FlowDocBean flowDocBean = null;
                 try {
                     flowDocBean = assembleSignDocs(req, templateInfo, flowNameInstitutionMap, maxSizeFlowName, i, organizeNo);
@@ -136,14 +140,13 @@ public class SignedBizServiceImpl implements SignedBizService {
                 String fileKey = flowDocBean.getDocFilekey();
                 signDocs.add(flowDocBean);
                 standardCreateFlow.setSignDocs(signDocs);
-                //签署人信息
                 List<TemplateFlowBean> templateFlows = templateInfo.getTemplateFlows();
                 Map<String, PredefineBean> flowNamePredefineMap = new HashMap<>();
                 templateFlows.forEach(templateFlowBean -> {
                     flowNamePredefineMap.put(templateFlowBean.getFlowName(), templateFlowBean.getPredefine());
                 });
+                //3、待优化 填充乙丙丁方签署机构信息
                 List<StandardSignerInfoBean> singerList = new ArrayList<>();
-                //todo 优化 填充乙丙丁方签署信息
                 for (SingerInfo singerInfo : req.getSingerInfos()) {
                     List<InstitutionBaseInfo> institutionInfoList = singerInfo.getInstitutionInfoList();
                     //获取签署机构名称
@@ -162,7 +165,14 @@ public class SignedBizServiceImpl implements SignedBizService {
                         //填充签署人信息
                         StandardSignerInfoBean signerInfoBean = null;
                         try {
+                            CopyViewerInfoBean copyViewerInfoBean = new CopyViewerInfoBean();
                             YbInstitutionInfo institutionInfo = getInstitutionInfo(institution);
+                            log.info("签署机构信息：{}",JSON.toJSONString(institutionInfo));
+                            if (!institutionInfo.getNumber().startsWith("bx")) {
+                                copyViewerInfoBean.setAccountId(institutionInfo.getAccountId());
+                                copyViewerInfoBean.setAccountType(EAccountType.EXTERNAL.getCode());
+                                copyViewerInfoBeans.add(copyViewerInfoBean);
+                            }
                             signerInfoBean = assembleStandardSignerInfoBean(institutionInfo, singerInfo, fileKey, flowNamePredefineMap, templateType, flowName);
                         } catch (BizServiceException e) {
                             return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(), e.getMessage());
@@ -170,8 +180,6 @@ public class SignedBizServiceImpl implements SignedBizService {
                         singerList.add(signerInfoBean);
                     }
                 }
-                //填充甲方信息
-//                PredefineBean predefineBeanA = flowNamePredefineMap.get("甲方");
                 //填充甲方信息
                 StandardSignerInfoBean partyA = null;
                 //StandardSignerInfoBean legalPartyA = null;
@@ -188,6 +196,7 @@ public class SignedBizServiceImpl implements SignedBizService {
                 //发起人姓名不能为空
                 String initiatorName = partyA.getAccountName();
                 standardCreateFlow.setInitiatorName(initiatorName);
+                standardCreateFlow.setCopyViewers(copyViewerInfoBeans);
                 //手机号或者邮箱
                 standardCreateFlow.setInitiatorMobile(partyA.getContactMobile());
                 standardCreateFlow.setInitiatorAccountId(partyA.getAccountId());
@@ -196,7 +205,6 @@ public class SignedBizServiceImpl implements SignedBizService {
                 Date now = new Date();
                 String subject = req.getTemplateId() + "-" + flowDocBean.getDocName() + "-" + DateUtil.getNowTimestampStr();
                 standardCreateFlow.setSubject(subject);
-                log.info("创建流程入参：{}", JSON.toJSONString(standardCreateFlow));
                 JSONObject signFlows = signedService.createSignFlows(standardCreateFlow);
                 log.info("创建流程出参：{}", JSON.toJSONString(signFlows));
                 if (signFlows.containsKey("errCode")) {
@@ -241,6 +249,8 @@ public class SignedBizServiceImpl implements SignedBizService {
             StandardCreateFlowBO standardCreateFlow = new StandardCreateFlowBO();
             //文档信息
             List<FlowDocBean> signDocs = new ArrayList<>();
+            //2、抄送人信息集合
+            List<CopyViewerInfoBean> copyViewerInfoBeans = new ArrayList<>();
             FlowDocBean flowDocBean = new FlowDocBean();
             String fileKey = req.getFileKey();
             flowDocBean.setDocFilekey(fileKey);
@@ -263,7 +273,14 @@ public class SignedBizServiceImpl implements SignedBizService {
                     //填充签署人信息
                     StandardSignerInfoBean signerInfoBean = null;
                     try {
+                        CopyViewerInfoBean copyViewerInfoBean = new CopyViewerInfoBean();
                         YbInstitutionInfo institutionInfo = getInstitutionInfo(institution);
+                        log.info("签署机构信息：{}",JSON.toJSONString(institutionInfo));
+                        if (!institutionInfo.getNumber().startsWith("bx")) {
+                            copyViewerInfoBean.setAccountId(institutionInfo.getAccountId());
+                            copyViewerInfoBean.setAccountType(EAccountType.EXTERNAL.getCode());
+                            copyViewerInfoBeans.add(copyViewerInfoBean);
+                        }
                         signerInfoBean = assembleStandardSignerInfoBean(institutionInfo, singerInfo, fileKey, null, templateType, flowName);
                     } catch (BizServiceException e) {
                         return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(), e.getMessage());
@@ -281,6 +298,7 @@ public class SignedBizServiceImpl implements SignedBizService {
                 return new ApiResponse(ErrorCodeEnum.SYSTEM_ERROR.getCode(), e.getMessage());
             }
             singerList.add(partyA);
+            standardCreateFlow.setCopyViewers(copyViewerInfoBeans);
             //发起人姓名不能为空
             String initiatorName = partyA.getAccountName();
             standardCreateFlow.setInitiatorName(initiatorName);
@@ -337,31 +355,38 @@ public class SignedBizServiceImpl implements SignedBizService {
 
     /**
      * 获取机构信息
+     *
      * @param institution
      * @return
      * @throws BizServiceException
      */
     private YbInstitutionInfo getInstitutionInfo(InstitutionBaseInfo institution) throws BizServiceException {
         YbInstitutionInfo institutionInfo = institutionInfoService.getInstitutionInfo(institution.getNumber());
+        //获取保险公司机构信息
         if (null == institutionInfo) {
             String institutionName = institution.getInstitutionName();
             String orgInfoListStr = organizationsService.queryByOrgName(institutionName);
-            log.info("*******机构名称*******：{}", institutionName);
-            log.info("外部机构详情：{}" , orgInfoListStr);
             JSONObject object = JSONObject.parseObject(orgInfoListStr);
             if ("0".equals(object.getString("errCode"))) {
                 String data = object.getString("data");
                 List<QueryOuterOrgResult> queryOuterOrgResults = JSON.parseArray(data, QueryOuterOrgResult.class);
-                queryOuterOrgResults = StreamUtils.filter(queryOuterOrgResults,queryOuterOrgResult -> institutionName.equals(queryOuterOrgResult.getOrganizeName()));
-                QueryOuterOrgResult result = StreamUtils.getFirst(queryOuterOrgResults);
-                BindedAgentBean bindedAgentBean = StreamUtils.getFirst(result.getAgentAccounts());
-                YbInstitutionInfo info = new YbInstitutionInfo();
-                info.setAccountId(bindedAgentBean != null ? bindedAgentBean.getAgentId() : null)
-                        .setOrganizeId(institution.getOrganizeId())
-                        .setInstitutionName(institutionName)
-                        .setLegalAccountId(result.getLegalAccountId());
-                institutionInfo = info;
-            }else {
+                for (QueryOuterOrgResult result : queryOuterOrgResults) {
+                    if (institutionName.equals(result.getOrganizeName())) {
+                        BindedAgentBean bindedAgentBean = StreamUtils.getFirst(result.getAgentAccounts());
+                        YbInstitutionInfo info = new YbInstitutionInfo();
+                        String organizeNo = result.getOrganizeNo();
+                        if (bindedAgentBean != null && organizeNo.startsWith("bx")) {
+                            info.setAccountId(bindedAgentBean.getAgentId())
+                                    .setOrganizeId(institution.getOrganizeId())
+                                    .setNumber(organizeNo)
+                                    .setInstitutionName(institutionName)
+                                    .setLegalAccountId(result.getLegalAccountId());
+                            institutionInfo = info;
+                        }
+                    }
+                }
+
+            } else {
                 throw new BizServiceException(object.getString("msg"));
             }
         }
@@ -435,11 +460,14 @@ public class SignedBizServiceImpl implements SignedBizService {
      */
     private StandardSignerInfoBean assembleStandardSignerInfoBean(YbInstitutionInfo institutionInfo, SingerInfo singerInfo, String fileKey, Map<String, PredefineBean> flowNamePredefineMap, ETemplateType templateType, String flowName) throws BizServiceException {
         StandardSignerInfoBean signerInfoBean = new StandardSignerInfoBean();
-//        signerInfoBean.setAccountId(institutionInfo.getAccountId());
-        signerInfoBean.setAccountId(institutionInfo.getLegalAccountId());
+        //外部机构如果是保险公司则经办人签署，如果是医疗机构则法人签署
+        if (institutionInfo.getNumber().startsWith("bx")) {
+            signerInfoBean.setAccountId(institutionInfo.getAccountId());
+        } else {
+            signerInfoBean.setAccountId(institutionInfo.getLegalAccountId());
+        }
         signerInfoBean.setAuthorizationOrganizeId(institutionInfo.getOrganizeId());
-//        signerInfoBean.setAccountType(singerInfo.getAccountType());
-        signerInfoBean.setAccountType(2);
+        signerInfoBean.setAccountType(EAccountType.EXTERNAL.getCode());
         signerInfoBean.setLegalSignFlag(1);
         signerInfoBean.setSignOrder(1);
         //签署文档信息
