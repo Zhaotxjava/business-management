@@ -372,16 +372,18 @@ public class SignedBizServiceImpl implements SignedBizService {
                 List<QueryOuterOrgResult> queryOuterOrgResults = JSON.parseArray(data, QueryOuterOrgResult.class);
                 for (QueryOuterOrgResult result : queryOuterOrgResults) {
                     if (institutionName.equals(result.getOrganizeName())) {
-                        BindedAgentBean bindedAgentBean = StreamUtils.getFirst(result.getAgentAccounts());
-                        YbInstitutionInfo info = new YbInstitutionInfo();
                         String organizeNo = result.getOrganizeNo();
-                        if (bindedAgentBean != null && organizeNo.startsWith("bx")) {
-                            info.setAccountId(bindedAgentBean.getAgentId())
-                                    .setOrganizeId(institution.getOrganizeId())
-                                    .setNumber(organizeNo)
-                                    .setInstitutionName(institutionName)
-                                    .setLegalAccountId(result.getLegalAccountId());
-                            institutionInfo = info;
+                        for (BindedAgentBean bindedAgentBean : result.getAgentAccounts()){
+                            YbInstitutionInfo info = new YbInstitutionInfo();
+                            String agentBeanAgentId = bindedAgentBean.getAgentId();
+                            if (organizeNo.startsWith("bx") && !result.getLegalAccountId().equals(agentBeanAgentId)) {
+                                info.setAccountId(agentBeanAgentId)
+                                        .setOrganizeId(institution.getOrganizeId())
+                                        .setNumber(organizeNo)
+                                        .setInstitutionName(institutionName)
+                                        .setLegalAccountId(result.getLegalAccountId());
+                                institutionInfo = info;
+                            }
                         }
                     }
                 }
@@ -485,6 +487,7 @@ public class SignedBizServiceImpl implements SignedBizService {
             if (ESignType.MANUAL_KEY_WORD_SIGN == signType || ESignType.DEFAULT_KEY_WORD_SIGN == signType) {
                 List<SignInfoBeanV2> signPos = new ArrayList<>();
                 SignInfoBeanV2 signInfoBeanV2 = new SignInfoBeanV2();
+                signInfoBeanV2.setAddSignTime(false);
                 signInfoBeanV2.setKey(flowName);
                 signInfoBeanV2.setSignType(4);
                 signPos.add(signInfoBeanV2);
@@ -505,6 +508,7 @@ public class SignedBizServiceImpl implements SignedBizService {
                         SignInfoBeanV2 signInfoBeanV2 = new SignInfoBeanV2();
                         //签署方式1-单页签署
                         signInfoBeanV2.setSignType(1);
+                        signInfoBeanV2.setAddSignTime(false);
                         signInfoBeanV2.setPosX(Float.valueOf(position.getPosX()));
                         signInfoBeanV2.setPosY(Float.valueOf(position.getPosY()));
                         signInfoBeanV2.setPosPage(position.getPageNo());
@@ -515,6 +519,7 @@ public class SignedBizServiceImpl implements SignedBizService {
                         SignInfoBeanV2 signInfoBeanV2 = new SignInfoBeanV2();
                         //签署方式1-单页签署
                         signInfoBeanV2.setSignType(1);
+                        signInfoBeanV2.setAddSignTime(false);
                         signInfoBeanV2.setPosX(Float.valueOf(position.getPosX()));
                         signInfoBeanV2.setPosY(Float.valueOf(position.getPosY()));
                         signInfoBeanV2.setPosPage(position.getPageNo());
@@ -535,6 +540,7 @@ public class SignedBizServiceImpl implements SignedBizService {
             log.info("文件直传发起");
             List<SignInfoBeanV2> signPos = new ArrayList<>();
             SignInfoBeanV2 signInfoBeanV2 = new SignInfoBeanV2();
+            signInfoBeanV2.setAddSignTime(false);
             signInfoBeanV2.setKey(singerInfo.getKey());
             signInfoBeanV2.setSignType(4);
             signInfoBeanV2.setSignIdentity("ORGANIZE");
@@ -613,6 +619,7 @@ public class SignedBizServiceImpl implements SignedBizService {
                 SignInfoBeanV2 signInfoBeanV2 = new SignInfoBeanV2();
                 //签署类型；1-单页签、2-多页签、3-骑缝章、4关键字签
                 signInfoBeanV2.setSignType(4);
+                signInfoBeanV2.setAddSignTime(false);
                 signInfoBeanV2.setKey("甲方");
                 signPos.add(signInfoBeanV2);
                 standardSignDocBean.setSignPos(signPos);
@@ -629,6 +636,7 @@ public class SignedBizServiceImpl implements SignedBizService {
                         SignInfoBeanV2 signInfoBeanV2 = new SignInfoBeanV2();
                         //签署方式1-单页签署
                         signInfoBeanV2.setSignType(1);
+                        signInfoBeanV2.setAddSignTime(false);
                         signInfoBeanV2.setPosX(Float.valueOf(position.getPosX()));
                         signInfoBeanV2.setPosY(Float.valueOf(position.getPosY()));
                         signInfoBeanV2.setPosPage(position.getPageNo());
@@ -640,6 +648,7 @@ public class SignedBizServiceImpl implements SignedBizService {
                         SignInfoBeanV2 signInfoBeanV2 = new SignInfoBeanV2();
                         //签署方式1-单页签署
                         signInfoBeanV2.setSignType(1);
+                        signInfoBeanV2.setAddSignTime(false);
                         signInfoBeanV2.setPosX(Float.valueOf(position.getPosX()));
                         signInfoBeanV2.setPosY(Float.valueOf(position.getPosY()));
                         signInfoBeanV2.setPosPage(position.getPageNo());
@@ -661,6 +670,7 @@ public class SignedBizServiceImpl implements SignedBizService {
             List<SignInfoBeanV2> signPos = new ArrayList<>();
             SignInfoBeanV2 signInfoBeanV2 = new SignInfoBeanV2();
             signInfoBeanV2.setKey("甲方");
+            signInfoBeanV2.setAddSignTime(false);
             signInfoBeanV2.setSignType(4);
             signInfoBeanV2.setSignIdentity("ORGANIZE");
             SignInfoBeanV2 legalSignInfoBeanV2 = new SignInfoBeanV2();
