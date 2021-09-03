@@ -361,33 +361,27 @@ public class SignedBizServiceImpl implements SignedBizService {
      * @throws BizServiceException
      */
     private YbInstitutionInfo getInstitutionInfo(InstitutionBaseInfo institution) throws BizServiceException {
+        log.info("获取机构信息请求参数：【{}】",JSON.toJSONString(institution));
         YbInstitutionInfo institutionInfo = institutionInfoService.getInstitutionInfo(institution.getNumber());
         //获取保险公司机构信息
         if (null == institutionInfo) {
-            String institutionName = institution.getInstitutionName();
-            String orgInfoListStr = organizationsService.queryByOrgName(institutionName,1);
-            JSONObject object = JSONObject.parseObject(orgInfoListStr);
+            JSONObject object = organizationsService.queryOrgans(institution.getOrganizeId(),institution.getNumber());
+            // {"errCode":0,"msg":"success","errShow":true,"data":{"organizeId":"f9696842-2d5b-4518-ac40-41f15491dd01","organizeNo":"bx001",
+            // "organizeName":"esigntest测试保险公司1","licenseType":12,"licenseNumber":"914403001000123161","legalName":"朱阳",
+            // "legalLicenseType":1,"legalLicenseNumber":"330184199401223513","legalMobile":"15957114467","email":null,
+            // "legalUniqueId":"330184199401223513","agentUniqueId":"330102199303171815","legalAccountId":"af2ef891-fdab-4f98-b1b0-57226e5f80b7",
+            // "agentAccountId":"f338517a-9653-4593-b1f7-3faea7783f22","agentName":"周鸣鸣","status":1,"language":"chinese",
+            // "createTime":"2021-08-10 13:09:18","modifyTime":"2021-08-21 15:01:39","esignOrganizeId":"1172d0bd39b14795b903a9d5723fe0a9"}}
             if ("0".equals(object.getString("errCode"))) {
                 String data = object.getString("data");
-                List<QueryOuterOrgResult> queryOuterOrgResults = JSON.parseArray(data, QueryOuterOrgResult.class);
-                for (QueryOuterOrgResult result : queryOuterOrgResults) {
-                    if (institutionName.equals(result.getOrganizeName())) {
-                        String organizeNo = result.getOrganizeNo();
-                        for (BindedAgentBean bindedAgentBean : result.getAgentAccounts()){
-                            YbInstitutionInfo info = new YbInstitutionInfo();
-                            String agentBeanAgentId = bindedAgentBean.getAgentId();
-                            if (organizeNo.startsWith("bx") && !result.getLegalAccountId().equals(agentBeanAgentId)) {
-                                info.setAccountId(agentBeanAgentId)
-                                        .setOrganizeId(institution.getOrganizeId())
-                                        .setNumber(organizeNo)
-                                        .setInstitutionName(institutionName)
-                                        .setLegalAccountId(result.getLegalAccountId());
-                                institutionInfo = info;
-                            }
-                        }
-                    }
-                }
-
+                JSONObject jsonObject = JSON.parseObject(data);
+                YbInstitutionInfo info = new YbInstitutionInfo();
+                info.setAccountId(jsonObject.getString("agentAccountId"))
+                        .setOrganizeId(institution.getOrganizeId())
+                        .setNumber(jsonObject.getString("organizeNo"))
+                        .setInstitutionName(jsonObject.getString("organizeName"))
+                        .setLegalAccountId(jsonObject.getString("legalAccountId"));
+                institutionInfo = info;
             } else {
                 throw new BizServiceException(object.getString("msg"));
             }
