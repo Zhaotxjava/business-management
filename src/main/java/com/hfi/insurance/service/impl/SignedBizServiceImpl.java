@@ -365,7 +365,7 @@ public class SignedBizServiceImpl implements SignedBizService {
         //获取保险公司机构信息
         if (null == institutionInfo) {
             String institutionName = institution.getInstitutionName();
-            String orgInfoListStr = organizationsService.queryByOrgName(institutionName);
+            String orgInfoListStr = organizationsService.queryByOrgName(institutionName,1);
             JSONObject object = JSONObject.parseObject(orgInfoListStr);
             if ("0".equals(object.getString("errCode"))) {
                 String data = object.getString("data");

@@ -97,29 +97,41 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         Integer pageNum = req.getPageNum();
         req.setPageNum(pageNum - 1);
         List<InstitutionInfoRes> ybInstitutionInfos = institutionInfoMapper.selectOrgForCreateFlow(req);
-        //添加保险公司
-        String orgInfoListStr = organizationsService.queryByOrgName("");
-        JSONObject object = JSONObject.parseObject(orgInfoListStr);
-        if ("0".equals(object.getString("errCode"))) {
-            String data = object.getString("data");
-            List<QueryOuterOrgResult> queryOuterOrgResults = JSON.parseArray(data, QueryOuterOrgResult.class);
-            List<InstitutionInfoRes> insuranceList = new ArrayList<>();
-            for(QueryOuterOrgResult result : queryOuterOrgResults){
-                BindedAgentBean bindedAgentBean = CollectionUtils.firstElement(result.getAgentAccounts());
-                String organizeNo = result.getOrganizeNo();
-                if (bindedAgentBean != null && organizeNo.startsWith("bx")) {
-                    InstitutionInfoRes res = new InstitutionInfoRes();
-                    res.setAccountId(bindedAgentBean.getAgentId());
-                    res.setContactName(bindedAgentBean.getAgentName());
-                    res.setOrganizeId(result.getOrganizeId());
-                    res.setNumber(organizeNo);
-                    res.setInstitutionName(result.getOrganizeName());
-                    insuranceList.add(res);
+        //todo 添加保险公司
+        int pageIndex = 1;
+        int size = 1;
+        List<InstitutionInfoRes> insuranceList = new ArrayList<>();
+        List<QueryOuterOrgResult> queryOuterOrgResultList = new ArrayList<>();
+        while (size > 0){
+            String orgInfoListStr = organizationsService.queryByOrgName("",pageIndex);
+            JSONObject object = JSONObject.parseObject(orgInfoListStr);
+            if ("0".equals(object.getString("errCode"))) {
+                String data = object.getString("data");
+                List<QueryOuterOrgResult> queryOuterOrgResults = JSON.parseArray(data, QueryOuterOrgResult.class);
+                if (0 == queryOuterOrgResults.size()){
+                    size = 0;
                 }
+                pageIndex ++;
+                queryOuterOrgResultList.addAll(queryOuterOrgResults);
+            }else {
+                break;
             }
-            ybInstitutionInfos.addAll(insuranceList);
         }
-
+        log.info("外部机构数量：【{}】",queryOuterOrgResultList.size());
+        for(QueryOuterOrgResult result : queryOuterOrgResultList){
+            BindedAgentBean bindedAgentBean = CollectionUtils.firstElement(result.getAgentAccounts());
+            String organizeNo = result.getOrganizeNo();
+            if (bindedAgentBean != null && organizeNo.startsWith("bx")) {
+                InstitutionInfoRes res = new InstitutionInfoRes();
+                res.setAccountId(bindedAgentBean.getAgentId());
+                res.setContactName(bindedAgentBean.getAgentName());
+                res.setOrganizeId(result.getOrganizeId());
+                res.setNumber(organizeNo);
+                res.setInstitutionName(result.getOrganizeName());
+                insuranceList.add(res);
+            }
+        }
+        ybInstitutionInfos.addAll(insuranceList);
         int total = institutionInfoMapper.selectCountOrgForCreateFlow(req);
         Page<InstitutionInfoRes> page = new Page<>(req.getPageNum(),req.getPageSize());
         page.setRecords(ybInstitutionInfos);

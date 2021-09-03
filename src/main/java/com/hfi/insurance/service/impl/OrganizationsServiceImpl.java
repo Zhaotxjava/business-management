@@ -216,15 +216,15 @@ public class OrganizationsServiceImpl implements OrganizationsService {
     }
 
     @Override
-    public String queryByOrgName(String organizeName) {
+    public String queryByOrgName(String organizeName,int pageIndex) {
         Map<String,String> headMap = new HashMap<>();
 
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("organizeName", organizeName);
-        jsonObject.put("pageIndex", 1);
+        jsonObject.put("pageIndex", pageIndex);
         jsonObject.put("pageSize", 20);
         convertHead(headMap, jsonObject.toJSONString());
-        String result = HttpUtil.doPost(url + "/V1/organizations/outerOrgans/queryByOrgname?pageIndex=1&pageSize=30", headMap, jsonObject.toJSONString());
+        String result = HttpUtil.doPost(url + "/V1/organizations/outerOrgans/queryByOrgname?pageIndex=" + pageIndex + "&pageSize=30", headMap, jsonObject.toJSONString());
        return result;
     }
 }
