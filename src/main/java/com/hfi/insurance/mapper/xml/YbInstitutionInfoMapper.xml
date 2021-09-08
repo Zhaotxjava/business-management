@@ -4,22 +4,22 @@
 
     <!-- 通用查询映射结果 -->
     <resultMap id="BaseResultMap" type="com.hfi.insurance.model.YbInstitutionInfo">
-        <id column="number" property="number" />
-        <result column="institution_name" property="institutionName" />
-        <result column="org_institution_code" property="orgInstitutionCode" />
-        <result column="legal_name" property="legalName" />
-        <result column="legal_card_type" property="legalCardType" />
-        <result column="legal_id_card" property="legalIdCard" />
-        <result column="legal_phone" property="legalPhone" />
-        <result column="contact_name" property="contactName" />
-        <result column="contact_card_type" property="contactCardType" />
-        <result column="contact_id_card" property="contactIdCard" />
-        <result column="contact_phone" property="contactPhone" />
-        <result column="account_id" property="accountId" />
-        <result column="legal_account_id" property="legalAccountId" />
-        <result column="organize_id" property="organizeId" />
-        <result column="create_time" property="createTime" />
-        <result column="update_time" property="updateTime" />
+        <id column="number" property="number"/>
+        <result column="institution_name" property="institutionName"/>
+        <result column="org_institution_code" property="orgInstitutionCode"/>
+        <result column="legal_name" property="legalName"/>
+        <result column="legal_card_type" property="legalCardType"/>
+        <result column="legal_id_card" property="legalIdCard"/>
+        <result column="legal_phone" property="legalPhone"/>
+        <result column="contact_name" property="contactName"/>
+        <result column="contact_card_type" property="contactCardType"/>
+        <result column="contact_id_card" property="contactIdCard"/>
+        <result column="contact_phone" property="contactPhone"/>
+        <result column="account_id" property="accountId"/>
+        <result column="legal_account_id" property="legalAccountId"/>
+        <result column="organize_id" property="organizeId"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
     </resultMap>
 
     <!-- 通用查询结果列 -->
@@ -45,7 +45,7 @@
         from yb_org_td org
         left join yb_institution_info ins on org.AKB020 = ins.number
         <where>
-             org.BKB012 = '1' and org.AAA027 like '3301%'
+            org.BKB012 = '1' and org.AAA027 like '3301%'
             <if test="institutionNumber != null and institutionNumber != ''">
                 and org.AKB020 like concat(#{institutionNumber} , '%')
             </if>
@@ -91,22 +91,30 @@
             <if test="number != null and number != ''">
                 and org.AKB020 = #{number}
             </if>
-            and org.AKB022 in
-            <foreach collection="institutionTypes" item="type" open="(" close=")" separator="," index="index">
-                #{type}
-            </foreach>
-            and org.AKA101 in
-            <foreach collection="institutionLevels" item="level" open="(" close=")" separator="," index="index">
-                #{level}
-            </foreach>
-            and org.AAA027 in
-            <foreach collection="areas" item="area" open="(" close=")" separator="," index="index">
-                #{area}
-            </foreach>
-            and org.BKA938 in
-            <foreach collection="profits" item="profit" open="(" close=")" separator="," index="index">
-                #{profit}
-            </foreach>
+            <if test='institutionTypes != null and institutionTypes.size() > 0'>
+                and org.AKB022 in
+                <foreach collection="institutionTypes" item="type" open="(" close=")" separator="," index="index">
+                    #{type}
+                </foreach>
+            </if>
+            <if test='institutionLevels != null and institutionLevels.size() > 0'>
+                and org.AKA101 in
+                <foreach collection="institutionLevels" item="level" open="(" close=")" separator="," index="index">
+                    #{level}
+                </foreach>
+            </if>
+            <if test='areas != null and areas.size() > 0'>
+                and org.AAA027 in
+                <foreach collection="areas" item="area" open="(" close=")" separator="," index="index">
+                    #{area}
+                </foreach>
+            </if>
+            <if test='profits != null and profits.size() > 0'>
+                and org.BKA938 in
+                <foreach collection="profits" item="profit" open="(" close=")" separator="," index="index">
+                    #{profit}
+                </foreach>
+            </if>
         </where>
         limit #{pageNum},#{pageSize}
     </select>
@@ -121,22 +129,30 @@
             <if test="number != null and number != ''">
                 and org.AKB020 = #{number}
             </if>
-            and org.AKB022 in
-            <foreach collection="institutionTypes" item="type" open="(" close=")" separator="," index="index">
-                #{type}
-            </foreach>
-            and org.AKA101 in
-            <foreach collection="institutionLevels" item="level" open="(" close=")" separator="," index="index">
-                #{level}
-            </foreach>
-            and org.AAA027 in
-            <foreach collection="areas" item="area" open="(" close=")" separator="," index="index">
-                #{area}
-            </foreach>
-            and org.BKA938 in
-            <foreach collection="profits" item="profit" open="(" close=")" separator="," index="index">
-                #{profit}
-            </foreach>
+            <if test='institutionTypes != null and institutionTypes.size() > 0'>
+                and org.AKB022 in
+                <foreach collection="institutionTypes" item="type" open="(" close=")" separator="," index="index">
+                    #{type}
+                </foreach>
+            </if>
+            <if test='institutionLevels != null and institutionLevels.size() > 0'>
+                and org.AKA101 in
+                <foreach collection="institutionLevels" item="level" open="(" close=")" separator="," index="index">
+                    #{level}
+                </foreach>
+            </if>
+            <if test='areas != null and areas.size() > 0'>
+                and org.AAA027 in
+                <foreach collection="areas" item="area" open="(" close=")" separator="," index="index">
+                    #{area}
+                </foreach>
+            </if>
+            <if test='profits != null and profits.size() > 0'>
+                and org.BKA938 in
+                <foreach collection="profits" item="profit" open="(" close=")" separator="," index="index">
+                    #{profit}
+                </foreach>
+            </if>
         </where>
     </select>
 </mapper>

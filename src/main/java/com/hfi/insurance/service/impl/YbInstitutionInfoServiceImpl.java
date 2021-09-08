@@ -271,10 +271,10 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         } else {
             //更新机构信息
             organizeId = organObj.getString("organizeId");
-            if (!defaultAccountId.equals(organObj.getString("agentAccountId"))) {
-                log.error("法人信息已变更，系统暂不支持接口");
-                return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), "法人信息已变更，系统暂不支持接口更新");
-            }
+//            if (!defaultAccountId.equals(organObj.getString("agentAccountId"))) {
+//                log.error("法人信息已变更，系统暂不支持接口");
+//                return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), "法人信息已变更，系统暂不支持接口更新");
+//            }
             institutionInfo.setOrganizeId(organizeId);
             JSONObject resultObj = organizationsService.updateOrgans(institutionInfo);
             if (resultObj.containsKey("errCode")) {

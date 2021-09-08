@@ -116,12 +116,12 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
         log.info("获取签署地址列表请求参数：{}", JSON.toJSONString(req));
         JSONObject signUrls = signedService.getSignUrls(req);
         log.info("获取签署地址列表响应参数：{}", signUrls);
-        if (signUrls.getBoolean("success")) {
+        if ("-1".equals(signUrls.getString("errCode"))) {
+            return new ApiResponse(ErrorCodeEnum.RESPONES_ERROR.getCode(),signUrls.getString("msg"));
+        }else {
             String signUrlsStr = signUrls.getString("signUrlList");
             List<SignUrlRes> signUrlRes = JSON.parseArray(signUrlsStr, SignUrlRes.class);
             return new ApiResponse(signUrlRes);
-        } else {
-            return new ApiResponse(ErrorCodeEnum.RESPONES_ERROR);
         }
     }
 
@@ -130,11 +130,11 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
     public ApiResponse getPreviewUrl(String fileKey, String docId) {
         JSONObject previewUrl = signedService.getPreviewUrl(fileKey, docId);
         log.info("获取文档预览的URL响应参数：{}", previewUrl);
-        if (previewUrl.getBoolean("success")) {
+        if ("-1".equals(previewUrl.getString("errCode"))) {
+            return new ApiResponse(ErrorCodeEnum.RESPONES_ERROR.getCode(),previewUrl.getString("msg"));
+        }else {
             String url = previewUrl.getString("url");
             return new ApiResponse(url);
-        } else {
-            return new ApiResponse(ErrorCodeEnum.RESPONES_ERROR);
         }
     }
 
