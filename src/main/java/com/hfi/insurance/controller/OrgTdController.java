@@ -36,7 +36,7 @@ public class OrgTdController {
     @Resource
     private IYbInstitutionInfoService institutionInfoService;
 
-    @PostMapping("getOrgTdInfo")
+    @PostMapping("/getOrgTdInfo")
     @ApiOperation("查询签署机构信息")
     public ApiResponse getOrgTdInfo(@RequestBody OrgTdQueryReq req){
 //        if (CollectionUtils.isEmpty(req.getInstitutionTypes())){

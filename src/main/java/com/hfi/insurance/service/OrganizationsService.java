@@ -26,5 +26,7 @@ public interface OrganizationsService {
 
     JSONObject queryInnerOrgans(String organizeNo);
 
-    String queryByOrgName(String organizeName,int pageIndex);
+    String queryByOrgName(String organizeName);
+
+
 }

@@ -9,10 +9,12 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.hfi.insurance.aspect.anno.LogAnnotation;
 import com.hfi.insurance.common.ApiResponse;
 import com.hfi.insurance.enums.ErrorCodeEnum;
+import com.hfi.insurance.mapper.YbInstitutionInfoChangeMapper;
 import com.hfi.insurance.mapper.YbInstitutionInfoMapper;
 import com.hfi.insurance.mapper.YbOrgTdMapper;
 import com.hfi.insurance.model.InstitutionInfo;
 import com.hfi.insurance.model.YbInstitutionInfo;
+import com.hfi.insurance.model.YbInstitutionInfoChange;
 import com.hfi.insurance.model.YbOrgTd;
 import com.hfi.insurance.model.dto.InstitutionInfoAddReq;
 import com.hfi.insurance.model.dto.OrgTdQueryReq;
@@ -26,7 +28,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
@@ -59,6 +60,9 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
 
     @Resource
     private Cache<String, String> caffeineCache;
+    @Resource
+    private YbInstitutionInfoChangeMapper  ybInstitutionInfoChangeMapper;
+
 
     @Override
     @LogAnnotation
@@ -95,49 +99,50 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
     @Override
     @LogAnnotation
     public Page<InstitutionInfoRes> getOrgTdListForCreateFlow(OrgTdQueryReq req) {
-        Integer pageNum = req.getPageNum();
-        req.setPageNum(pageNum - 1);
-        List<InstitutionInfoRes> ybInstitutionInfos = institutionInfoMapper.selectOrgForCreateFlow(req);
-        //todo 添加保险公司
-        int pageIndex = 1;
-        int size = 1;
-        List<InstitutionInfoRes> insuranceList = new ArrayList<>();
-        List<QueryOuterOrgResult> queryOuterOrgResultList = new ArrayList<>();
-        while (size > 0){
-            String orgInfoListStr = organizationsService.queryByOrgName("",pageIndex);
-            JSONObject object = JSONObject.parseObject(orgInfoListStr);
-            if ("0".equals(object.getString("errCode"))) {
-                String data = object.getString("data");
-                List<QueryOuterOrgResult> queryOuterOrgResults = JSON.parseArray(data, QueryOuterOrgResult.class);
-                if (0 == queryOuterOrgResults.size()){
-                    size = 0;
-                }
-                pageIndex ++;
-                queryOuterOrgResultList.addAll(queryOuterOrgResults);
-            }else {
-                break;
-            }
-        }
-        log.info("外部机构数量：【{}】",queryOuterOrgResultList.size());
-        for(QueryOuterOrgResult result : queryOuterOrgResultList){
-            BindedAgentBean bindedAgentBean = CollectionUtils.firstElement(result.getAgentAccounts());
-            String organizeNo = result.getOrganizeNo();
-            if (bindedAgentBean != null && organizeNo.startsWith("bx")) {
-                InstitutionInfoRes res = new InstitutionInfoRes();
-                res.setAccountId(bindedAgentBean.getAgentId());
-                res.setContactName(bindedAgentBean.getAgentName());
-                res.setOrganizeId(result.getOrganizeId());
-                res.setNumber(organizeNo);
-                res.setInstitutionName(result.getOrganizeName());
-                insuranceList.add(res);
-            }
-        }
-        ybInstitutionInfos.addAll(insuranceList);
-        int total = institutionInfoMapper.selectCountOrgForCreateFlow(req);
-        Page<InstitutionInfoRes> page = new Page<>(req.getPageNum(),req.getPageSize());
-        page.setRecords(ybInstitutionInfos);
-        page.setTotal(total);
-        return page;
+//        Integer pageNum = req.getPageNum();
+//        req.setPageNum(pageNum - 1);
+//        List<InstitutionInfoRes> ybInstitutionInfos = institutionInfoMapper.selectOrgForCreateFlow(req);
+//       //todo 添加保险公司
+//        int pageIndex = 1;
+//        int size = 1;
+//        List<InstitutionInfoRes> insuranceList = new ArrayList<>();
+//        List<QueryOuterOrgResult> queryOuterOrgResultList = new ArrayList<>();
+//        while (size > 0){
+//            String orgInfoListStr = organizationsService.queryByOrgName("",pageIndex);
+//            JSONObject object = JSONObject.parseObject(orgInfoListStr);
+//            if ("0".equals(object.getString("errCode"))) {
+//                String data = object.getString("data");
+//                List<QueryOuterOrgResult> queryOuterOrgResults = JSON.parseArray(data, QueryOuterOrgResult.class);
+//                if (0 == queryOuterOrgResults.size()){
+//                    size = 0;
+//                }
+//                pageIndex ++;
+//                queryOuterOrgResultList.addAll(queryOuterOrgResults);
+//            }else {
+//                break;
+//            }
+//        }
+//        log.info("外部机构数量：【{}】",queryOuterOrgResultList.size());
+//        for(QueryOuterOrgResult result : queryOuterOrgResultList){
+//            BindedAgentBean bindedAgentBean = CollectionUtils.firstElement(result.getAgentAccounts());
+//            String organizeNo = result.getOrganizeNo();
+//            if (bindedAgentBean != null && organizeNo.startsWith("bx")) {
+//                InstitutionInfoRes res = new InstitutionInfoRes();
+//                res.setAccountId(bindedAgentBean.getAgentId());
+//                res.setContactName(bindedAgentBean.getAgentName());
+//                res.setOrganizeId(result.getOrganizeId());
+//                res.setNumber(organizeNo);
+//                res.setInstitutionName(result.getOrganizeName());
+//                insuranceList.add(res);
+//            }
+//        }
+//        ybInstitutionInfos.addAll(insuranceList);
+//        int total = institutionInfoMapper.selectCountOrgForCreateFlow(req);
+//        Page<InstitutionInfoRes> page = new Page<>(req.getPageNum(),req.getPageSize());
+//        page.setRecords(ybInstitutionInfos);
+//        page.setTotal(total);
+ //       return page;
+        return  null;
     }
 
     @Override
@@ -150,7 +155,6 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
 
     @Override
     @LogAnnotation
-    @Transactional(rollbackFor = Exception.class)
     public ApiResponse updateInstitutionInfo(InstitutionInfoAddReq req) {
         String number = req.getNumber();
         //1.往yb_institution_info表添加记录
@@ -174,16 +178,15 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
                     .setOrgInstitutionCode(req.getOrgInstitutionCode());
             institutionInfoMapper.insert(institutionInfo);
             cacheInfo = this.getInstitutionInfo(number);
+        } else {
+            //判断法人信息是否已更新
+            if(StringUtils.isNotEmpty(cacheInfo.getOrganizeId()) && (!StringUtils.equals(req.getLegalIdCard(),cacheInfo.getLegalIdCard())
+                || !StringUtils.equals(req.getLegalName(),cacheInfo.getLegalName())
+                || !StringUtils.equals(req.getLegalPhone(),cacheInfo.getLegalPhone()))){
+                log.error("法人信息已变更，系统暂不支持接口");
+                return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), "法人信息已变更，系统暂不支持接口更新");
+            }
         }
-//        else {
-//            //判断法人信息是否已更新
-//            if(StringUtils.isNotEmpty(cacheInfo.getOrganizeId()) && (!StringUtils.equals(req.getLegalIdCard(),cacheInfo.getLegalIdCard())
-//                || !StringUtils.equals(req.getLegalName(),cacheInfo.getLegalName())
-//                || !StringUtils.equals(req.getLegalPhone(),cacheInfo.getLegalPhone()))){
-//                log.error("法人信息已变更，系统暂不支持接口");
-//                return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), "法人信息已变更，系统暂不支持接口更新");
-//            }
-//        }
         // 2>通过天印系统查询联系人是否已存在于系统，不存在则调用创建用户接口，得到用户的唯一编码，存在则直接跳到第4步
         boolean accountExist = true;
         boolean organExist = true;
@@ -271,10 +274,10 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         } else {
             //更新机构信息
             organizeId = organObj.getString("organizeId");
-//            if (!defaultAccountId.equals(organObj.getString("agentAccountId"))) {
-//                log.error("法人信息已变更，系统暂不支持接口");
-//                return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), "法人信息已变更，系统暂不支持接口更新");
-//            }
+            if (!defaultAccountId.equals(organObj.getString("agentAccountId"))) {
+                log.error("法人信息已变更，系统暂不支持接口");
+                return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), "法人信息已变更，系统暂不支持接口更新");
+            }
             institutionInfo.setOrganizeId(organizeId);
             JSONObject resultObj = organizationsService.updateOrgans(institutionInfo);
             if (resultObj.containsKey("errCode")) {
@@ -310,4 +313,17 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         institutionInfoMapper.updateById(ybInstitutionInfo);
         return new ApiResponse(ErrorCodeEnum.SUCCESS);
     }
+    @Override
+    public void addYbInstitutionInfoChange(YbInstitutionInfoChange ybInstitutionInfoChange) {
+
+        ybInstitutionInfoChangeMapper.insert(ybInstitutionInfoChange);
+    }
+
+    @Override
+    public ApiResponse getInstitutionInfoChangeList(String token, String number, String institutionName, Integer pageNum, Integer pageSize) {
+
+
+        return null;
+    }
+
 }
