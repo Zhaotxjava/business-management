@@ -39,18 +39,18 @@ public class OrgTdController {
     @PostMapping("getOrgTdInfo")
     @ApiOperation("查询签署机构信息")
     public ApiResponse getOrgTdInfo(@RequestBody OrgTdQueryReq req){
-        if (CollectionUtils.isEmpty(req.getInstitutionTypes())){
-            return new ApiResponse("机构类型不能为空！");
-        }
-        if (CollectionUtils.isEmpty(req.getInstitutionLevels())){
-            return new ApiResponse("机构等级不能为空！");
-        }
-        if (CollectionUtils.isEmpty(req.getAreas())){
-            return new ApiResponse("区域不能为空！");
-        }
-        if (CollectionUtils.isEmpty(req.getProfits())){
-            return new ApiResponse("营利类型不能为空！");
-        }
+//        if (CollectionUtils.isEmpty(req.getInstitutionTypes())){
+//            return new ApiResponse("机构类型不能为空！");
+//        }
+//        if (CollectionUtils.isEmpty(req.getInstitutionLevels())){
+//            return new ApiResponse("机构等级不能为空！");
+//        }
+//        if (CollectionUtils.isEmpty(req.getAreas())){
+//            return new ApiResponse("区域不能为空！");
+//        }
+//        if (CollectionUtils.isEmpty(req.getProfits())){
+//            return new ApiResponse("营利类型不能为空！");
+//        }
         return new ApiResponse(institutionInfoService.getOrgTdListForCreateFlow(req));
     }
 }
