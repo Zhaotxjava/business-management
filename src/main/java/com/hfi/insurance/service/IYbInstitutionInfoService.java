@@ -5,6 +5,7 @@ import com.hfi.insurance.common.ApiResponse;
 import com.hfi.insurance.common.PageDto;
 import com.hfi.insurance.model.YbInstitutionInfo;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.hfi.insurance.model.YbInstitutionInfoChange;
 import com.hfi.insurance.model.YbOrgTd;
 import com.hfi.insurance.model.dto.InstitutionInfoAddReq;
 import com.hfi.insurance.model.dto.OrgTdQueryReq;
@@ -37,4 +38,7 @@ public interface IYbInstitutionInfoService extends IService<YbInstitutionInfo> {
 
     ApiResponse updateInstitutionInfo(InstitutionInfoAddReq req);
 
+    void addYbInstitutionInfoChange(YbInstitutionInfoChange ybInstitutionInfoChange);
+
+    ApiResponse getInstitutionInfoChangeList(String token, String number, String institutionName, Integer pageNum, Integer pageSize);
 }
