@@ -48,7 +48,7 @@ public class PicUploadUtil {
         } catch (Exception e) {
 //            e.printStackTrace();
             log.error("",e);
-            return ApiResponse.fail("上传失败:{}",e.getMessage());
+            return ApiResponse.fail("图片上传失败:{}",e.getMessage());
         }
     }
 }
