@@ -17,6 +17,12 @@ public class ApiResponse<T>  {
     @ApiModelProperty(value = "返回数据")
     private T data;
 
+    public boolean isSuccess(){
+        if(ErrorCodeEnum.SUCCESS.getCode().equals(this.code) ){
+            return true;
+        }
+        return false;
+    }
 
     public ApiResponse(T data) {
         this.code = ErrorCodeEnum.SUCCESS.getCode();

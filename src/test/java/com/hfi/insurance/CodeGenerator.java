@@ -22,7 +22,7 @@ public class CodeGenerator {
         // 设置活动记录ActiveRecord
         config.setActiveRecord(false);
         // 设置作者
-        config.setAuthor("ChenZX");
+        config.setAuthor("NZH");
         // 设置文件第二次是二次覆
         config.setFileOverride(true);
         // 设置缓存cache 二级缓存
@@ -61,7 +61,7 @@ public class CodeGenerator {
         strategyConfig.setNaming(NamingStrategy.underline_to_camel);
         strategyConfig.setColumnNaming(NamingStrategy.underline_to_camel);//数据库表字段映射到实体的命名策略
         // .setSuperMapperClass(“cn.saytime.mapper.BaseMapper”)
-        strategyConfig.setInclude("yb_flow_info");//修改替换成你需要的表名，多个表名传数组
+        strategyConfig.setInclude("yb_institution_pic_path");//修改替换成你需要的表名，多个表名传数组
         // 4.设置包配置package
         PackageConfig packageConfig = new PackageConfig();
         //pc.setModuleName(scanner(“模块名”));
