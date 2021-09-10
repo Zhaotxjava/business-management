@@ -5,6 +5,8 @@ import java.util.List;
 
 public enum ErrorCodeEnum {
     SUCCESS("200", "success"),
+
+    FAILURE("201","条件不能为空"),
     SYSTEM_ERROR("500", "系统错误"),
     PARAM_ERROR("50901", "参数错误"),
     NETWORK_ERROR("50904", "对方服务器连接失败"),

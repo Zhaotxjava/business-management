@@ -100,50 +100,50 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
     @Override
     @LogAnnotation
     public Page<InstitutionInfoRes> getOrgTdListForCreateFlow(OrgTdQueryReq req) {
-//        Integer pageNum = req.getPageNum();
-//        req.setPageNum(pageNum - 1);
-//        List<InstitutionInfoRes> ybInstitutionInfos = institutionInfoMapper.selectOrgForCreateFlow(req);
-//       //todo 添加保险公司
-//        int pageIndex = 1;
-//        int size = 1;
-//        List<InstitutionInfoRes> insuranceList = new ArrayList<>();
-//        List<QueryOuterOrgResult> queryOuterOrgResultList = new ArrayList<>();
-//        while (size > 0){
-//            String orgInfoListStr = organizationsService.queryByOrgName("",pageIndex);
-//            JSONObject object = JSONObject.parseObject(orgInfoListStr);
-//            if ("0".equals(object.getString("errCode"))) {
-//                String data = object.getString("data");
-//                List<QueryOuterOrgResult> queryOuterOrgResults = JSON.parseArray(data, QueryOuterOrgResult.class);
-//                if (0 == queryOuterOrgResults.size()){
-//                    size = 0;
-//                }
-//                pageIndex ++;
-//                queryOuterOrgResultList.addAll(queryOuterOrgResults);
-//            }else {
-//                break;
-//            }
-//        }
-//        log.info("外部机构数量：【{}】",queryOuterOrgResultList.size());
-//        for(QueryOuterOrgResult result : queryOuterOrgResultList){
-//            BindedAgentBean bindedAgentBean = CollectionUtils.firstElement(result.getAgentAccounts());
-//            String organizeNo = result.getOrganizeNo();
-//            if (bindedAgentBean != null && organizeNo.startsWith("bx")) {
-//                InstitutionInfoRes res = new InstitutionInfoRes();
-//                res.setAccountId(bindedAgentBean.getAgentId());
-//                res.setContactName(bindedAgentBean.getAgentName());
-//                res.setOrganizeId(result.getOrganizeId());
-//                res.setNumber(organizeNo);
-//                res.setInstitutionName(result.getOrganizeName());
-//                insuranceList.add(res);
-//            }
-//        }
-//        ybInstitutionInfos.addAll(insuranceList);
-//        int total = institutionInfoMapper.selectCountOrgForCreateFlow(req);
-//        Page<InstitutionInfoRes> page = new Page<>(req.getPageNum(),req.getPageSize());
-//        page.setRecords(ybInstitutionInfos);
-//        page.setTotal(total);
- //       return page;
-        return  null;
+        Integer pageNum = req.getPageNum();
+        req.setPageNum(pageNum - 1);
+        List<InstitutionInfoRes> ybInstitutionInfos = institutionInfoMapper.selectOrgForCreateFlow(req);
+       //todo 添加保险公司
+        int pageIndex = 1;
+        int size = 1;
+        List<InstitutionInfoRes> insuranceList = new ArrayList<>();
+        List<QueryOuterOrgResult> queryOuterOrgResultList = new ArrayList<>();
+        while (size > 0){
+            String orgInfoListStr = organizationsService.queryByOrgName("",pageIndex);
+            JSONObject object = JSONObject.parseObject(orgInfoListStr);
+            if ("0".equals(object.getString("errCode"))) {
+                String data = object.getString("data");
+                List<QueryOuterOrgResult> queryOuterOrgResults = JSON.parseArray(data, QueryOuterOrgResult.class);
+                if (0 == queryOuterOrgResults.size()){
+                    size = 0;
+                }
+                pageIndex ++;
+                queryOuterOrgResultList.addAll(queryOuterOrgResults);
+            }else {
+                break;
+            }
+        }
+        log.info("外部机构数量：【{}】",queryOuterOrgResultList.size());
+        for(QueryOuterOrgResult result : queryOuterOrgResultList){
+            BindedAgentBean bindedAgentBean = CollectionUtils.firstElement(result.getAgentAccounts());
+            String organizeNo = result.getOrganizeNo();
+            if (bindedAgentBean != null && organizeNo.startsWith("bx")) {
+                InstitutionInfoRes res = new InstitutionInfoRes();
+                res.setAccountId(bindedAgentBean.getAgentId());
+                res.setContactName(bindedAgentBean.getAgentName());
+                res.setOrganizeId(result.getOrganizeId());
+                res.setNumber(organizeNo);
+                res.setInstitutionName(result.getOrganizeName());
+                insuranceList.add(res);
+            }
+        }
+        ybInstitutionInfos.addAll(insuranceList);
+        int total = institutionInfoMapper.selectCountOrgForCreateFlow(req);
+        Page<InstitutionInfoRes> page = new Page<>(req.getPageNum(),req.getPageSize());
+        page.setRecords(ybInstitutionInfos);
+        page.setTotal(total);
+        return page;
+
     }
 
     @Override
@@ -320,21 +320,21 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         ybInstitutionInfoChangeMapper.insert(ybInstitutionInfoChange);
     }
 
-
     @Override
     public ApiResponse getInstitutionInfoChangeList(YbInstitutionInfoChangeReq ybInstitutionInfoChangeReq) {
-
         String number = ybInstitutionInfoChangeReq.getNumber();
         String institutionName = ybInstitutionInfoChangeReq.getInstitutionName();
+        Date maxupdateTime = ybInstitutionInfoChangeReq.getMaxupdateTime();
+        Date minupdateTime = ybInstitutionInfoChangeReq.getMinupdateTime();
 
-        if (!StringUtils.isEmpty(number) ||!StringUtils.isEmpty(institutionName)) {
-            List<YbInstitutionInfoChange>    YbInstitutionInfoChangelist=  ybInstitutionInfoChangeMapper.selectChangeList(ybInstitutionInfoChangeReq);
+        if (!StringUtils.isEmpty(number)||!StringUtils.isEmpty(institutionName)||maxupdateTime != null || minupdateTime !=null){
 
-            return  ApiResponse.success(YbInstitutionInfoChangelist) ;
+            List<YbInstitutionInfoChange>  YbInstitutionInfoChangeList= ybInstitutionInfoChangeMapper.selectChangeList(ybInstitutionInfoChangeReq);
+
+            return new ApiResponse(YbInstitutionInfoChangeList);
         }
-
-
-        return ApiResponse.fail("203","机构编号或机构名称为空");
+        return new ApiResponse("300","条件不能为空");
     }
+
 
 }

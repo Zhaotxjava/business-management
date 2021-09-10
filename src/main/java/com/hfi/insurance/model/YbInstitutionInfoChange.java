@@ -105,13 +105,6 @@ public class YbInstitutionInfoChange implements Serializable {
     @ApiModelProperty("天印系统法人用户标识")
     private String legalAccountId;
 
-    @ApiModelProperty("医疗机构执业许可证副本及变更登记记录图片")
-    private String licensePicture;
-
-    @ApiModelProperty("营业执照副本及变更登记记录图片")
-    private String businessPicture;
-
-
     /**
      * 天印系统机构标记
      */

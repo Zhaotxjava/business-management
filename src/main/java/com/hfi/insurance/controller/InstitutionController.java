@@ -57,8 +57,8 @@ public class InstitutionController {
 
 
     @PostMapping("/getInstitutionInfoChangeList")
-    @ApiOperation("分页查询外部机构信息")
-    public ApiResponse getInstitutionInfoChangeList(@RequestBody YbInstitutionInfoChangeReq ybInstitutionInfoChangeReq) {
+    @ApiOperation("分页查询外部机构变更表信息")
+    public ApiResponse getInstitutionInfoChangeList(@RequestBody YbInstitutionInfoChangeReq  ybInstitutionInfoChangeReq) {
 
         return institutionInfoService.getInstitutionInfoChangeList(ybInstitutionInfoChangeReq);
     }

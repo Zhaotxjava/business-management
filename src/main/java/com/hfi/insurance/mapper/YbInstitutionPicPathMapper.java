@@ -9,7 +9,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * </p>
  *
  * @author NZH
- * @since 2021-09-10
+ * @since 2021-09-09
  */
 public interface YbInstitutionPicPathMapper extends BaseMapper<YbInstitutionPicPath> {
 

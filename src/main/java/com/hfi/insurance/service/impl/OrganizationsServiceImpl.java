@@ -215,6 +215,8 @@ public class OrganizationsServiceImpl implements OrganizationsService {
         return convertResult(result);
     }
 
+
+
     @Override
     public String queryByOrgName(String organizeName,int pageIndex) {
         Map<String,String> headMap = new HashMap<>();
