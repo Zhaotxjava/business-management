@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
  * </p>
  *
  * @author NZH
- * @since 2021-09-09
+ * @since 2021-09-10
  */
 @Service
 public class YbInstitutionPicPathServiceImpl extends ServiceImpl<YbInstitutionPicPathMapper, YbInstitutionPicPath> implements IYbInstitutionPicPathService {

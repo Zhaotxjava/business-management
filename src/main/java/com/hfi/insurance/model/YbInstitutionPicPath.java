@@ -14,7 +14,7 @@ import lombok.experimental.Accessors;
  * </p>
  *
  * @author NZH
- * @since 2021-09-09
+ * @since 2021-09-10
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
@@ -23,6 +23,9 @@ public class YbInstitutionPicPath implements Serializable {
 
     private static final long serialVersionUID=1L;
 
+    /**
+     * 主键id
+     */
       @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
 
@@ -30,6 +33,11 @@ public class YbInstitutionPicPath implements Serializable {
      * 机构编码
      */
     private String number;
+
+    /**
+     * 分两种，yyzz,xkz
+     */
+    private String picType;
 
     /**
      * 图片地址
