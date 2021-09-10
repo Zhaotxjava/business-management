@@ -101,6 +101,7 @@ public class OrganizationsServiceImpl implements OrganizationsService {
         Map<String, String> headMap = new HashMap<>();
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("agentAccountId", institutionInfo.getAccountId());
+        jsonObject.put("legalAccountId",institutionInfo.getLegalAccountId());
         jsonObject.put("legalLicenseNumber", institutionInfo.getLegalIdCard());
         jsonObject.put("legalLicenseType", "IDCard");
         jsonObject.put("legalMobile", institutionInfo.getLegalPhone());
@@ -132,6 +133,7 @@ public class OrganizationsServiceImpl implements OrganizationsService {
         Map<String, String> headMap = new HashMap<>();
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("legalLicenseNumber", institutionInfo.getLegalIdCard());
+        jsonObject.put("legalAccountId",institutionInfo.getLegalAccountId());
         jsonObject.put("legalLicenseType", "IDCard");
         jsonObject.put("legalMobile", institutionInfo.getLegalPhone());
         jsonObject.put("legalName", institutionInfo.getLegalName());

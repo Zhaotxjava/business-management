@@ -262,6 +262,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         institutionInfo.setInstitutionName(orgTd.getAkb021());
         if (!organExist) { //不存在则创建机构
             institutionInfo.setAccountId(defaultAccountId); //创建默认经办人
+            institutionInfo.setLegalAccountId(defaultAccountId);
             JSONObject resultObj = organizationsService.createOrgans(institutionInfo);
             if (resultObj.containsKey("errCode")) {
                 log.error("创建外部机构信息异常，{}", resultObj);
@@ -275,6 +276,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
 //                log.error("法人信息已变更，系统暂不支持接口");
 //                return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), "法人信息已变更，系统暂不支持接口更新");
 //            }
+            institutionInfo.setLegalAccountId(defaultAccountId);
             institutionInfo.setOrganizeId(organizeId);
             JSONObject resultObj = organizationsService.updateOrgans(institutionInfo);
             if (resultObj.containsKey("errCode")) {
