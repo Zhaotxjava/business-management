@@ -18,6 +18,7 @@ import com.hfi.insurance.model.YbInstitutionInfoChange;
 import com.hfi.insurance.model.YbOrgTd;
 import com.hfi.insurance.model.dto.InstitutionInfoAddReq;
 import com.hfi.insurance.model.dto.OrgTdQueryReq;
+import com.hfi.insurance.model.dto.YbInstitutionInfoChangeReq;
 import com.hfi.insurance.model.dto.res.InstitutionInfoRes;
 import com.hfi.insurance.model.sign.BindedAgentBean;
 import com.hfi.insurance.model.sign.QueryOuterOrgResult;
@@ -319,11 +320,21 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         ybInstitutionInfoChangeMapper.insert(ybInstitutionInfoChange);
     }
 
+
     @Override
-    public ApiResponse getInstitutionInfoChangeList(String token, String number, String institutionName, Integer pageNum, Integer pageSize) {
+    public ApiResponse getInstitutionInfoChangeList(YbInstitutionInfoChangeReq ybInstitutionInfoChangeReq) {
+
+        String number = ybInstitutionInfoChangeReq.getNumber();
+        String institutionName = ybInstitutionInfoChangeReq.getInstitutionName();
+
+        if (!StringUtils.isEmpty(number) ||!StringUtils.isEmpty(institutionName)) {
+            List<YbInstitutionInfoChange>    YbInstitutionInfoChangelist=  ybInstitutionInfoChangeMapper.selectChangeList(ybInstitutionInfoChangeReq);
+
+            return  ApiResponse.success(YbInstitutionInfoChangelist) ;
+        }
 
 
-        return null;
+        return ApiResponse.fail("203","机构编号或机构名称为空");
     }
 
 }

@@ -9,6 +9,7 @@ import com.hfi.insurance.model.YbInstitutionInfoChange;
 import com.hfi.insurance.model.YbOrgTd;
 import com.hfi.insurance.model.dto.InstitutionInfoAddReq;
 import com.hfi.insurance.model.dto.OrgTdQueryReq;
+import com.hfi.insurance.model.dto.YbInstitutionInfoChangeReq;
 import com.hfi.insurance.model.dto.res.InstitutionInfoRes;
 
 import javax.servlet.http.HttpSession;
@@ -40,5 +41,7 @@ public interface IYbInstitutionInfoService extends IService<YbInstitutionInfo> {
 
     void addYbInstitutionInfoChange(YbInstitutionInfoChange ybInstitutionInfoChange);
 
-    ApiResponse getInstitutionInfoChangeList(String token, String number, String institutionName, Integer pageNum, Integer pageSize);
+
+
+    ApiResponse getInstitutionInfoChangeList(YbInstitutionInfoChangeReq ybInstitutionInfoChangeReq);
 }

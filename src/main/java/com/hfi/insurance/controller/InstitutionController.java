@@ -8,6 +8,7 @@ import com.hfi.insurance.model.YbInstitutionInfo;
 import com.hfi.insurance.model.YbInstitutionInfoChange;
 import com.hfi.insurance.model.dto.InstitutionInfoAddReq;
 import com.hfi.insurance.model.dto.InstitutionInfoQueryReq;
+import com.hfi.insurance.model.dto.YbInstitutionInfoChangeReq;
 import com.hfi.insurance.service.IYbInstitutionInfoService;
 import com.hfi.insurance.utils.ImportExcelUtil;
 import io.swagger.annotations.Api;
@@ -55,13 +56,13 @@ public class InstitutionController {
 
 
 
-//    @PostMapping("/getInstitutionInfoChangeList")
-//    @ApiOperation("分页查询外部机构信息")
-//    public ApiResponse getInstitutionInfoChangeList(@RequestBody InstitutionInfoQueryReq req, HttpServletRequest httpRequest) {
-//
-//        return institutionInfoService.getInstitutionInfoChangeList(token, req.getNumber(), req.getInstitutionName(), req.getPageNum(), req.getPageSize());
-//    }
-//
+    @PostMapping("/getInstitutionInfoChangeList")
+    @ApiOperation("分页查询外部机构信息")
+    public ApiResponse getInstitutionInfoChangeList(@RequestBody YbInstitutionInfoChangeReq ybInstitutionInfoChangeReq) {
+
+        return institutionInfoService.getInstitutionInfoChangeList(ybInstitutionInfoChangeReq);
+    }
+
     @PostMapping("getInstitutionInfoByNumber")
     @ApiOperation("根据机构编号获取机构信息")
     public ApiResponse getClinicInfoByNumber(@RequestParam(value = "number") String number) {
