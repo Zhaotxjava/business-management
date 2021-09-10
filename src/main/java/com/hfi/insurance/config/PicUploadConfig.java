@@ -17,6 +17,6 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @Data
 public class PicUploadConfig {
-    @Value("${file.pic.uploadPathImg}")
+    @Value("${file.picPath}")
     private String uploadPathImg;
 }

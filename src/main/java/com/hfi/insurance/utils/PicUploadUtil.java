@@ -20,7 +20,7 @@ import java.util.UUID;
 @Slf4j
 public class PicUploadUtil {
     //file要与表单上传的名字相同
-    public static ApiResponse<List<String>> uploadFiles(MultipartFile[] file,String dir ) {
+    public static ApiResponse<List<String>> uploadFiles(MultipartFile[] file,String dir ,String picType) {
         try {
             //创建文件在服务器端存放路径
 //            String dir = request.getServletContext().getRealPath("/upload");
@@ -36,7 +36,7 @@ public class PicUploadUtil {
             //生成文件在服务器端存放的名字
             for (int i = 0; i < file.length; i++) {
                 String fileSuffix = file[i].getOriginalFilename().substring(file[i].getOriginalFilename().lastIndexOf("."));
-                String fileName = UUID.randomUUID().toString().replace("-","") + fileSuffix;
+                String fileName = picType+"_"+UUID.randomUUID().toString().replace("-","") + fileSuffix;
                 String filePath = fileDir + "/" + fileName;
                 File files = new File(filePath);
                 log.info("文件地址:{}",filePath);
