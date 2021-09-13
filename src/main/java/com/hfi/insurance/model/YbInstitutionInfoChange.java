@@ -96,6 +96,18 @@ public class YbInstitutionInfoChange implements Serializable {
     @ApiModelProperty("经办人手机号")
     private String contactPhone;
 
+
+    /**
+     * 医疗机构执业许可证副本及变更登记记录图片
+     */
+    @ApiModelProperty("医疗机构执业许可证副本及变更登记记录图片")
+    private String licensePicture;
+    /**
+     * 营业执照副本及变更登记记录图片
+     */
+    @ApiModelProperty("营业执照副本及变更登记记录图片")
+    private String businessPicture;
+
     /**
      * 天印系统经办人用户标识
      */
