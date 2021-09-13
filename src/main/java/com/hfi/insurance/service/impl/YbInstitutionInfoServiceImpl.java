@@ -283,6 +283,14 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
                 log.error("更新外部用户信息异常，{}", resultObj);
                 return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
             }
+            //todo 法人信息变更，将法人信息添加为经办人
+            if (!defaultAccountId.equals(organObj.getString("agentAccountId"))){
+                resultObj = organizationsService.bindAgent(organizeId, institutionInfo.getNumber(), defaultAccountId, institutionInfo.getLegalAccountId());
+                if (resultObj.containsKey("errCode")) {
+                    log.error("外部机构将法人绑定为经办人信息异常，{}", resultObj);
+                    return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
+                }
+            }
         }
         if (!isSameAccount) {
             JSONObject resultObj = null;
