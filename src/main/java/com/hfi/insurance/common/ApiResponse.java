@@ -71,4 +71,11 @@ public class ApiResponse<T>  {
         return response;
     }
 
+    public static ApiResponse fail(ErrorCodeEnum e,String msg){
+        ApiResponse response = new ApiResponse();
+        response.setCode(e.getCode());
+        response.setMessage(e.getMessage() +" "+ msg);
+        return response;
+    }
+
 }
