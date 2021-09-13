@@ -30,10 +30,14 @@ public class YbInstitutionInfoChange implements Serializable {
     private static final long serialVersionUID=1L;
 
     /**
-     * 机构编号
+     * 变更id
      */
-    @ApiModelProperty("机构编号")
+    @ApiModelProperty("id")
     @TableId(type = IdType.INPUT)
+    private Long id;
+
+
+    @ApiModelProperty("机构编号")
     private String number;
 
     /**
