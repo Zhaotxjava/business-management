@@ -175,15 +175,6 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
             institutionInfoMapper.insert(institutionInfo);
             cacheInfo = this.getInstitutionInfo(number);
         }
-//        else {
-//            //判断法人信息是否已更新
-//            if(StringUtils.isNotEmpty(cacheInfo.getOrganizeId()) && (!StringUtils.equals(req.getLegalIdCard(),cacheInfo.getLegalIdCard())
-//                || !StringUtils.equals(req.getLegalName(),cacheInfo.getLegalName())
-//                || !StringUtils.equals(req.getLegalPhone(),cacheInfo.getLegalPhone()))){
-//                log.error("法人信息已变更，系统暂不支持接口");
-//                return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), "法人信息已变更，系统暂不支持接口更新");
-//            }
-//        }
         // 2>通过天印系统查询联系人是否已存在于系统，不存在则调用创建用户接口，得到用户的唯一编码，存在则直接跳到第4步
         boolean accountExist = true;
         boolean organExist = true;
@@ -195,7 +186,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
             isSameAccount = false;
         }
         // 判定法人是否已存在系统用户
-        JSONObject accountObj = organizationsService.queryAccounts("", req.getLegalIdCard());
+        JSONObject accountObj = organizationsService.queryAccounts(cacheInfo.getLegalAccountId(), req.getLegalIdCard());
         if (accountObj.containsKey("errCode")) {
             if ("-1".equals(accountObj.getString("errCode"))) {
                 accountExist = false;
@@ -214,24 +205,27 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
             defaultAccountId = resultObj.getString("accountId");
         } else {
             defaultAccountId = accountObj.getString("accountId");
-            /*JSONObject resultObj = organizationsService.updateAccounts(defaultAccountId, req.getLegalName(), req.getLegalIdCard(), req.getLegalPhone());
+            JSONObject resultObj = organizationsService.updateAccounts(defaultAccountId, req.getLegalName(), req.getLegalIdCard(), req.getLegalPhone());
             if (resultObj.containsKey("errCode")) {
                 log.error("更新外部用户（法人）信息异常，{}", resultObj);
                 return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
-            }*/
+            }
         }
+
+        boolean agentAccountExist = true;
         if (!isSameAccount) {
             log.info("法人和经办人信息不一致，再创建联系人为经办人");
-            accountObj = organizationsService.queryAccounts("", req.getContactIdCard());
-            if (accountObj.containsKey("errCode")) {
-                if ("-1".equals(accountObj.getString("errCode"))) {
-                    accountExist = false;
+            //判断经办人（联系人）是否存在于系统内
+            JSONObject agentAccountObj = organizationsService.queryAccounts(cacheInfo.getAccountId(), req.getContactIdCard());
+            if (agentAccountObj.containsKey("errCode")) {
+                if ("-1".equals(agentAccountObj.getString("errCode"))) {
+                    agentAccountExist = false;
                 } else {
-                    log.error("查询外部用户（联系人）信息异常，{}", accountObj);
-                    return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), accountObj.getString("msg"));
+                    log.error("查询外部用户（联系人）信息异常，{}", agentAccountObj);
+                    return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), agentAccountObj.getString("msg"));
                 }
             }
-            if (!accountExist) { //不存在则创建用户
+            if (!agentAccountExist) { //不存在则创建用户
                 JSONObject resultObj = organizationsService.createAccounts(req.getContactName(), req.getContactIdCard(), req.getContactPhone());
                 if (resultObj.containsKey("errCode")) {
                     log.error("创建外部用户（联系人）信息异常，{}", resultObj);
@@ -239,7 +233,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
                 }
                 accountId = resultObj.getString("accountId");
             } else {
-                accountId = accountObj.getString("accountId");
+                accountId = agentAccountObj.getString("accountId");
                 JSONObject resultObj = organizationsService.updateAccounts(accountId, req.getContactName(), req.getContactIdCard(), req.getContactPhone());
                 if (resultObj.containsKey("errCode")) {
                     log.error("更新外部用户（联系人）信息异常，{}", resultObj);
