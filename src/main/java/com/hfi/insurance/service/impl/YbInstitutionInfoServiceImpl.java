@@ -186,7 +186,9 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
             isSameAccount = false;
         }
         // 判定法人是否已存在系统用户
-        JSONObject accountObj = organizationsService.queryAccounts(cacheInfo.getLegalAccountId(), req.getLegalIdCard());
+        log.info("机构信息：【{}】",JSON.toJSONString(cacheInfo));
+        String legalAccountId = cacheInfo.getLegalAccountId() != null ? cacheInfo.getLegalAccountId() : "";
+        JSONObject accountObj = organizationsService.queryAccounts(legalAccountId, req.getLegalIdCard());
         if (accountObj.containsKey("errCode")) {
             if ("-1".equals(accountObj.getString("errCode"))) {
                 accountExist = false;
@@ -215,8 +217,9 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         boolean agentAccountExist = true;
         if (!isSameAccount) {
             log.info("法人和经办人信息不一致，再创建联系人为经办人");
+            String agentAccountId = cacheInfo.getAccountId() != null ? cacheInfo.getAccountId() : "";
             //判断经办人（联系人）是否存在于系统内
-            JSONObject agentAccountObj = organizationsService.queryAccounts(cacheInfo.getAccountId(), req.getContactIdCard());
+            JSONObject agentAccountObj = organizationsService.queryAccounts(agentAccountId, req.getContactIdCard());
             if (agentAccountObj.containsKey("errCode")) {
                 if ("-1".equals(agentAccountObj.getString("errCode"))) {
                     agentAccountExist = false;
