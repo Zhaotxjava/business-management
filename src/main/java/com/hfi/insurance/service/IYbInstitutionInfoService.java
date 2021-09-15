@@ -12,6 +12,7 @@ import com.hfi.insurance.model.dto.OrgTdQueryReq;
 import com.hfi.insurance.model.dto.YbInstitutionInfoChangeReq;
 import com.hfi.insurance.model.dto.res.InstitutionInfoRes;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 /**
@@ -42,4 +43,8 @@ public interface IYbInstitutionInfoService extends IService<YbInstitutionInfo> {
     void addYbInstitutionInfoChange(YbInstitutionInfoChange ybInstitutionInfoChange);
 
     ApiResponse getInstitutionInfoChangeList(YbInstitutionInfoChangeReq ybInstitutionInfoChangeReq);
+
+    void exportExcel(YbInstitutionInfoChangeReq ybInstitutionInfoChangeReq, HttpServletResponse response);
+
+    void exportExcel2(HttpServletResponse response);
 }
