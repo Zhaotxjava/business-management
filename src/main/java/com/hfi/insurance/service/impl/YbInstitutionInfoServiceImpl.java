@@ -188,7 +188,11 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         // 判定法人是否已存在系统用户
         log.info("机构信息：【{}】",JSON.toJSONString(cacheInfo));
         String legalAccountId = cacheInfo.getLegalAccountId() != null ? cacheInfo.getLegalAccountId() : "";
-        JSONObject accountObj = organizationsService.queryAccounts(legalAccountId, req.getLegalIdCard());
+        JSONObject accountObj = organizationsService.queryAccounts(legalAccountId, "");
+        log.info("查询外部用户【{}】接口响应{}", accountId, accountObj);
+        if (null == accountObj.getString("accountId")){
+            accountExist = false;
+        }
         if (accountObj.containsKey("errCode")) {
             if ("-1".equals(accountObj.getString("errCode"))) {
                 accountExist = false;
@@ -199,18 +203,21 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         }
         if (!accountExist) { //不存在则创建用户
             JSONObject resultObj = organizationsService.createAccounts(req.getLegalName(), req.getLegalIdCard(), req.getLegalPhone());
-
             if (resultObj.containsKey("errCode")) {
                 log.error("创建外部用户（法人）信息异常，{}", resultObj);
                 return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
             }
             defaultAccountId = resultObj.getString("accountId");
         } else {
-            defaultAccountId = accountObj.getString("accountId");
-            JSONObject resultObj = organizationsService.updateAccounts(defaultAccountId, req.getLegalName(), req.getLegalIdCard(), req.getLegalPhone());
-            if (resultObj.containsKey("errCode")) {
-                log.error("更新外部用户（法人）信息异常，{}", resultObj);
-                return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
+            if (StringUtils.isNotBlank(legalAccountId)){
+                JSONObject resultObj = organizationsService.updateAccounts(legalAccountId, req.getLegalName(), req.getLegalIdCard(), req.getLegalPhone());
+                if (resultObj.containsKey("errCode")) {
+                    log.error("更新外部用户（法人）信息异常，{}", resultObj);
+                    return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
+                }else {
+                    JSONObject jsonObject = organizationsService.queryAccounts("",  req.getLegalIdCard());
+                    defaultAccountId = jsonObject.getString("accountId");
+                }
             }
         }
 
@@ -219,7 +226,11 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
             log.info("法人和经办人信息不一致，再创建联系人为经办人");
             String agentAccountId = cacheInfo.getAccountId() != null ? cacheInfo.getAccountId() : "";
             //判断经办人（联系人）是否存在于系统内
-            JSONObject agentAccountObj = organizationsService.queryAccounts(agentAccountId, req.getContactIdCard());
+            JSONObject agentAccountObj = organizationsService.queryAccounts(agentAccountId, "");
+            log.info("查询外部用户【{}】接口响应{}", accountId, agentAccountObj);
+            if (null == agentAccountObj.getString("accountId")){
+                agentAccountExist = false;
+            }
             if (agentAccountObj.containsKey("errCode")) {
                 if ("-1".equals(agentAccountObj.getString("errCode"))) {
                     agentAccountExist = false;
@@ -236,11 +247,16 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
                 }
                 accountId = resultObj.getString("accountId");
             } else {
-                accountId = agentAccountObj.getString("accountId");
-                JSONObject resultObj = organizationsService.updateAccounts(accountId, req.getContactName(), req.getContactIdCard(), req.getContactPhone());
-                if (resultObj.containsKey("errCode")) {
-                    log.error("更新外部用户（联系人）信息异常，{}", resultObj);
-                    return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
+                if (StringUtils.isNotBlank(accountId)){
+                    JSONObject resultObj = organizationsService.updateAccounts(agentAccountId, req.getContactName(), req.getContactIdCard(), req.getContactPhone());
+                    if (resultObj.containsKey("errCode")) {
+                        log.error("更新外部用户（联系人）信息异常，{}", resultObj);
+                        return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
+                    }else {
+                        JSONObject jsonObject = organizationsService.queryAccounts("",  req.getContactIdCard());
+                        accountId = jsonObject.getString("accountId");
+                    }
+
                 }
             }
         }
@@ -281,8 +297,8 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
                 return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
             }
             //todo 法人信息变更，将法人信息添加为经办人
-            if (!defaultAccountId.equals(organObj.getString("agentAccountId"))){
-                resultObj = organizationsService.bindAgent(organizeId, institutionInfo.getNumber(), defaultAccountId, institutionInfo.getLegalAccountId());
+            if (!StringUtils.equals(defaultAccountId,organObj.getString("agentAccountId"))){
+                resultObj = organizationsService.bindAgent(organizeId, institutionInfo.getNumber(), defaultAccountId, institutionInfo.getLegalIdCard());
                 if (resultObj.containsKey("errCode")) {
                     log.error("外部机构将法人绑定为经办人信息异常，{}", resultObj);
                     return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
@@ -291,18 +307,40 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         }
         if (!isSameAccount) {
             JSONObject resultObj = null;
-            if (cacheInfo != null && StringUtils.isNotBlank(cacheInfo.getAccountId()) && !StringUtils.equals(cacheInfo.getAccountId(), accountId)) {
+            if (StringUtils.isNotBlank(cacheInfo.getAccountId()) && !StringUtils.equals(cacheInfo.getAccountId(), accountId)) {
                 resultObj = organizationsService.unbindAgent(organizeId, institutionInfo.getNumber(), cacheInfo.getAccountId(), "");
                 if (resultObj.containsKey("errCode")) {
                     log.error("外部机构解绑经办人信息异常，{}", resultObj);
                 }
             }
+            boolean flag = true;
+            JSONObject agentAccountObj = organizationsService.queryAccounts("", req.getContactIdCard());
+            log.info("查询外部用户【{}】接口响应{}", accountId, agentAccountObj);
+            if (null == agentAccountObj.getString("accountId")){
+                flag = false;
+            }
+            if (agentAccountObj.containsKey("errCode")) {
+                if ("-1".equals(agentAccountObj.getString("errCode"))) {
+                    flag = false;
+                } else {
+                    log.error("查询外部用户（联系人）信息异常，{}", agentAccountObj);
+                    return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), agentAccountObj.getString("msg"));
+                }
+            }
+            if (!flag) { //不存在则创建用户
+                JSONObject jsonObject = organizationsService.createAccounts(req.getContactName(), req.getContactIdCard(), req.getContactPhone());
+                if (jsonObject.containsKey("errCode")) {
+                    log.error("创建外部用户（联系人）信息异常，{}", jsonObject);
+                    return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), jsonObject.getString("msg"));
+                }
+            }
+
             resultObj = organizationsService.bindAgent(organizeId, institutionInfo.getNumber(), accountId, institutionInfo.getContactIdCard());
             if (resultObj.containsKey("errCode")) {
                 log.error("外部机构绑定经办人信息异常，{}", resultObj);
                 return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
             }
-        } else {
+        }else {
             accountId = defaultAccountId;
         }
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
