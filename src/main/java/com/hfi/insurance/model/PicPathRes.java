@@ -13,6 +13,6 @@ import java.util.List;
  */
 @Data
 public class PicPathRes {
-    private List<String> xxkList;
+    private List<String> xkzList;
     private List<String> yyzzList;
 }
