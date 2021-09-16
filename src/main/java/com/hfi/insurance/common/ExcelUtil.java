@@ -1,18 +1,10 @@
 package com.hfi.insurance.common;
-
 import java.io.OutputStream;
 import java.lang.reflect.Field;
-import java.net.URLEncoder;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.UUID;
-
 import javax.servlet.http.HttpServletResponse;
-import javax.xml.crypto.Data;
-
 import com.hfi.insurance.config.ExportExcel;
-import com.hfi.insurance.model.YbInstitutionInfoChange;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;

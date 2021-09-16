@@ -1,5 +1,4 @@
 package com.hfi.insurance.service.impl;
-
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -28,15 +27,11 @@ import com.hfi.insurance.service.OrganizationsService;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.Font;
-import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.text.SimpleDateFormat;
@@ -110,12 +105,13 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         Integer pageNum = req.getPageNum();
         req.setPageNum(pageNum - 1);
         List<InstitutionInfoRes> ybInstitutionInfos = institutionInfoMapper.selectOrgForCreateFlow(req);
-       //todo 添加保险公司
+      /* //todo 添加保险公司
         int pageIndex = 1;
         int size = 1;
         List<InstitutionInfoRes> insuranceList = new ArrayList<>();
         List<QueryOuterOrgResult> queryOuterOrgResultList = new ArrayList<>();
         while (size > 0){
+
             String orgInfoListStr = organizationsService.queryByOrgName("",pageIndex);
             JSONObject object = JSONObject.parseObject(orgInfoListStr);
             if ("0".equals(object.getString("errCode"))) {
@@ -144,7 +140,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
                 insuranceList.add(res);
             }
         }
-        ybInstitutionInfos.addAll(insuranceList);
+        ybInstitutionInfos.addAll(insuranceList);*/
         int total = institutionInfoMapper.selectCountOrgForCreateFlow(req);
         Page<InstitutionInfoRes> page = new Page<>(req.getPageNum(),req.getPageSize());
         page.setRecords(ybInstitutionInfos);
@@ -334,12 +330,15 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
 
 
         if (!StringUtils.isEmpty(number)&&!StringUtils.isEmpty(institutionName)){
-
+            Integer pageNum = ybInstitutionInfoChangeReq.getPageNum();
+            if (pageNum==1){
+                ybInstitutionInfoChangeReq.setPageNum(0);
+            }
             List<YbInstitutionInfoChange>  YbInstitutionInfoChangeList= ybInstitutionInfoChangeMapper.selectChangeList(ybInstitutionInfoChangeReq);
 
             return new ApiResponse(YbInstitutionInfoChangeList);
         }
-        return new ApiResponse("300","条件不能为空");
+        return new ApiResponse("300","机构编号或机构名称为空!");
     }
 
     @Override
