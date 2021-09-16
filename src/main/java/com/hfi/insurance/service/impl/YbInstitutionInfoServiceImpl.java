@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.hfi.insurance.aspect.anno.LogAnnotation;
 import com.hfi.insurance.common.ApiResponse;
+import com.hfi.insurance.common.ExcelUtil;
 import com.hfi.insurance.enums.ErrorCodeEnum;
 import com.hfi.insurance.mapper.YbInstitutionInfoMapper;
 import com.hfi.insurance.mapper.YbOrgTdMapper;
@@ -16,20 +17,22 @@ import com.hfi.insurance.model.YbInstitutionInfo;
 import com.hfi.insurance.model.YbOrgTd;
 import com.hfi.insurance.model.dto.InstitutionInfoAddReq;
 import com.hfi.insurance.model.dto.OrgTdQueryReq;
+import com.hfi.insurance.model.dto.YbInstitutionInfoChangeReq;
 import com.hfi.insurance.model.dto.res.InstitutionInfoRes;
 import com.hfi.insurance.model.sign.BindedAgentBean;
 import com.hfi.insurance.model.sign.QueryOuterOrgResult;
 import com.hfi.insurance.service.IYbInstitutionInfoService;
 import com.hfi.insurance.service.OrganizationsService;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.xssf.usermodel.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -59,6 +62,9 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
 
     @Resource
     private Cache<String, String> caffeineCache;
+    @Resource
+    private YbInstitutionInfoChangeMapper  ybInstitutionInfoChangeMapper;
+
 
     @Override
     @LogAnnotation
@@ -98,7 +104,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         Integer pageNum = req.getPageNum();
         req.setPageNum(pageNum - 1);
         List<InstitutionInfoRes> ybInstitutionInfos = institutionInfoMapper.selectOrgForCreateFlow(req);
-        //todo 添加保险公司
+       //todo 添加保险公司
         int pageIndex = 1;
         int size = 1;
         List<InstitutionInfoRes> insuranceList = new ArrayList<>();
@@ -340,4 +346,90 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         institutionInfoMapper.updateById(ybInstitutionInfo);
         return new ApiResponse(ErrorCodeEnum.SUCCESS);
     }
+    @Override
+    public void addYbInstitutionInfoChange(YbInstitutionInfoChange ybInstitutionInfoChange) {
+
+        ybInstitutionInfoChangeMapper.insert(ybInstitutionInfoChange);
+    }
+
+    @Override
+    public ApiResponse getInstitutionInfoChangeList(YbInstitutionInfoChangeReq ybInstitutionInfoChangeReq) {
+        //机构名称跟机构编号非空判断
+        String number = ybInstitutionInfoChangeReq.getNumber();
+        String institutionName = ybInstitutionInfoChangeReq.getInstitutionName();
+        if (!StringUtils.isEmpty(number) || !StringUtils.isEmpty(institutionName)){
+            Integer pageNum = ybInstitutionInfoChangeReq.getPageNum();
+            ybInstitutionInfoChangeReq.setPageNum(pageNum-1);
+            List<YbInstitutionInfoChange>  YbInstitutionInfoChangeList= ybInstitutionInfoChangeMapper.selectChangeList(ybInstitutionInfoChangeReq);
+            if (YbInstitutionInfoChangeList.size()>0){
+                return new ApiResponse(YbInstitutionInfoChangeList);
+            }
+            return new ApiResponse("200","空");
+        }
+        return new ApiResponse("300","机构编号或机构名称为空!");
+    }
+
+    @Override
+    public void exportExcel(YbInstitutionInfoChangeReq ybInstitutionInfoChangeReq,HttpServletResponse response) {
+        String number = ybInstitutionInfoChangeReq.getNumber();
+        String institutionName = ybInstitutionInfoChangeReq.getInstitutionName();
+
+
+        if (!StringUtils.isEmpty(number) || !StringUtils.isEmpty(institutionName)){
+
+            List<YbInstitutionInfoChange>  YbInstitutionInfoChangeList= ybInstitutionInfoChangeMapper.selectChangeList(ybInstitutionInfoChangeReq);
+            SimpleDateFormat   sdf=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            XSSFWorkbook workbook = new XSSFWorkbook();
+            XSSFSheet sheet = workbook.createSheet();
+            int rowIndex = 0;
+            int colIndex = 0;
+            //表头
+            String[] headers = {"id","机构编号","机构名称","统一社会信用代码","机构法人姓名"
+                    ,"机构法人证件类型","机构法人证件号","机构法人手机号","经办人姓名"
+                    ,"经办人证件类型","经办人证件号","经办人手机号","天印系统经办人用户标识"
+                    ,"天印系统法人用户标识","天印系统机构标记","修改时间"};
+            XSSFRow headerRow = sheet.createRow(rowIndex++);
+            for (int i = 0; i < headers.length; i++) {
+                String header = headers[i];
+                XSSFCell headerRowCell = headerRow.createCell(i);
+                headerRowCell.setCellValue(header);
+                // 设置列的宽度
+                sheet.setColumnWidth(i, 30*256);
+            }
+            for (YbInstitutionInfoChange ybInstitutionInfoChange : YbInstitutionInfoChangeList) {
+                XSSFRow bodyRow = sheet.createRow(rowIndex++);
+                bodyRow.createCell(colIndex++).setCellValue(ybInstitutionInfoChange.getId());
+                bodyRow.createCell(colIndex++).setCellValue(ybInstitutionInfoChange.getNumber());
+                bodyRow.createCell(colIndex++).setCellValue(ybInstitutionInfoChange.getInstitutionName());
+                bodyRow.createCell(colIndex++).setCellValue(ybInstitutionInfoChange.getOrgInstitutionCode());
+                bodyRow.createCell(colIndex++).setCellValue(ybInstitutionInfoChange.getLegalName());
+                bodyRow.createCell(colIndex++).setCellValue(ybInstitutionInfoChange.getLegalCardType());
+                bodyRow.createCell(colIndex++).setCellValue(ybInstitutionInfoChange.getLegalIdCard());
+                bodyRow.createCell(colIndex++).setCellValue(ybInstitutionInfoChange.getLegalPhone());
+                bodyRow.createCell(colIndex++).setCellValue(ybInstitutionInfoChange.getContactName());
+                bodyRow.createCell(colIndex++).setCellValue(ybInstitutionInfoChange.getContactCardType());
+                bodyRow.createCell(colIndex++).setCellValue(ybInstitutionInfoChange.getContactIdCard());
+                bodyRow.createCell(colIndex++).setCellValue(ybInstitutionInfoChange.getContactPhone());
+                bodyRow.createCell(colIndex++).setCellValue(ybInstitutionInfoChange.getAccountId());
+                bodyRow.createCell(colIndex++).setCellValue(ybInstitutionInfoChange.getLegalAccountId());
+                bodyRow.createCell(colIndex++).setCellValue(ybInstitutionInfoChange.getOrganizeId());
+                Date updateTime = ybInstitutionInfoChange.getUpdateTime();
+                System.out.println(updateTime);
+                bodyRow.createCell(colIndex++).setCellValue(sdf.format(updateTime));
+                //将下标还原供下次循环使用
+                colIndex=0;
+            }
+            ExcelUtil.xlsDownloadFile(response,workbook);
+        }
+    }
+
+    @SneakyThrows
+    @Override
+    public void exportExcel2(HttpServletResponse response) {
+        List<YbInstitutionInfoChange> ybInstitutionInfoChanges = ybInstitutionInfoChangeMapper.selectList(null);
+        ExcelUtil.exportExcel(ybInstitutionInfoChanges,response);
+
+    }
+
+
 }

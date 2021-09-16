@@ -8,22 +8,19 @@ import com.hfi.insurance.model.YbInstitutionInfo;
 import com.hfi.insurance.model.YbInstitutionInfoChange;
 import com.hfi.insurance.model.dto.InstitutionInfoAddReq;
 import com.hfi.insurance.model.dto.InstitutionInfoQueryReq;
+import com.hfi.insurance.model.dto.YbInstitutionInfoChangeReq;
 import com.hfi.insurance.service.IYbInstitutionInfoService;
 import com.hfi.insurance.utils.ImportExcelUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -55,13 +52,13 @@ public class InstitutionController {
 
 
 
-//    @PostMapping("/getInstitutionInfoChangeList")
-//    @ApiOperation("分页查询外部机构信息")
-//    public ApiResponse getInstitutionInfoChangeList(@RequestBody InstitutionInfoQueryReq req, HttpServletRequest httpRequest) {
-//
-//        return institutionInfoService.getInstitutionInfoChangeList(token, req.getNumber(), req.getInstitutionName(), req.getPageNum(), req.getPageSize());
-//    }
-//
+    @PostMapping("/getInstitutionInfoChangeList")
+    @ApiOperation("分页查询外部机构变更表信息")
+    public ApiResponse getInstitutionInfoChangeList(@RequestBody YbInstitutionInfoChangeReq  ybInstitutionInfoChangeReq) {
+
+        return institutionInfoService.getInstitutionInfoChangeList(ybInstitutionInfoChangeReq);
+    }
+
     @PostMapping("getInstitutionInfoByNumber")
     @ApiOperation("根据机构编号获取机构信息")
     public ApiResponse getClinicInfoByNumber(@RequestParam(value = "number") String number) {
@@ -164,10 +161,21 @@ public class InstitutionController {
     }
 
 
+    @GetMapping("/exportExcel")
+    @ApiOperation("导出机构信息变更记录表")
+
+    public void exportExcel(@RequestBody YbInstitutionInfoChangeReq  ybInstitutionInfoChangeReq, HttpServletResponse response) {
+
+        institutionInfoService.exportExcel(ybInstitutionInfoChangeReq,response);
+    }
 
 
+    @GetMapping("/exportExcel2")
+    @ApiOperation("测试不用管")
+    public void exportExcel2( HttpServletResponse response) {
 
-
+        institutionInfoService.exportExcel2(response);
+    }
 
 
 

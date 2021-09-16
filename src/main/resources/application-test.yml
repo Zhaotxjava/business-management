@@ -13,6 +13,8 @@ file:
   pathCsv: /opt/app/insurance-info-server/service/医保定点机构列表20210607.csv
   down:
     url: /opt/app/insurance-info-server/service/demo
+  pic:
+    uploadPathImg: /opt/app/insurance-info-server/pic
 #天印系统接口配置
 esignpro:
   url: http://192.20.97.42:8086

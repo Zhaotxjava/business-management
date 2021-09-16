@@ -107,7 +107,12 @@ public class OrganizationsServiceImpl implements OrganizationsService {
         jsonObject.put("legalMobile", institutionInfo.getLegalPhone());
         jsonObject.put("legalName", institutionInfo.getLegalName());
         jsonObject.put("licenseNumber", institutionInfo.getOrgInstitutionCode());
-        jsonObject.put("licenseType", "SOCNO");
+//        jsonObject.put("licenseType", "SOCNO");
+        if(StringUtils.isNotBlank(institutionInfo.getLicenseType())){
+            jsonObject.put("licenseType", institutionInfo.getLicenseType());
+        }else {
+            jsonObject.put("licenseType", "CRED_ORG_UNKNOWN");
+        }
         jsonObject.put("organizeName", institutionInfo.getInstitutionName());
         jsonObject.put("organizeNo", institutionInfo.getNumber());
         convertHead(headMap, jsonObject.toJSONString());
@@ -216,6 +221,8 @@ public class OrganizationsServiceImpl implements OrganizationsService {
         log.info("根据机构编号【{}】查询内部机构信息接口响应{}", organizeNo, result);
         return convertResult(result);
     }
+
+
 
     @Override
     public String queryByOrgName(String organizeName,int pageIndex) {
