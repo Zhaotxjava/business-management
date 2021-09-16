@@ -12,11 +12,9 @@ import com.hfi.insurance.common.ExcelUtil;
 import com.hfi.insurance.enums.ErrorCodeEnum;
 import com.hfi.insurance.mapper.YbInstitutionInfoChangeMapper;
 import com.hfi.insurance.mapper.YbInstitutionInfoMapper;
+import com.hfi.insurance.mapper.YbInstitutionPicPathMapper;
 import com.hfi.insurance.mapper.YbOrgTdMapper;
-import com.hfi.insurance.model.InstitutionInfo;
-import com.hfi.insurance.model.YbInstitutionInfo;
-import com.hfi.insurance.model.YbInstitutionInfoChange;
-import com.hfi.insurance.model.YbOrgTd;
+import com.hfi.insurance.model.*;
 import com.hfi.insurance.model.dto.InstitutionInfoAddReq;
 import com.hfi.insurance.model.dto.OrgTdQueryReq;
 import com.hfi.insurance.model.dto.YbInstitutionInfoChangeReq;
@@ -34,12 +32,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -68,22 +65,25 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
     @Resource
     private YbInstitutionInfoChangeMapper ybInstitutionInfoChangeMapper;
 
+    @Autowired
+    private YbInstitutionPicPathMapper ybInstitutionPicPathMapper;
+
 
     @Override
     @LogAnnotation
-    public ApiResponse getInstitutionInfoList(String token,String number, String institutionName, int current, int limit) {
+    public ApiResponse getInstitutionInfoList(String token, String number, String institutionName, int current, int limit) {
 //        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
 //        HttpServletRequest request = requestAttributes.getRequest();
 //        HttpSession session =  request.getSession();
 //        String institutionNumber = (String) session.getAttribute("number");
         String jsonStr = caffeineCache.asMap().get(token);
-        log.info("token:{}",token);
-        if (StringUtils.isBlank(jsonStr)){
-            return new ApiResponse(ErrorCodeEnum.TOKEN_EXPIRED.getCode(),ErrorCodeEnum.TOKEN_EXPIRED.getMessage());
+        log.info("token:{}", token);
+        if (StringUtils.isBlank(jsonStr)) {
+            return new ApiResponse(ErrorCodeEnum.TOKEN_EXPIRED.getCode(), ErrorCodeEnum.TOKEN_EXPIRED.getMessage());
         }
         JSONObject jsonObject = JSON.parseObject(jsonStr);
         String institutionNumber = jsonObject.getString("number");
-        log.info("从token中获取机构编号：{}",institutionNumber);
+        log.info("从token中获取机构编号：{}", institutionNumber);
 //        if (StringUtils.isNotBlank(institutionNumber)){
 //            queryWrapper.like("number",institutionNumber);
 //        }
@@ -93,10 +93,34 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
 //        if (StringUtils.isNotBlank(institutionName)){
 //            queryWrapper.eq("institution_name",institutionName);
 //        }
-        List<YbInstitutionInfo> ybInstitutionInfos = institutionInfoMapper.selectInstitutionInfoAndOrg(institutionNumber,number, institutionName, current-1, limit);
-        int total = institutionInfoMapper.selectCountInstitutionInfoAndOrg(institutionNumber,number, institutionName);
-        Page<YbInstitutionInfo> page = new Page<>(current,limit);
-        page.setRecords(ybInstitutionInfos);
+        List<YbInstitutionInfo> ybInstitutionInfos = institutionInfoMapper.selectInstitutionInfoAndOrg(institutionNumber, number, institutionName, current - 1, limit);
+        int total = institutionInfoMapper.selectCountInstitutionInfoAndOrg(institutionNumber, number, institutionName);
+        Page<YbInstitutionInfoChange> page = new Page<>(current, limit);
+
+
+        List<YbInstitutionInfoChange> list = new ArrayList<>();
+        QueryWrapper<YbInstitutionPicPath> objectQueryWrapper = new QueryWrapper<>();
+
+        for (int i = 0; i < ybInstitutionInfos.size(); i++) {
+            YbInstitutionInfo ybInstitutionInfo = ybInstitutionInfos.get(i);
+            YbInstitutionInfoChange change = new YbInstitutionInfoChange();
+            BeanUtils.copyProperties(ybInstitutionInfo, change);
+            objectQueryWrapper.eq("number", ybInstitutionInfo.getNumber());
+            YbInstitutionPicPath ybInstitutionPicPath = ybInstitutionPicPathMapper.selectOne(objectQueryWrapper);
+            objectQueryWrapper.clear();
+            if (Objects.isNull(ybInstitutionPicPath)) {
+
+            } else {
+                JSONObject jsonObject1 = JSONObject.parseObject(JSONObject.toJSONString(ybInstitutionPicPath.getPicPath()));
+                jsonObject1.get("xkzList");
+                change.setLicensePicture(String.valueOf(jsonObject1.get("xkzList")));
+                change.setBusinessPicture(String.valueOf(jsonObject1.get("yyzzList")));
+            }
+            list.add(change);
+        }
+
+//        page.setRecords(ybInstitutionInfos);
+        page.setRecords(list);
         page.setTotal(total);
         return new ApiResponse(page);
     }
@@ -107,28 +131,28 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         Integer pageNum = req.getPageNum();
         req.setPageNum(pageNum - 1);
         List<InstitutionInfoRes> ybInstitutionInfos = institutionInfoMapper.selectOrgForCreateFlow(req);
-       //todo 添加保险公司
+        //todo 添加保险公司
         int pageIndex = 1;
         int size = 1;
         List<InstitutionInfoRes> insuranceList = new ArrayList<>();
         List<QueryOuterOrgResult> queryOuterOrgResultList = new ArrayList<>();
-        while (size > 0){
-            String orgInfoListStr = organizationsService.queryByOrgName("",pageIndex);
+        while (size > 0) {
+            String orgInfoListStr = organizationsService.queryByOrgName("", pageIndex);
             JSONObject object = JSONObject.parseObject(orgInfoListStr);
             if ("0".equals(object.getString("errCode"))) {
                 String data = object.getString("data");
                 List<QueryOuterOrgResult> queryOuterOrgResults = JSON.parseArray(data, QueryOuterOrgResult.class);
-                if (0 == queryOuterOrgResults.size()){
+                if (0 == queryOuterOrgResults.size()) {
                     size = 0;
                 }
-                pageIndex ++;
+                pageIndex++;
                 queryOuterOrgResultList.addAll(queryOuterOrgResults);
-            }else {
+            } else {
                 break;
             }
         }
-        log.info("外部机构数量：【{}】",queryOuterOrgResultList.size());
-        for(QueryOuterOrgResult result : queryOuterOrgResultList){
+        log.info("外部机构数量：【{}】", queryOuterOrgResultList.size());
+        for (QueryOuterOrgResult result : queryOuterOrgResultList) {
             BindedAgentBean bindedAgentBean = CollectionUtils.firstElement(result.getAgentAccounts());
             String organizeNo = result.getOrganizeNo();
             if (bindedAgentBean != null && organizeNo.startsWith("bx")) {
@@ -143,7 +167,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         }
         ybInstitutionInfos.addAll(insuranceList);
         int total = institutionInfoMapper.selectCountOrgForCreateFlow(req);
-        Page<InstitutionInfoRes> page = new Page<>(req.getPageNum(),req.getPageSize());
+        Page<InstitutionInfoRes> page = new Page<>(req.getPageNum(), req.getPageSize());
         page.setRecords(ybInstitutionInfos);
         page.setTotal(total);
         return page;
@@ -153,7 +177,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
     @LogAnnotation
     public YbInstitutionInfo getInstitutionInfo(String number) {
         QueryWrapper<YbInstitutionInfo> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("number",number);
+        queryWrapper.eq("number", number);
         return institutionInfoMapper.selectOne(queryWrapper);
     }
 
@@ -165,12 +189,12 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         //1.往yb_institution_info表添加记录
         YbInstitutionInfo cacheInfo = this.getInstitutionInfo(number);
         QueryWrapper<YbOrgTd> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("AKB020",number);
+        queryWrapper.eq("AKB020", number);
         YbOrgTd orgTd = orgTdMapper.selectOne(queryWrapper);
-        if (null == orgTd){
-            return new ApiResponse(ErrorCodeEnum.SYSTEM_ERROR.getCode(),"机构不存在!");
+        if (null == orgTd) {
+            return new ApiResponse(ErrorCodeEnum.SYSTEM_ERROR.getCode(), "机构不存在!");
         }
-        if (null == cacheInfo){
+        if (null == cacheInfo) {
             YbInstitutionInfo institutionInfo = new YbInstitutionInfo();
             institutionInfo.setNumber(number)
                     .setInstitutionName(orgTd.getAkb021())
@@ -195,11 +219,11 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
             isSameAccount = false;
         }
         // 判定法人是否已存在系统用户
-        log.info("机构信息：【{}】",JSON.toJSONString(cacheInfo));
+        log.info("机构信息：【{}】", JSON.toJSONString(cacheInfo));
         String legalAccountId = cacheInfo.getLegalAccountId() != null ? cacheInfo.getLegalAccountId() : "";
         JSONObject accountObj = organizationsService.queryAccounts(legalAccountId, "");
         log.info("查询外部用户【{}】接口响应{}", legalAccountId, accountObj);
-        if (null == accountObj.getString("accountId")){
+        if (null == accountObj.getString("accountId")) {
             accountExist = false;
         }
         if (accountObj.containsKey("errCode")) {
@@ -218,16 +242,16 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
             }
             defaultAccountId = resultObj.getString("accountId");
         } else {
-            if (StringUtils.isNotBlank(legalAccountId)){
+            if (StringUtils.isNotBlank(legalAccountId)) {
                 defaultAccountId = legalAccountId;
                 JSONObject resultObj = organizationsService.updateAccounts(legalAccountId, req.getLegalName(), req.getLegalIdCard(), req.getLegalPhone());
                 if (resultObj.containsKey("errCode")) {
                     log.error("更新外部用户（法人）信息异常，{}", resultObj);
                     return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
-                }else {
+                } else {
                     YbInstitutionInfoChange change = new YbInstitutionInfoChange();
-                    BeanUtils.copyProperties(cacheInfo,change);
-                    BeanUtils.copyProperties(req,change);
+                    BeanUtils.copyProperties(cacheInfo, change);
+                    BeanUtils.copyProperties(req, change);
                     addYbInstitutionInfoChange(change);
                 }
             }
@@ -240,7 +264,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
             //判断经办人（联系人）是否存在于系统内
             JSONObject agentAccountObj = organizationsService.queryAccounts(agentAccountId, "");
             log.info("查询外部用户【{}】接口响应{}", accountId, agentAccountObj);
-            if (null == agentAccountObj.getString("accountId")){
+            if (null == agentAccountObj.getString("accountId")) {
                 agentAccountExist = false;
             }
             if (agentAccountObj.containsKey("errCode")) {
@@ -259,16 +283,16 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
                 }
                 accountId = resultObj.getString("accountId");
             } else {
-                if (StringUtils.isNotBlank(agentAccountId)){
+                if (StringUtils.isNotBlank(agentAccountId)) {
                     accountId = agentAccountId;
                     JSONObject resultObj = organizationsService.updateAccounts(agentAccountId, req.getContactName(), req.getContactIdCard(), req.getContactPhone());
                     if (resultObj.containsKey("errCode")) {
                         log.error("更新外部用户（联系人）信息异常，{}", resultObj);
                         return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
-                    }else {
+                    } else {
                         YbInstitutionInfoChange change = new YbInstitutionInfoChange();
-                        BeanUtils.copyProperties(cacheInfo,change);
-                        BeanUtils.copyProperties(req,change);
+                        BeanUtils.copyProperties(cacheInfo, change);
+                        BeanUtils.copyProperties(req, change);
                         addYbInstitutionInfoChange(change);
                     }
                 }
@@ -307,7 +331,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
                 return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
             }
             //todo 法人信息变更，将法人信息添加为经办人
-            if (!StringUtils.equals(defaultAccountId,organObj.getString("agentAccountId"))){
+            if (!StringUtils.equals(defaultAccountId, organObj.getString("agentAccountId"))) {
                 resultObj = organizationsService.bindAgent(organizeId, institutionInfo.getNumber(), defaultAccountId, institutionInfo.getLegalIdCard());
                 if (resultObj.containsKey("errCode")) {
                     log.error("外部机构将法人绑定为经办人信息异常，{}", resultObj);
@@ -347,7 +371,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
             if (resultObj.containsKey("errCode")) {
                 log.error("外部机构绑定经办人信息异常，{}", resultObj);
             }
-        }else {
+        } else {
             accountId = defaultAccountId;
         }
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -357,10 +381,11 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         institutionInfo.setUpdateTime(df.format(new Date()));
         // 4>机构创建完成以后，更新数据库
         YbInstitutionInfo ybInstitutionInfo = new YbInstitutionInfo();
-        BeanUtils.copyProperties(institutionInfo,ybInstitutionInfo);
+        BeanUtils.copyProperties(institutionInfo, ybInstitutionInfo);
         institutionInfoMapper.updateById(ybInstitutionInfo);
         return new ApiResponse(ErrorCodeEnum.SUCCESS);
     }
+
     @Override
     public void addYbInstitutionInfoChange(YbInstitutionInfoChange ybInstitutionInfoChange) {
 
@@ -372,44 +397,44 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         //机构名称跟机构编号非空判断
         String number = ybInstitutionInfoChangeReq.getNumber();
         String institutionName = ybInstitutionInfoChangeReq.getInstitutionName();
-        if (!StringUtils.isEmpty(number) || !StringUtils.isEmpty(institutionName)){
+        if (!StringUtils.isEmpty(number) || !StringUtils.isEmpty(institutionName)) {
             Integer pageNum = ybInstitutionInfoChangeReq.getPageNum();
-            ybInstitutionInfoChangeReq.setPageNum(pageNum-1);
-            List<YbInstitutionInfoChange>  YbInstitutionInfoChangeList= ybInstitutionInfoChangeMapper.selectChangeList(ybInstitutionInfoChangeReq);
-            if (YbInstitutionInfoChangeList.size()>0){
+            ybInstitutionInfoChangeReq.setPageNum(pageNum - 1);
+            List<YbInstitutionInfoChange> YbInstitutionInfoChangeList = ybInstitutionInfoChangeMapper.selectChangeList(ybInstitutionInfoChangeReq);
+            if (YbInstitutionInfoChangeList.size() > 0) {
                 return new ApiResponse(YbInstitutionInfoChangeList);
             }
-            return new ApiResponse("200","空");
+            return new ApiResponse("200", "空");
         }
-        return new ApiResponse("300","机构编号或机构名称为空!");
+        return new ApiResponse("300", "机构编号或机构名称为空!");
     }
 
     @Override
-    public void exportExcel(YbInstitutionInfoChangeReq ybInstitutionInfoChangeReq,HttpServletResponse response) {
+    public void exportExcel(YbInstitutionInfoChangeReq ybInstitutionInfoChangeReq, HttpServletResponse response) {
         String number = ybInstitutionInfoChangeReq.getNumber();
         String institutionName = ybInstitutionInfoChangeReq.getInstitutionName();
 
 
-        if (!StringUtils.isEmpty(number) || !StringUtils.isEmpty(institutionName)){
+        if (!StringUtils.isEmpty(number) || !StringUtils.isEmpty(institutionName)) {
 
-            List<YbInstitutionInfoChange>  YbInstitutionInfoChangeList= ybInstitutionInfoChangeMapper.selectChangeList(ybInstitutionInfoChangeReq);
-            SimpleDateFormat   sdf=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            List<YbInstitutionInfoChange> YbInstitutionInfoChangeList = ybInstitutionInfoChangeMapper.selectChangeList(ybInstitutionInfoChangeReq);
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             XSSFWorkbook workbook = new XSSFWorkbook();
             XSSFSheet sheet = workbook.createSheet();
             int rowIndex = 0;
             int colIndex = 0;
             //表头
-            String[] headers = {"id","机构编号","机构名称","统一社会信用代码","机构法人姓名"
-                    ,"机构法人证件类型","机构法人证件号","机构法人手机号","经办人姓名"
-                    ,"经办人证件类型","经办人证件号","经办人手机号","天印系统经办人用户标识"
-                    ,"天印系统法人用户标识","天印系统机构标记","修改时间"};
+            String[] headers = {"id", "机构编号", "机构名称", "统一社会信用代码", "机构法人姓名"
+                    , "机构法人证件类型", "机构法人证件号", "机构法人手机号", "经办人姓名"
+                    , "经办人证件类型", "经办人证件号", "经办人手机号", "天印系统经办人用户标识"
+                    , "天印系统法人用户标识", "天印系统机构标记", "修改时间"};
             XSSFRow headerRow = sheet.createRow(rowIndex++);
             for (int i = 0; i < headers.length; i++) {
                 String header = headers[i];
                 XSSFCell headerRowCell = headerRow.createCell(i);
                 headerRowCell.setCellValue(header);
                 // 设置列的宽度
-                sheet.setColumnWidth(i, 30*256);
+                sheet.setColumnWidth(i, 30 * 256);
             }
             for (YbInstitutionInfoChange ybInstitutionInfoChange : YbInstitutionInfoChangeList) {
                 XSSFRow bodyRow = sheet.createRow(rowIndex++);
@@ -432,9 +457,9 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
                 System.out.println(updateTime);
                 bodyRow.createCell(colIndex++).setCellValue(sdf.format(updateTime));
                 //将下标还原供下次循环使用
-                colIndex=0;
+                colIndex = 0;
             }
-            ExcelUtil.xlsDownloadFile(response,workbook);
+            ExcelUtil.xlsDownloadFile(response, workbook);
         }
     }
 
@@ -442,7 +467,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
     @Override
     public void exportExcel2(HttpServletResponse response) {
         List<YbInstitutionInfoChange> ybInstitutionInfoChanges = ybInstitutionInfoChangeMapper.selectList(null);
-        ExcelUtil.exportExcel(ybInstitutionInfoChanges,response);
+        ExcelUtil.exportExcel(ybInstitutionInfoChanges, response);
 
     }
 

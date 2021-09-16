@@ -1,14 +1,18 @@
 package com.hfi.insurance.controller;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.hfi.insurance.aspect.anno.LogAnnotation;
 import com.hfi.insurance.common.ApiResponse;
 import com.hfi.insurance.config.PicUploadConfig;
 import com.hfi.insurance.enums.ErrorCodeEnum;
 import com.hfi.insurance.enums.PicType;
+import com.hfi.insurance.mapper.YbInstitutionPicPathMapper;
 import com.hfi.insurance.model.PicPathRes;
 import com.hfi.insurance.model.YbInstitutionInfoChange;
 import com.hfi.insurance.model.YbInstitutionPicPath;
+import com.hfi.insurance.model.dto.GetPicByNumbers;
 import com.hfi.insurance.model.dto.PicCommit;
 import com.hfi.insurance.service.IYbInstitutionInfoService;
 import com.hfi.insurance.service.IYbInstitutionPicPathService;
@@ -25,10 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author jthealth-NZH
@@ -45,14 +46,15 @@ import java.util.Map;
 public class PicController {
     @Resource
     private PicUploadConfig picUploadConfig;
-    private static final String SPILE = "#";
-
 
     @Autowired
     private IYbInstitutionPicPathService iYbInstitutionPicPathService;
 
     @Autowired
     private IYbInstitutionInfoService iYbInstitutionInfoService;
+
+    @Autowired
+    private YbInstitutionPicPathMapper ybInstitutionPicPathMapper;
 
     @RequestMapping(value = "/upload/batch", method = RequestMethod.POST)
     @ApiOperation("上传批量图片")
@@ -198,11 +200,18 @@ public class PicController {
         return res;
     }
 
-    @RequestMapping(value = "/upload/cacheMap", method = RequestMethod.POST)
-    @ResponseBody
+    @RequestMapping(value = "/upload/getPicByNumber", method = RequestMethod.POST)
+    @ApiOperation("获取机构图片")
+    @ApiImplicitParams({
+            @ApiImplicitParam(paramType = "body", name = "number", value = "机构代码", dataType = "Set<String>", required = true),})
     //file要与表单上传的名字相同
-    public ApiResponse cacheMap(){
-        return ApiResponse.success(PicUploadUtil.picCommitPath);
+    @LogAnnotation
+    public ApiResponse<List<YbInstitutionPicPath>> getPicByNumber(@RequestBody Set<String> number ) {
+        QueryWrapper<YbInstitutionPicPath> objectQueryWrapper = new QueryWrapper<>();
+        objectQueryWrapper.in("number",number);
+        List<YbInstitutionPicPath> ybInstitutionPicPaths = ybInstitutionPicPathMapper.selectList(objectQueryWrapper);
+        //返回的图片列表
+        return ApiResponse.success(ybInstitutionPicPaths);
     }
 
 }
