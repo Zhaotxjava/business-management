@@ -20,10 +20,8 @@
        <if test="maxupdateTime!=null">
            and update_time &lt; #{maxupdateTime}
        </if>
-
        </where>
        order by update_time desc) t
-
        limit #{pageNum},#{pageSize}
    </select>
 
