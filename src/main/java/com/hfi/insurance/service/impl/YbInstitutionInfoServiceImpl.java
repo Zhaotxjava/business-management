@@ -107,7 +107,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         Integer pageNum = req.getPageNum();
         req.setPageNum(pageNum - 1);
         List<InstitutionInfoRes> ybInstitutionInfos = institutionInfoMapper.selectOrgForCreateFlow(req);
-      /* //todo 添加保险公司
+       //todo 添加保险公司
         int pageIndex = 1;
         int size = 1;
         List<InstitutionInfoRes> insuranceList = new ArrayList<>();
@@ -142,7 +142,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
                 insuranceList.add(res);
             }
         }
-        ybInstitutionInfos.addAll(insuranceList);*/
+        ybInstitutionInfos.addAll(insuranceList);
         int total = institutionInfoMapper.selectCountOrgForCreateFlow(req);
         Page<InstitutionInfoRes> page = new Page<>(req.getPageNum(),req.getPageSize());
         page.setRecords(ybInstitutionInfos);
@@ -327,18 +327,17 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
 
     @Override
     public ApiResponse getInstitutionInfoChangeList(YbInstitutionInfoChangeReq ybInstitutionInfoChangeReq) {
+        //机构名称跟机构编号非空判断
         String number = ybInstitutionInfoChangeReq.getNumber();
         String institutionName = ybInstitutionInfoChangeReq.getInstitutionName();
-
-
-        if (!StringUtils.isEmpty(number)&&!StringUtils.isEmpty(institutionName)){
+        if (!StringUtils.isEmpty(number) || !StringUtils.isEmpty(institutionName)){
             Integer pageNum = ybInstitutionInfoChangeReq.getPageNum();
-            if (pageNum==1){
-                ybInstitutionInfoChangeReq.setPageNum(0);
-            }
+            ybInstitutionInfoChangeReq.setPageNum(pageNum-1);
             List<YbInstitutionInfoChange>  YbInstitutionInfoChangeList= ybInstitutionInfoChangeMapper.selectChangeList(ybInstitutionInfoChangeReq);
-
-            return new ApiResponse(YbInstitutionInfoChangeList);
+            if (YbInstitutionInfoChangeList.size()>0){
+                return new ApiResponse(YbInstitutionInfoChangeList);
+            }
+            return new ApiResponse("200","空");
         }
         return new ApiResponse("300","机构编号或机构名称为空!");
     }
@@ -349,7 +348,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         String institutionName = ybInstitutionInfoChangeReq.getInstitutionName();
 
 
-        if (!StringUtils.isEmpty(number)&& !StringUtils.isEmpty(institutionName)){
+        if (!StringUtils.isEmpty(number) || !StringUtils.isEmpty(institutionName)){
 
             List<YbInstitutionInfoChange>  YbInstitutionInfoChangeList= ybInstitutionInfoChangeMapper.selectChangeList(ybInstitutionInfoChangeReq);
             SimpleDateFormat   sdf=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
