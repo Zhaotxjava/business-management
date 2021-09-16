@@ -29,7 +29,7 @@ public class PicUploadUtil {
     public static Map<String, PicCommit> picCommitMap = new HashMap<>();
     public static Map<String, PicCommitPath> picCommitPath = new HashMap<>();
 
-    public static ApiResponse<PicPathRes> uploadFiles2(MultipartFile[] xxk, MultipartFile[] yyzz, String dir) {
+    public static ApiResponse<PicPathRes> uploadFiles2(MultipartFile[] xxk, MultipartFile[] yyzz, String dir,String number) {
         try {
             //创建文件在服务器端存放路径
 //            String dir = request.getServletContext().getRealPath("/upload");
@@ -40,9 +40,8 @@ public class PicUploadUtil {
             List<String> xkzList = new ArrayList<>();
             List<String> yyzzList = new ArrayList<>();
 
-            uploadFilesHelper(xxk, xkzList, PicType.XKZ.getCode(), dir);
-            uploadFilesHelper(yyzz, yyzzList, PicType.YYZZ.getCode(), dir);
-
+            uploadFilesHelper(xxk, xkzList, PicType.XKZ, dir,number);
+            uploadFilesHelper(yyzz, yyzzList, PicType.YYZZ, dir,number);
 
             PicPathRes res = new PicPathRes();
             res.setXkzList(xkzList);
@@ -118,7 +117,7 @@ public class PicUploadUtil {
 //
 //    }
 
-    public static void uploadFilesHelper(MultipartFile[] file, List<String> fileNameList, String picType, String dir) throws IOException {
+    public static void uploadFilesHelper(MultipartFile[] file, List<String> fileNameList, PicType picType, String dir,String number) throws IOException {
 
         File fileDir = new File(dir);
         boolean b = false;
@@ -130,14 +129,20 @@ public class PicUploadUtil {
             if (file[i].isEmpty()) {
                 continue;
             }
-            String fileSuffix = file[i].getOriginalFilename().substring(file[i].getOriginalFilename().lastIndexOf("."));
-            String fileName = picType + "_" + UUID.randomUUID().toString().replace("-", "") + fileSuffix;
-            String filePath = fileDir + "/" + fileName;
-            File files = new File(filePath);
-            log.info("文件名：{} 保存地址:{}", fileName, filePath);
+            String filePath = uploadOneFile(file[i],dir,picType,number);
             fileNameList.add(filePath);
-            //上传
-            file[i].transferTo(files);
+//            String fileSuffix = file[i].getOriginalFilename().substring(file[i].getOriginalFilename().lastIndexOf("."));
+//            DateFormat df = new SimpleDateFormat("yyyyMMdd");
+//            Calendar calendar = Calendar.getInstance();
+//            String dateName = df.format(calendar.getTime());
+//            String fileName = picType + "_" +number+"_"+dateName+"_"
+//                    + UUID.randomUUID().toString().replace("-", "").substring(0,11) + fileSuffix;
+//            String filePath = fileDir + "/" + fileName;
+//            File files = new File(filePath);
+//            log.info("文件名：{} 保存地址:{}", fileName, filePath);
+//            fileNameList.add(filePath);
+//            //上传
+//            file[i].transferTo(files);
         }
     }
 
