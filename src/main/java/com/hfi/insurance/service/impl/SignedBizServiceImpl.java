@@ -225,6 +225,8 @@ public class SignedBizServiceImpl implements SignedBizService {
                             .setFileKey(fileKey)
                             .setInitiatorTime(now)
                             .setAccountType(2)
+                            .setFlowStatus(0)
+                            .setSignStatus("0")
                             .setFlowType("Common");
                     flowInfoList.add(flowInfo);
                 });
@@ -239,6 +241,8 @@ public class SignedBizServiceImpl implements SignedBizService {
                         .setInitiatorTime(now)
                         .setUniqueId(partyA.getUniqueId())
                         .setAccountType(1)
+                        .setFlowStatus(0)
+                        .setSignStatus("0")
                         .setFlowType("Common");
                 flowInfoList.add(flowAInfo);
                 flowInfoService.saveBatch(flowInfoList);
@@ -329,6 +333,8 @@ public class SignedBizServiceImpl implements SignedBizService {
                         .setSignFlowId(signFlowId)
                         .setNumber(institutionNumber)
                         .setAccountType(2)
+                        .setFlowStatus(0)
+                        .setSignStatus("0")
                         .setFileKey(fileKey)
                         .setFlowType("Common");
                 flowInfoList.add(flowInfo);
@@ -343,6 +349,8 @@ public class SignedBizServiceImpl implements SignedBizService {
                     .setInitiatorTime(new Date())
                     .setUniqueId(partyA.getUniqueId())
                     .setAccountType(1)
+                    .setFlowStatus(0)
+                    .setSignStatus("0")
                     .setFileKey(fileKey)
                     .setFlowType("Common");
             flowInfoList.add(flowAInfo);

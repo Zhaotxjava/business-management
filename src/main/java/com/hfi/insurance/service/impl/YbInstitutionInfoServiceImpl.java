@@ -189,7 +189,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         log.info("机构信息：【{}】",JSON.toJSONString(cacheInfo));
         String legalAccountId = cacheInfo.getLegalAccountId() != null ? cacheInfo.getLegalAccountId() : "";
         JSONObject accountObj = organizationsService.queryAccounts(legalAccountId, "");
-        log.info("查询外部用户【{}】接口响应{}", accountId, accountObj);
+        log.info("查询外部用户【{}】接口响应{}", legalAccountId, accountObj);
         if (null == accountObj.getString("accountId")){
             accountExist = false;
         }
@@ -210,6 +210,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
             defaultAccountId = resultObj.getString("accountId");
         } else {
             if (StringUtils.isNotBlank(legalAccountId)){
+                defaultAccountId = legalAccountId;
                 JSONObject resultObj = organizationsService.updateAccounts(legalAccountId, req.getLegalName(), req.getLegalIdCard(), req.getLegalPhone());
                 if (resultObj.containsKey("errCode")) {
                     log.error("更新外部用户（法人）信息异常，{}", resultObj);
@@ -244,7 +245,8 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
                 }
                 accountId = resultObj.getString("accountId");
             } else {
-                if (StringUtils.isNotBlank(accountId)){
+                if (StringUtils.isNotBlank(agentAccountId)){
+                    accountId = agentAccountId;
                     JSONObject resultObj = organizationsService.updateAccounts(agentAccountId, req.getContactName(), req.getContactIdCard(), req.getContactPhone());
                     if (resultObj.containsKey("errCode")) {
                         log.error("更新外部用户（联系人）信息异常，{}", resultObj);
