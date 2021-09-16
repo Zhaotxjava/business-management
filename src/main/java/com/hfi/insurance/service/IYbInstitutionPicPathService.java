@@ -9,7 +9,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * </p>
  *
  * @author NZH
- * @since 2021-09-09
+ * @since 2021-09-15
  */
 public interface IYbInstitutionPicPathService extends IService<YbInstitutionPicPath> {
 

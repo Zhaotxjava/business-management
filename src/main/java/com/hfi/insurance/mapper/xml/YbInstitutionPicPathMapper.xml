@@ -4,8 +4,8 @@
 
     <!-- 通用查询映射结果 -->
     <resultMap id="BaseResultMap" type="com.hfi.insurance.model.YbInstitutionPicPath">
-        <id column="id" property="id" />
-        <result column="number" property="number" />
+        <id column="number" property="number" />
+        <result column="pic_type" property="picType" />
         <result column="pic_path" property="picPath" />
         <result column="create_time" property="createTime" />
         <result column="update_time" property="updateTime" />
@@ -13,7 +13,7 @@
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, number, pic_path, create_time, update_time
+        number, pic_type, pic_path, create_time, update_time
     </sql>
 
 </mapper>

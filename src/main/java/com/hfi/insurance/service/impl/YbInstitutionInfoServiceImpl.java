@@ -76,12 +76,14 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
 //        String institutionNumber = (String) session.getAttribute("number");
         String jsonStr = caffeineCache.asMap().get(token);
         log.info("token:{}",token);
-        if (StringUtils.isBlank(jsonStr)){
-            return new ApiResponse(ErrorCodeEnum.TOKEN_EXPIRED.getCode(),ErrorCodeEnum.TOKEN_EXPIRED.getMessage());
-        }
-        JSONObject jsonObject = JSON.parseObject(jsonStr);
-        String institutionNumber = jsonObject.getString("number");
-        log.info("从token中获取机构编号：{}",institutionNumber);
+//        if (StringUtils.isBlank(jsonStr)){
+//            return new ApiResponse(ErrorCodeEnum.TOKEN_EXPIRED.getCode(),ErrorCodeEnum.TOKEN_EXPIRED.getMessage());
+//        }
+//        JSONObject jsonObject = JSON.parseObject(jsonStr);
+//        String institutionNumber = jsonObject.getString("number");
+//        log.info("从token中获取机构编号：{}",institutionNumber);
+        String institutionNumber = "111";
+
 //        if (StringUtils.isNotBlank(institutionNumber)){
 //            queryWrapper.like("number",institutionNumber);
 //        }

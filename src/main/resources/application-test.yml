@@ -14,7 +14,7 @@ file:
   down:
     url: /opt/app/insurance-info-server/service/demo
   pic:
-    uploadPathImg: E:\Temp\img
+    uploadPathImg: /opt/app/insurance-info-server/pic
 #天印系统接口配置
 esignpro:
   url: http://192.20.97.42:8086

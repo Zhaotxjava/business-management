@@ -12,6 +12,7 @@ public enum ErrorCodeEnum {
     NETWORK_ERROR("50904", "对方服务器连接失败"),
     DATA_NOT_READY_ERROR("50905", "数据还未准备结束"),
     RESPONES_ERROR("50906", "接口响应错误"),
+    FILE_UPLOAD_ERROR("50908","文件上传失败"),
     TOKEN_EXPIRED("50907", "token已经过期，请重新登录！！");
 
     /**

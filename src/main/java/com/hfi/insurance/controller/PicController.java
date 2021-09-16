@@ -1,14 +1,13 @@
 package com.hfi.insurance.controller;
 
 import com.alibaba.fastjson.JSONObject;
-import com.hfi.insurance.aspect.anno.LogAnnotation;
 import com.hfi.insurance.common.ApiResponse;
 import com.hfi.insurance.config.PicUploadConfig;
 import com.hfi.insurance.enums.ErrorCodeEnum;
-import com.hfi.insurance.enums.PicType;
 import com.hfi.insurance.model.PicPathRes;
 import com.hfi.insurance.model.YbInstitutionInfoChange;
 import com.hfi.insurance.model.YbInstitutionPicPath;
+import com.hfi.insurance.model.dto.PicCommit;
 import com.hfi.insurance.service.IYbInstitutionInfoService;
 import com.hfi.insurance.service.IYbInstitutionPicPathService;
 import com.hfi.insurance.utils.PicUploadUtil;
@@ -20,10 +19,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.UUID;
+import java.util.Map;
 
 /**
  * @author jthealth-NZH
@@ -42,6 +42,7 @@ public class PicController {
     private PicUploadConfig picUploadConfig;
     private static final String SPILE = "#";
 
+
     @Autowired
     private IYbInstitutionPicPathService iYbInstitutionPicPathService;
 
@@ -53,7 +54,21 @@ public class PicController {
     //file要与表单上传的名字相同
     public ApiResponse<PicPathRes> uploadFiles(MultipartFile[] xkz, MultipartFile[] yyzz, HttpServletRequest request) {
         String number = request.getHeader("number");
-        String picType = request.getHeader("picType");
+        String orgInstitutionCode = request.getHeader("orgInstitutionCode");
+        log.info("上传图片入参 xkz.length={},yyzz.length={},number={},orgInstitutionCode={}"
+                , xkz.length, yyzz.length, number, orgInstitutionCode);
+        if (xkz.length <= 0 && yyzz.length <= 0) {
+            log.info("未获取到图片");
+            return ApiResponse.fail(ErrorCodeEnum.PARAM_ERROR.getCode(), "未获取到图片");
+        }
+        ApiResponse check = PicUploadUtil.checkFile(xkz);
+        if (!check.isSuccess()) {
+            return check;
+        }
+        check = PicUploadUtil.checkFile(yyzz);
+        if (!check.isSuccess()) {
+            return check;
+        }
         //返回的图片列表
         ApiResponse<PicPathRes> res = PicUploadUtil.uploadFiles2(xkz, yyzz, picUploadConfig.getUploadPathImg());
         if (res.isSuccess()) {
@@ -63,16 +78,102 @@ public class PicController {
             picPath.setPicPath(JSONObject.toJSONString(data));
             boolean b = iYbInstitutionPicPathService.save(picPath);
             if (b) {
-                //todo 是否在此处进行变更记录提交。
                 YbInstitutionInfoChange change = new YbInstitutionInfoChange();
+                change.setLicensePicture(JSONObject.toJSONString(data.getXkzList()));
+                change.setBusinessPicture(JSONObject.toJSONString(data.getYyzzList()));
                 change.setNumber(picPath.getNumber());
+                change.setOrgInstitutionCode(orgInstitutionCode);
                 iYbInstitutionInfoService.addYbInstitutionInfoChange(change);
                 return res;
             } else {
+                log.info("图片保存失败");
                 return ApiResponse.fail(ErrorCodeEnum.RESPONES_ERROR.getCode(), "图片保存失败");
             }
         }
         return res;
+    }
+
+    @RequestMapping(value = "/upload/one", method = RequestMethod.POST)
+    @ResponseBody
+    //file要与表单上传的名字相同
+    public ApiResponse<PicPathRes> cacheFile(MultipartFile file, HttpServletRequest request) {
+        String number = request.getHeader("number");
+        String orgInstitutionCode = request.getHeader("orgInstitutionCode");
+        String operationId = request.getHeader("operationId");
+        String picType = request.getHeader("picType");
+
+        log.info("上传图片入参operationId={} file.isEmpty={},number={},orgInstitutionCode={}"
+                , operationId, file.isEmpty(), number, orgInstitutionCode);
+        ApiResponse apiResponse = null;
+        try {
+            apiResponse = PicUploadUtil.cacheFile(file, operationId, picType,picUploadConfig.getUploadPathImg(),number);
+        } catch (IOException e) {
+            log.error("",e);
+           return ApiResponse.fail(ErrorCodeEnum.FILE_UPLOAD_ERROR);
+        }
+        return apiResponse;
+    }
+
+//    @RequestMapping(value = "/upload/one2", method = RequestMethod.POST)
+//    @ResponseBody
+//    //file要与表单上传的名字相同
+//    public ApiResponse<PicPathRes> cacheFile2(MultipartFile file, HttpServletRequest request) {
+//        String number = request.getHeader("number");
+//        String orgInstitutionCode = request.getHeader("orgInstitutionCode");
+//        String operationId = request.getHeader("operationId");
+//        String picType = request.getHeader("picType");
+//
+//        log.info("上传图片入参operationId={} file.isEmpty={},number={},orgInstitutionCode={}"
+//                , operationId, file.isEmpty(), number, orgInstitutionCode);
+//        ApiResponse apiResponse = PicUploadUtil.cacheFile(file, operationId, picType,picUploadConfig.getUploadPathImg());
+//
+//        return apiResponse;
+//    }
+
+    @RequestMapping(value = "/upload/commit", method = RequestMethod.POST)
+    @ResponseBody
+    //file要与表单上传的名字相同
+    public ApiResponse<PicPathRes> commit(HttpServletRequest request) {
+        String number = request.getHeader("number");
+        String orgInstitutionCode = request.getHeader("orgInstitutionCode");
+        String operationId = request.getHeader("operationId");
+//        String picType = request.getHeader("picType");
+
+        log.info("提交图片入参operationId={} number={},orgInstitutionCode={}"
+                , operationId, number, orgInstitutionCode);
+        ApiResponse<PicPathRes> res = new ApiResponse<>();
+        try {
+            res = PicUploadUtil.fileCommit(operationId, picUploadConfig.getUploadPathImg());
+            if (res.isSuccess()) {
+                PicPathRes data = res.getData();
+                YbInstitutionPicPath picPath = new YbInstitutionPicPath();
+                picPath.setNumber(number);
+                picPath.setPicPath(JSONObject.toJSONString(data));
+                boolean b = iYbInstitutionPicPathService.saveOrUpdate(picPath);
+                if (b) {
+                    YbInstitutionInfoChange change = new YbInstitutionInfoChange();
+                    change.setLicensePicture(JSONObject.toJSONString(data.getXkzList()));
+                    change.setBusinessPicture(JSONObject.toJSONString(data.getYyzzList()));
+                    change.setNumber(picPath.getNumber());
+                    change.setOrgInstitutionCode(orgInstitutionCode);
+                    iYbInstitutionInfoService.addYbInstitutionInfoChange(change);
+                    return res;
+                } else {
+                    log.info("图片保存失败");
+                    return ApiResponse.fail(ErrorCodeEnum.RESPONES_ERROR.getCode(), "图片保存失败");
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return res;
+    }
+
+    @RequestMapping(value = "/upload/cacheMap", method = RequestMethod.POST)
+    @ResponseBody
+    //file要与表单上传的名字相同
+    public ApiResponse cacheMap(){
+        return ApiResponse.success(PicUploadUtil.picCommitPath);
     }
 
 }
