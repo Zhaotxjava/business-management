@@ -10,10 +10,12 @@ import com.hfi.insurance.aspect.anno.LogAnnotation;
 import com.hfi.insurance.common.ApiResponse;
 import com.hfi.insurance.common.ExcelUtil;
 import com.hfi.insurance.enums.ErrorCodeEnum;
+import com.hfi.insurance.mapper.YbInstitutionInfoChangeMapper;
 import com.hfi.insurance.mapper.YbInstitutionInfoMapper;
 import com.hfi.insurance.mapper.YbOrgTdMapper;
 import com.hfi.insurance.model.InstitutionInfo;
 import com.hfi.insurance.model.YbInstitutionInfo;
+import com.hfi.insurance.model.YbInstitutionInfoChange;
 import com.hfi.insurance.model.YbOrgTd;
 import com.hfi.insurance.model.dto.InstitutionInfoAddReq;
 import com.hfi.insurance.model.dto.OrgTdQueryReq;
@@ -30,6 +32,7 @@ import org.apache.poi.xssf.usermodel.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
@@ -63,7 +66,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
     @Resource
     private Cache<String, String> caffeineCache;
     @Resource
-    private YbInstitutionInfoChangeMapper  ybInstitutionInfoChangeMapper;
+    private YbInstitutionInfoChangeMapper ybInstitutionInfoChangeMapper;
 
 
     @Override
@@ -221,6 +224,11 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
                 if (resultObj.containsKey("errCode")) {
                     log.error("更新外部用户（法人）信息异常，{}", resultObj);
                     return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
+                }else {
+                    YbInstitutionInfoChange change = new YbInstitutionInfoChange();
+                    BeanUtils.copyProperties(cacheInfo,change);
+                    BeanUtils.copyProperties(req,change);
+                    addYbInstitutionInfoChange(change);
                 }
             }
         }
@@ -257,6 +265,11 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
                     if (resultObj.containsKey("errCode")) {
                         log.error("更新外部用户（联系人）信息异常，{}", resultObj);
                         return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
+                    }else {
+                        YbInstitutionInfoChange change = new YbInstitutionInfoChange();
+                        BeanUtils.copyProperties(cacheInfo,change);
+                        BeanUtils.copyProperties(req,change);
+                        addYbInstitutionInfoChange(change);
                     }
                 }
             }
