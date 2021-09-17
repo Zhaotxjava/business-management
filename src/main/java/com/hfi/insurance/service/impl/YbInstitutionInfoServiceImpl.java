@@ -539,7 +539,9 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
     }
 
     @Override
+    @LogAnnotation
     public ApiResponse newUpdateInstitutionInfo(InstitutionInfoAddReq req) {
+        log.info("-------------------------------------------------------");
         String number = req.getNumber();
         // 查询机构是否在可访问范围
         QueryWrapper<YbOrgTd> queryWrapper = new QueryWrapper<>();
@@ -566,6 +568,8 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
      */
     private ApiResponse updateInstitution(
             final InstitutionInfoAddReq req, final YbInstitutionInfo local, String institutionName) {
+        log.info("[更新机构] 开始 {}", institutionName);
+
         // 待更新信息
         InstitutionInfo updateInfo = new InstitutionInfo();
         BeanUtils.copyProperties(req, updateInfo);
@@ -583,6 +587,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
                 log.error("更新外部用户（法人）信息异常，{}", resultObj);
                 return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
             }
+            log.info("[更新机构] 查询并更新法人信息 {}", resultObj);
             updateInfo.setLegalAccountId(data.getString("accountId"));
         } else {
             // 创建法人信息
@@ -592,6 +597,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
                 log.error("创建外部用户（法人）信息异常，{}", createAccount);
                 return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), createAccount.getString("msg"));
             }
+            log.info("[更新机构] 创建法人信息 {}", createAccount);
             updateInfo.setLegalAccountId(createAccount.getString("accountId"));
         }
 
@@ -606,6 +612,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
                 log.error("更新外部用户（经办人）信息异常，{}", resultObj);
                 return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
             }
+            log.info("[更新机构] 查询并更新经办人信息 {}", resultObj);
             updateInfo.setAccountId(data.getString("accountId"));
         } else {
             // 创建经办人信息
@@ -615,13 +622,14 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
                 log.error("创建外部用户（经办人）信息异常，{}", createAccount);
                 return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), createAccount.getString("msg"));
             }
+            log.info("[更新机构] 创建经办人信息 {}", createAccount);
             updateInfo.setAccountId(createAccount.getString("accountId"));
         }
 
         // 更新外部机构
         JSONObject resultObj = organizationsService.updateOrgans(updateInfo);
         if (resultObj.containsKey("errCode")) {
-            log.error("更新外部用户信息异常，{}", resultObj);
+            log.error("更新外部机构信息异常，{}", resultObj);
             return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
         }
 
@@ -660,6 +668,8 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         YbInstitutionInfoChange institutionInfo =
                 JSONObject.parseObject(JSONObject.toJSONString(updateInfo), YbInstitutionInfoChange.class);
         addYbInstitutionInfoChange(institutionInfo);
+
+        log.info("[更新机构] 结束 {}", institutionName);
         return ApiResponse.success();
     }
 
@@ -669,6 +679,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
      * @return
      */
     private ApiResponse insertInstitution(final InstitutionInfoAddReq req, String institutionName) {
+        log.info("[新增机构] 开始 {}", institutionName);
         // 待存储信息
         InstitutionInfo saveInfo = new InstitutionInfo();
         BeanUtils.copyProperties(req, saveInfo);
@@ -684,6 +695,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
                     || !StringUtils.equals(data.getString("mobile"), req.getLegalPhone())) {
                 return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), "ERR-P：法人身份信息校验失败");
             }
+            log.info("[新增机构] 查询到法人信息 {}", data);
             saveInfo.setLegalAccountId(data.getString("accountId"));
         } else {
             // 创建法人信息
@@ -693,6 +705,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
                 log.error("创建外部用户（法人）信息异常，{}", createAccount);
                 return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), createAccount.getString("msg"));
             }
+            log.info("[新增机构] 创建法人信息 {}", createAccount);
             saveInfo.setLegalAccountId(createAccount.getString("accountId"));
         }
 
@@ -706,6 +719,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
                     || !StringUtils.equals(data.getString("mobile"), req.getContactPhone())) {
                 return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), "ERR-P：经办人身份信息校验失败");
             }
+            log.info("[新增机构] 查询到经办人信息 {}", data);
             saveInfo.setAccountId(data.getString("accountId"));
         } else {
             // 创建经办人信息
@@ -715,6 +729,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
                 log.error("创建外部用户（经办人）信息异常，{}", createAccount);
                 return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), createAccount.getString("msg"));
             }
+            log.info("[新增机构] 创建经办人信息 {}", createAccount);
             saveInfo.setAccountId(createAccount.getString("accountId"));
         }
 
@@ -730,6 +745,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         YbInstitutionInfo institutionInfo = JSONObject.parseObject(JSONObject.toJSONString(saveInfo), YbInstitutionInfo.class);
         institutionInfoMapper.insert(institutionInfo);
 
+        log.info("[新增机构] 结束 {}", institutionName);
         return ApiResponse.success();
     }
 
