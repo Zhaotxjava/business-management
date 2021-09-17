@@ -221,6 +221,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         // 是否更新
         boolean updated = false;
         YbInstitutionInfoChange change = new YbInstitutionInfoChange();
+        BeanUtils.copyProperties(cacheInfo,change);
 
         // 2>通过天印系统查询联系人是否已存在于系统，不存在则调用创建用户接口，得到用户的唯一编码，存在则直接跳到第4步
         boolean accountExist = true;
@@ -271,8 +272,6 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
                     return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
                 }else {
                     updated = true;
-                    BeanUtils.copyProperties(cacheInfo,change);
-                    BeanUtils.copyProperties(req,change);
                 }
             }
         }
@@ -314,11 +313,11 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
                         return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
                     }else {
                         updated = true;
-                        BeanUtils.copyProperties(cacheInfo,change);
-                        BeanUtils.copyProperties(req,change);
                     }
                 }
             }
+        } else {
+            accountId = defaultAccountId;
         }
         // 更新机构信息（经办人accountId）
         institutionInfo.setAccountId(accountId);
@@ -335,8 +334,6 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
             }
         }
         if (!organExist) { //不存在则创建机构
-            institutionInfo.setAccountId(defaultAccountId); //创建默认经办人
-            institutionInfo.setLegalAccountId(defaultAccountId);
             JSONObject resultObj = organizationsService.createOrgans(institutionInfo);
             if (resultObj.containsKey("errCode")) {
                 log.error("创建外部机构信息异常，{}", resultObj);
@@ -346,8 +343,6 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         } else {
             //更新机构信息
             organizeId = organObj.getString("organizeId");
-            institutionInfo.setLegalAccountId(defaultAccountId);
-            institutionInfo.setOrganizeId(organizeId);
             JSONObject resultObj = organizationsService.updateOrgans(institutionInfo);
             if (resultObj.containsKey("errCode")) {
                 log.error("更新外部用户信息异常，{}", resultObj);
@@ -394,8 +389,6 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
             if (resultObj.containsKey("errCode")) {
                 log.error("外部机构绑定经办人信息异常，{}", resultObj);
             }
-        }else {
-            accountId = defaultAccountId;
         }
         institutionInfo.setOrganizeId(organizeId);
         // 4>机构创建完成以后，更新数据库
@@ -415,6 +408,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         BeanUtils.copyProperties(institutionInfo,ybInstitutionInfo);
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         institutionInfo.setUpdateTime(df.format(new Date()));
+        log.error("更新机构信息：{}", JSONObject.toJSONString(ybInstitutionInfo));
         institutionInfoMapper.updateById(ybInstitutionInfo);
     }
 
