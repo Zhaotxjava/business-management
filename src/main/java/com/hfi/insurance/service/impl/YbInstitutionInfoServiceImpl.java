@@ -450,7 +450,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
 
 
         if (!StringUtils.isEmpty(number) || !StringUtils.isEmpty(institutionName)){
-            List<YbInstitutionInfoChange>  YbInstitutionInfoChangeList= ybInstitutionInfoChangeMapper.selectChangeList(ybInstitutionInfoChangeReq);
+            List<YbInstitutionInfoChange>  YbInstitutionInfoChangeList= ybInstitutionInfoChangeMapper.selectexportChangeList(ybInstitutionInfoChangeReq);
             SimpleDateFormat   sdf=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             XSSFWorkbook workbook = new XSSFWorkbook();
             XSSFSheet sheet = workbook.createSheet();
@@ -472,21 +472,18 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
             }
             for (YbInstitutionInfoChange ybInstitutionInfoChange : YbInstitutionInfoChangeList) {
                 XSSFRow bodyRow = sheet.createRow(rowIndex++);
-                bodyRow.createCell(colIndex++).setCellValue(ybInstitutionInfoChange.getId());
                 bodyRow.createCell(colIndex++).setCellValue(ybInstitutionInfoChange.getNumber());
                 bodyRow.createCell(colIndex++).setCellValue(ybInstitutionInfoChange.getInstitutionName());
                 bodyRow.createCell(colIndex++).setCellValue(ybInstitutionInfoChange.getOrgInstitutionCode());
                 bodyRow.createCell(colIndex++).setCellValue(ybInstitutionInfoChange.getLegalName());
-                bodyRow.createCell(colIndex++).setCellValue(ybInstitutionInfoChange.getLegalCardType());
+                bodyRow.createCell(colIndex++).setCellValue("身份证");
                 bodyRow.createCell(colIndex++).setCellValue(ybInstitutionInfoChange.getLegalIdCard());
                 bodyRow.createCell(colIndex++).setCellValue(ybInstitutionInfoChange.getLegalPhone());
                 bodyRow.createCell(colIndex++).setCellValue(ybInstitutionInfoChange.getContactName());
-                bodyRow.createCell(colIndex++).setCellValue(ybInstitutionInfoChange.getContactCardType());
+                bodyRow.createCell(colIndex++).setCellValue("身份证");
                 bodyRow.createCell(colIndex++).setCellValue(ybInstitutionInfoChange.getContactIdCard());
                 bodyRow.createCell(colIndex++).setCellValue(ybInstitutionInfoChange.getContactPhone());
-                bodyRow.createCell(colIndex++).setCellValue(ybInstitutionInfoChange.getAccountId());
-                bodyRow.createCell(colIndex++).setCellValue(ybInstitutionInfoChange.getLegalAccountId());
-                bodyRow.createCell(colIndex++).setCellValue(ybInstitutionInfoChange.getOrganizeId());
+
                 Date updateTime = ybInstitutionInfoChange.getUpdateTime();
                 System.out.println(updateTime);
                 bodyRow.createCell(colIndex++).setCellValue(sdf.format(updateTime));
@@ -506,10 +503,9 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         int rowIndex = 0;
         int colIndex = 0;
         //表头
-        String[] headers = {"id","机构编号","机构名称","统一社会信用代码","机构法人姓名"
+        String[] headers = {"机构编号","机构名称","统一社会信用代码","机构法人姓名"
                 ,"机构法人证件类型","机构法人证件号","机构法人手机号","经办人姓名"
-                ,"经办人证件类型","经办人证件号","经办人手机号","天印系统经办人用户标识"
-                ,"天印系统法人用户标识","天印系统机构标记","修改时间"};
+                ,"经办人证件类型","经办人证件号","经办人手机号","修改时间"};
         XSSFRow headerRow = sheet.createRow(rowIndex++);
         for (int i = 0; i < headers.length; i++) {
             String header = headers[i];
@@ -520,23 +516,20 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         }
         for (YbInstitutionInfoChange ybInstitutionInfoChange : ybInstitutionInfoChanges) {
             XSSFRow bodyRow = sheet.createRow(rowIndex++);
-            bodyRow.createCell(colIndex++).setCellValue(ybInstitutionInfoChange.getId());
+
             bodyRow.createCell(colIndex++).setCellValue(ybInstitutionInfoChange.getNumber());
             bodyRow.createCell(colIndex++).setCellValue(ybInstitutionInfoChange.getInstitutionName());
             bodyRow.createCell(colIndex++).setCellValue(ybInstitutionInfoChange.getOrgInstitutionCode());
             bodyRow.createCell(colIndex++).setCellValue(ybInstitutionInfoChange.getLegalName());
-            bodyRow.createCell(colIndex++).setCellValue(ybInstitutionInfoChange.getLegalCardType());
+            bodyRow.createCell(colIndex++).setCellValue("身份证");
             bodyRow.createCell(colIndex++).setCellValue(ybInstitutionInfoChange.getLegalIdCard());
             bodyRow.createCell(colIndex++).setCellValue(ybInstitutionInfoChange.getLegalPhone());
             bodyRow.createCell(colIndex++).setCellValue(ybInstitutionInfoChange.getContactName());
-            bodyRow.createCell(colIndex++).setCellValue(ybInstitutionInfoChange.getContactCardType());
+            bodyRow.createCell(colIndex++).setCellValue("身份证");
             bodyRow.createCell(colIndex++).setCellValue(ybInstitutionInfoChange.getContactIdCard());
             bodyRow.createCell(colIndex++).setCellValue(ybInstitutionInfoChange.getContactPhone());
-            bodyRow.createCell(colIndex++).setCellValue(ybInstitutionInfoChange.getAccountId());
-            bodyRow.createCell(colIndex++).setCellValue(ybInstitutionInfoChange.getLegalAccountId());
-            bodyRow.createCell(colIndex++).setCellValue(ybInstitutionInfoChange.getOrganizeId());
             Date updateTime = ybInstitutionInfoChange.getUpdateTime();
-            System.out.println(updateTime);
+
             bodyRow.createCell(colIndex++).setCellValue(sdf.format(updateTime));
             //将下标还原供下次循环使用
             colIndex=0;

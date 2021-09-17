@@ -26,9 +26,16 @@
        order by update_time desc) t
        limit #{pageNum},#{pageSize}
    </select>
+   <select id="selectexportChangeList"   parameterType="com.hfi.insurance.model.dto.YbInstitutionInfoChangeReq" resultType="com.hfi.insurance.model.YbInstitutionInfoChange">
+
+    SELECT  * FROM   yb_institution_info_change
+     <include refid="ChangeWhere"/>
+
+   </select>
 
     <select id="selectChangeCount" parameterType="com.hfi.insurance.model.dto.YbInstitutionInfoChangeReq" resultType="int">
           select count(*) from yb_institution_info_change
+
         <include refid="ChangeWhere"/>
 
     </select>
