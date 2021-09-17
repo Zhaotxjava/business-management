@@ -1,6 +1,7 @@
 package com.hfi.insurance.service.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -382,14 +383,14 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
             if (YbInstitutionInfoChangeList.size()>0){
 
                 Integer ybInstitutionInfoChangeCount = ybInstitutionInfoChangeMapper.selectChangeCount(ybInstitutionInfoChangeReq);
-                PageDto pageDto = new PageDto();
-                pageDto.setList(YbInstitutionInfoChangeList);
-                pageDto.setTotal(ybInstitutionInfoChangeReq.getPageNum());
-                pageDto.setTotalPages(ybInstitutionInfoChangeCount);
-                return new ApiResponse(pageDto);
-/*
-                institutionInfoService.getInstitutionInfoList(token, req.getNumber(), req.getInstitutionName(), req.getPageNum(), req.getPageSize());
-*/
+
+
+                Page<YbInstitutionInfoChange> page = new Page<>(ybInstitutionInfoChangeReq.getPageNum(),ybInstitutionInfoChangeCount);
+                page.setRecords(YbInstitutionInfoChangeList);
+                page.setTotal(ybInstitutionInfoChangeCount);
+
+                return new ApiResponse(page);
+
             }
             return new ApiResponse("200","空");
         }
