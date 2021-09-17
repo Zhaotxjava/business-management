@@ -1,5 +1,6 @@
 package com.hfi.insurance.test;
 
+import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -7,6 +8,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
+
+import java.util.Date;
 
 /**
  * @author jthealth-NZH
@@ -21,6 +24,12 @@ public class Test {
 //        for (int i = 0; i < jsonArray.size(); i++) {
 //            jsonArray.get(i);
 //        }
+
+//        JSONArray jsonArray = JSONObject.parseArray("[\"E:\\\\Temp\\\\img/xkz_872042ad4f3d4a2b95dd3c1975fc3276.jpg\",\"E:\\\\Temp\\\\img/xkz_6169fa35861d48aeb79645141e4dec80.png\"]");
+//        System.out.println(JSONObject.toJSONString(jsonArray));
+
+        System.out.println(DateUtil.yesterday());
+
     }
 
 
