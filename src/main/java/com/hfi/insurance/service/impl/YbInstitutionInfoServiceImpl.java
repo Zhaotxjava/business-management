@@ -218,6 +218,10 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         BeanUtils.copyProperties(req, institutionInfo);
         institutionInfo.setInstitutionName(orgTd.getAkb021());
 
+        // 是否更新
+        boolean updated = false;
+        YbInstitutionInfoChange change = new YbInstitutionInfoChange();
+
         // 2>通过天印系统查询联系人是否已存在于系统，不存在则调用创建用户接口，得到用户的唯一编码，存在则直接跳到第4步
         boolean accountExist = true;
         boolean organExist = true;
@@ -266,10 +270,9 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
                     log.error("更新外部用户（法人）信息异常，{}", resultObj);
                     return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
                 }else {
-                    YbInstitutionInfoChange change = new YbInstitutionInfoChange();
+                    updated = true;
                     BeanUtils.copyProperties(cacheInfo,change);
                     BeanUtils.copyProperties(req,change);
-                    addYbInstitutionInfoChange(change);
                 }
             }
         }
@@ -310,10 +313,9 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
                         log.error("更新外部用户（联系人）信息异常，{}", resultObj);
                         return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
                     }else {
-                        YbInstitutionInfoChange change = new YbInstitutionInfoChange();
+                        updated = true;
                         BeanUtils.copyProperties(cacheInfo,change);
                         BeanUtils.copyProperties(req,change);
-                        addYbInstitutionInfoChange(change);
                     }
                 }
             }
@@ -398,6 +400,9 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         institutionInfo.setOrganizeId(organizeId);
         // 4>机构创建完成以后，更新数据库
         updateInstitutionInfo(institutionInfo);
+        if (updated) {
+            addYbInstitutionInfoChange(change);
+        }
         return new ApiResponse(ErrorCodeEnum.SUCCESS);
     }
 
