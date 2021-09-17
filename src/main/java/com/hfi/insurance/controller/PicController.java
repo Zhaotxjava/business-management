@@ -1,6 +1,5 @@
 package com.hfi.insurance.controller;
 
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.hfi.insurance.aspect.anno.LogAnnotation;
@@ -26,15 +25,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import sun.misc.BASE64Encoder;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -235,22 +229,25 @@ public class PicController {
             @ApiImplicitParam(paramType = "query", name = "number", value = "机构代码", dataType = "String", required = true),})
     //file要与表单上传的名字相同
     @LogAnnotation
-    public ApiResponse<List<YbInstitutionPicPath>> getPicByNumber(@RequestBody String number) {
+    public ApiResponse<List<YbInstitutionPicPath>> getPicByNumber(@RequestParam String number) {
         QueryWrapper<YbInstitutionPicPath> objectQueryWrapper = new QueryWrapper<>();
         objectQueryWrapper.eq("number",number);
-        List<YbInstitutionPicPath> ybInstitutionPicPath = ybInstitutionPicPathMapper.selectList(objectQueryWrapper);
-
+        YbInstitutionPicPath ybInstitutionPicPath = ybInstitutionPicPathMapper.selectOne(objectQueryWrapper);
         log.info("查询结果：{}",JSONObject.toJSONString(ybInstitutionPicPath));
         //返回的图片列表
         return ApiResponse.success(ybInstitutionPicPath);
     }
 
-    @RequestMapping(value = "/upload/getPicBase64", method = RequestMethod.POST)
+    @RequestMapping(value = "/upload/getPicBase64", method = RequestMethod.GET)
+    @ApiImplicitParams({
+            @ApiImplicitParam(paramType = "query", name = "number", value = "机构代码", dataType = "String", required = true),})
     @ApiOperation("获取机构图片BASE64")
     @LogAnnotation
-    public String showImg(String filePath) {
-        return PicUploadUtil.getBase64(filePath);
-
+    public ApiResponse showImg(@RequestParam String filePath) {
+        if(StringUtils.isBlank(filePath)){
+            return ApiResponse.fail(ErrorCodeEnum.PARAM_ERROR," 入参为空");
+        }
+        return ApiResponse.success(PicUploadUtil.getBase64(filePath));
     }
 
 //    @GetMapping("/loadimg")
