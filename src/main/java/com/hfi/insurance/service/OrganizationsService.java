@@ -22,6 +22,8 @@ public interface OrganizationsService {
 
     JSONObject bindAgent(String organizeId, String organizeNo, String accountId, String uniqueId);
 
+    JSONObject bindAgent(String organizeId, String organizeNo, String accountId, String uniqueId, String isDefault);
+
     JSONObject unbindAgent(String organizeId, String organizeNo, String accountId, String uniqueId);
 
     JSONObject queryInnerAccounts(QueryInnerAccountsReq req);

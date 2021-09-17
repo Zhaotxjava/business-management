@@ -169,14 +169,20 @@ public class OrganizationsServiceImpl implements OrganizationsService {
         return convertResult(result);
     }
 
+
     @Override
     public JSONObject bindAgent(String organizeId, String organizeNo, String accountId, String uniqueId) {
+        return bindAgent(organizeId, organizeNo, accountId, uniqueId, "0");
+    }
+
+    @Override
+    public JSONObject bindAgent(String organizeId, String organizeNo, String accountId, String uniqueId, String isDefault) {
         Map<String, String> headMap = new HashMap<>();
 
         List<JSONObject> agentList = new ArrayList<>();
         JSONObject agent = new JSONObject();
         agent.put("accountId", accountId);
-        agent.put("isDefault", "0");
+        agent.put("isDefault", isDefault);
         agent.put("uniqueId", uniqueId);
         agentList.add(agent);
 

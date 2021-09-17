@@ -669,14 +669,14 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         // 法人信息变更，将新法人绑定为经办人，原法人解绑
         if (!StringUtils.equals(local.getLegalAccountId(), updateInfo.getLegalAccountId())) {
             JSONObject bindResult = organizationsService.bindAgent(
-                    updateInfo.getOrganizeId(), updateInfo.getNumber(), updateInfo.getLegalAccountId(), null);
+                    updateInfo.getOrganizeId(), updateInfo.getNumber(), updateInfo.getLegalAccountId(), null, "1");
             if (bindResult.containsKey("errCode")) {
-                log.error("外部机构将法人绑定为经办人信息异常，{}", bindResult);
+                log.error("外部机构将法人绑定为默认经办人异常，{}", bindResult);
             }
             JSONObject unbindResult = organizationsService.unbindAgent(
                     updateInfo.getOrganizeId(), updateInfo.getNumber(), local.getLegalAccountId(), null);
             if (unbindResult.containsKey("errCode")) {
-                log.error("外部机构解绑法人信息异常，{}", unbindResult);
+                log.error("外部机构解绑法人异常，{}", unbindResult);
             }
         }
 
@@ -685,12 +685,12 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
             JSONObject bindResult = organizationsService.bindAgent(
                     updateInfo.getOrganizeId(), updateInfo.getNumber(), updateInfo.getAccountId(), null);
             if (bindResult.containsKey("errCode")) {
-                log.error("外部机构绑定经办人信息异常，{}", bindResult);
+                log.error("外部机构绑定经办人异常，{}", bindResult);
             }
             JSONObject unbindResult = organizationsService.unbindAgent(
                     updateInfo.getOrganizeId(), updateInfo.getNumber(), local.getAccountId(), null);
             if (unbindResult.containsKey("errCode")) {
-                log.error("外部机构解绑经办人信息异常，{}", unbindResult);
+                log.error("外部机构解绑经办人异常，{}", unbindResult);
             }
         }
 
@@ -773,6 +773,13 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
             return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), createOrgan.getString("msg"));
         }
         saveInfo.setOrganizeId(createOrgan.getString("organizeId"));
+
+        // 绑定法人为默认经办人
+        JSONObject bindResult = organizationsService.bindAgent(
+                saveInfo.getOrganizeId(), saveInfo.getNumber(), saveInfo.getLegalAccountId(), null, "1");
+        if (bindResult.containsKey("errCode")) {
+            log.error("外部机构将法人绑定为默认经办人信息异常，{}", bindResult);
+        }
 
         // 存储本地机构
         YbInstitutionInfo institutionInfo = JSONObject.parseObject(JSONObject.toJSONString(saveInfo), YbInstitutionInfo.class);
