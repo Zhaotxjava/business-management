@@ -1,5 +1,6 @@
 package com.hfi.insurance.utils;
 
+import com.alibaba.fastjson.JSONObject;
 import com.hfi.insurance.common.ApiResponse;
 import com.hfi.insurance.enums.ErrorCodeEnum;
 import com.hfi.insurance.enums.PicType;
@@ -67,6 +68,7 @@ public class PicUploadUtil {
         }
         PicType type = PicType.getPicType(picType);
         String path = uploadOneFile(file,dir,type,bumber);
+//        String path = uploadOneFile();
         switch (type){
             case XKZ:
                 picCommit.getXkz().add(path);
@@ -80,6 +82,32 @@ public class PicUploadUtil {
         picCommitPath.put(operationId,picCommit);
         return ApiResponse.success();
     }
+
+    public static ApiResponse cacheFileInFileSystem(MultipartFile file, String operationId, String picType,String dir,String bumber) throws IOException {
+        ApiResponse apiResponse = checkOneFile(file);
+        if(!apiResponse.isSuccess()){
+            return apiResponse;
+        }
+        PicCommitPath picCommit = picCommitPath.get(operationId);
+        if (Objects.isNull(picCommit)) {
+            picCommit = new PicCommitPath();
+        }
+        PicType type = PicType.getPicType(picType);
+        String path = uploadOneFile(file,dir,type,bumber);
+        switch (type){
+            case XKZ:
+                picCommit.getXkz().add(path);
+                break;
+            case YYZZ:
+                picCommit.getYyzz().add(path);
+                break;
+            default:
+                return ApiResponse.fail(ErrorCodeEnum.PARAM_ERROR,"图片类型非法");
+        }
+        picCommitPath.put(operationId,picCommit);
+        return ApiResponse.success();
+    }
+
 
     public static ApiResponse<PicPathRes> fileCommit(String id,String dir) throws IOException {
         PicCommitPath picCommit = picCommitPath.get(id);
@@ -299,4 +327,37 @@ public class PicUploadUtil {
 //            return ApiResponse.fail("图片上传失败:{}", e.getMessage());
 //        }
 //    }
+
+    /**
+     * 上传单个文件，返回文件地址
+     * @param f
+     * @param dir
+     * @return
+     * @throws IOException
+     */
+    private static String uploadOneFileToSystem(MultipartFile f,String dir,PicType picType,String number) throws IOException {
+        File fileDir = new File(dir);
+        boolean b = false;
+        if (!fileDir.exists()) {
+            b = fileDir.mkdirs();
+        }
+        String filePath = Strings.EMPTY;
+//        if(!f.isEmpty()){
+        String fileSuffix = f.getOriginalFilename().substring(f.getOriginalFilename().lastIndexOf("."));
+        DateFormat df = new SimpleDateFormat("yyyyMMdd");
+        Calendar calendar = Calendar.getInstance();
+        String dateName = df.format(calendar.getTime());
+        String fileName = picType.getCode() + "_" +number+"_"+dateName+"_"
+                + UUID.randomUUID().toString().replace("-", "").substring(0,11) + fileSuffix;
+        filePath = fileDir + "/" + fileName;
+        File files = new File(filePath);
+        log.info("文件名：{} 保存地址:{}", fileName, filePath);
+        //上传
+        f.transferTo(files);
+//        }
+        return filePath;
+
+    }
+
+
 }

@@ -33,7 +33,7 @@ public class YbFlowInfoServiceImpl extends ServiceImpl<YbFlowInfoMapper, YbFlowI
             queryWrapper.eq("sign_status", req.getSignStatus());
         }
         if (null != req.getFlowId()) {
-            queryWrapper.eq("flow_id", req.getFlowId());
+            queryWrapper.eq("sign_flow_id", req.getFlowId());
         }
         if (null != req.getFlowStatus()) {
             queryWrapper.eq("flow_status", req.getFlowStatus());

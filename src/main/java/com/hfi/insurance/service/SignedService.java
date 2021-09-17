@@ -37,6 +37,8 @@ public interface SignedService {
      */
     JSONObject buildTemplateDoc(TemplateUseParam templateUseParam);
 
+    JSONObject upload(MultipartFile file, String fileName);
+
     /**
      * 文件直传，返回fileKey
      * @param file
@@ -100,4 +102,7 @@ public interface SignedService {
     JSONObject getSealInfos(String sealId);
 
 
+    JSONObject getDownloadUrl(String docId, String fileKey);
+
+    ApiResponse isResultSuccess(JSONObject result);
 }

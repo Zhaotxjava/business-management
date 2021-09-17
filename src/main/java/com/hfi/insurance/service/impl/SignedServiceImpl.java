@@ -2,6 +2,8 @@ package com.hfi.insurance.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.hfi.insurance.common.ApiResponse;
+import com.hfi.insurance.enums.ErrorCodeEnum;
 import com.hfi.insurance.model.sign.req.GetPageWithPermissionV2Model;
 import com.hfi.insurance.model.sign.req.GetSignUrlsReq;
 import com.hfi.insurance.model.sign.req.StandardCreateFlowBO;
@@ -61,17 +63,31 @@ public class SignedServiceImpl implements SignedService {
     }
 
     @Override
-    public JSONObject upload(MultipartFile file) {
+    public JSONObject upload(MultipartFile file, String fileName) {
         String result = null;
         try {
             byte[] data = file.getBytes();
             Map<String, String> heads = new HashMap<>();
             convertHead(heads,"");
-            result = HttpUtil.doPostFile(url + "/V1/files/upload", data, "file", file.getOriginalFilename(), heads, null);
+            result = HttpUtil.doPostFile(url + "/V1/files/upload", data, "file", fileName, heads, null);
         } catch (IOException e) {
             e.printStackTrace();
         }
         return convertResult(result);
+    }
+
+    @Override
+    public JSONObject upload(MultipartFile file) {
+//        String result = null;
+//        try {
+//            byte[] data = file.getBytes();
+//            Map<String, String> heads = new HashMap<>();
+//            convertHead(heads,"");
+//            result = HttpUtil.doPostFile(url + "/V1/files/upload", data, "file", file.getOriginalFilename(), heads, null);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+        return upload(file,file.getOriginalFilename());
     }
 
     @Override
@@ -158,6 +174,17 @@ public class SignedServiceImpl implements SignedService {
         return convertResult(s);
     }
 
+    @Override
+    public JSONObject getDownloadUrl(String docId, String fileKey) {
+        Map<String, String> headMap = new HashMap<>();
+        convertHead(headMap,"");
+        Map<String,String> urlParams = new HashMap<>(4);
+        urlParams.put("fileKey",fileKey);
+        String s = HttpUtil.doGet(url + "/V1/files/getDownloadUrl", headMap, urlParams);
+        return convertResult(s);
+    }
+
+
     private void convertHead(Map<String, String> headMap, String message) {
         headMap.put("x-timevale-project-id", projectId);
         String signature = HmacSHA256Utils.hmacSha256(message, secret);
@@ -183,5 +210,13 @@ public class SignedServiceImpl implements SignedService {
         }
     }
 
+    @Override
+    public ApiResponse isResultSuccess(JSONObject result){
+        if (result.containsKey("errCode")) {
+            return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), result.getString("msg"));
+        }else {
+            return ApiResponse.success();
+        }
+    }
 
 }

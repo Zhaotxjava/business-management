@@ -73,7 +73,7 @@ public class HttpUtil {
      */
     public static String doGet(
             String url, Map<String, String> headers, Map<String, String> urlParams) {
-        log.info("请求参数：{}", urlParams);
+        log.info("请求url：{}参数：{}",url, urlParams);
         HttpGet httpGet = new HttpGet(buildUrl(url, urlParams));
         addHeaders(httpGet, headers);
         String data = null;

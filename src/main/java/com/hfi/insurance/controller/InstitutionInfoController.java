@@ -155,7 +155,7 @@ public class InstitutionInfoController {
         return institutionInfoService.updateInstitutionInfo(req);
     }
 
-    @GetMapping("downloadExcel")
+    @PostMapping("downloadExcel")
     public void downloadExcel(HttpServletResponse response) {
         institutionInfoService.downloadExcel(response);
     }

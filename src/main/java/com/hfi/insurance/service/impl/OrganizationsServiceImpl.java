@@ -103,12 +103,13 @@ public class OrganizationsServiceImpl implements OrganizationsService {
         jsonObject.put("legalMobile", institutionInfo.getLegalPhone());
         jsonObject.put("legalName", institutionInfo.getLegalName());
         jsonObject.put("licenseNumber", institutionInfo.getOrgInstitutionCode());
-        jsonObject.put("licenseType", "SOCNO");
+//        jsonObject.put("licenseType", "SOCNO");
 //        if(StringUtils.isNotBlank(institutionInfo.getLicenseType())){
 //            jsonObject.put("licenseType", institutionInfo.getLicenseType());
 //        }else {
 //            jsonObject.put("licenseType", "CRED_ORG_UNKNOWN");
 //        }
+        jsonObject.put("licenseType", "OTHERNO");
         jsonObject.put("organizeName", institutionInfo.getInstitutionName());
         jsonObject.put("organizeNo", institutionInfo.getNumber());
         convertHead(headMap, jsonObject.toJSONString());
@@ -140,6 +141,7 @@ public class OrganizationsServiceImpl implements OrganizationsService {
         jsonObject.put("legalName", institutionInfo.getLegalName());
         jsonObject.put("licenseNumber", institutionInfo.getOrgInstitutionCode());
         jsonObject.put("licenseType", "SOCNO");
+//        jsonObject.put("licenseType", "CRED_ORG_UNKNOWN");
         jsonObject.put("organizeName", institutionInfo.getInstitutionName());
         jsonObject.put("organizeId", institutionInfo.getOrganizeId());
         jsonObject.put("organizeNo", institutionInfo.getNumber());
