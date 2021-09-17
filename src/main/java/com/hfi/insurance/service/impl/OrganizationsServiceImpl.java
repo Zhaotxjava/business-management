@@ -11,10 +11,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -60,7 +57,7 @@ public class OrganizationsServiceImpl implements OrganizationsService {
         jsonObject.put("licenseType", "IDCard");
         jsonObject.put("loginMobile", mobile);
         jsonObject.put("name", name);
-        jsonObject.put("uniqueId", idCode);
+        jsonObject.put("uniqueId", UUID.randomUUID().toString());
         convertHead(headMap, jsonObject.toJSONString());
         String result = HttpUtil.doPost(url + "/V1/accounts/outerAccounts/create", headMap, jsonObject.toJSONString());
         log.info("创建外部用户【{}】接口响应{}", name, result);
@@ -68,12 +65,12 @@ public class OrganizationsServiceImpl implements OrganizationsService {
     }
 
     @Override
-    public JSONObject queryAccounts(String accountId, String uniqueId) {
+    public JSONObject queryAccounts(String accountId, String idCode) {
         Map<String, String> headMap = new HashMap<>();
         convertHead(headMap, "");
         Map<String, String> params = new HashMap<>();
         params.put("accountId", accountId);
-        params.put("uniqueId", uniqueId);
+        params.put("licenseNumber", idCode);
         String result = HttpUtil.doGet(url + "/V1/accounts/outerAccounts/query", headMap, params);
         log.info("查询外部用户【{}】接口响应{}", accountId, result);
         return convertResult(result);
@@ -89,7 +86,6 @@ public class OrganizationsServiceImpl implements OrganizationsService {
         jsonObject.put("licenseType", "IDCard");
         jsonObject.put("loginMobile", mobile);
         jsonObject.put("name", name);
-        jsonObject.put("uniqueId", idCode);
         convertHead(headMap, jsonObject.toJSONString());
         String result = HttpUtil.doPost(url + "/V1/accounts/outerAccounts/update", headMap, jsonObject.toJSONString());
         log.info("更新外部用户【{}】接口响应{}", name, result);

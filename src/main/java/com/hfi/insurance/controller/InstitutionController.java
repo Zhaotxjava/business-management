@@ -161,9 +161,8 @@ public class InstitutionController {
     }
 
 
-    @GetMapping("/exportExcel")
+    @PostMapping("/exportExcel")
     @ApiOperation("导出机构信息变更记录表")
-
     public void exportExcel(@RequestBody YbInstitutionInfoChangeReq  ybInstitutionInfoChangeReq, HttpServletResponse response) {
 
         institutionInfoService.exportExcel(ybInstitutionInfoChangeReq,response);
