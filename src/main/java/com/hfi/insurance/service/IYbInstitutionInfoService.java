@@ -40,6 +40,8 @@ public interface IYbInstitutionInfoService extends IService<YbInstitutionInfo> {
 
     ApiResponse updateInstitutionInfo(InstitutionInfoAddReq req);
 
+    ApiResponse newUpdateInstitutionInfo(InstitutionInfoAddReq req);
+
     void addYbInstitutionInfoChange(YbInstitutionInfoChange ybInstitutionInfoChange);
 
     ApiResponse getInstitutionInfoChangeList(YbInstitutionInfoChangeReq ybInstitutionInfoChangeReq);
