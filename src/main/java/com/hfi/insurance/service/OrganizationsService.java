@@ -8,7 +8,9 @@ public interface OrganizationsService {
 
     JSONObject createAccounts(String name, String idCode, String mobile);
 
-    JSONObject queryAccounts(String accountId, String idCode);
+    JSONObject listAccounts(String idCode, String mobile);
+
+    JSONObject queryAccounts(String accountId, String uniqueId);
 
     JSONObject updateAccounts(String accountId, String name, String idCode, String mobile);
 

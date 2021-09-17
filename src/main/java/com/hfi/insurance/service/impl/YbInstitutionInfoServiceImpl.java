@@ -571,5 +571,235 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
 
     }
 
+    @Override
+    public ApiResponse newUpdateInstitutionInfo(InstitutionInfoAddReq req) {
+        String number = req.getNumber();
+        // 查询机构是否在可访问范围
+        QueryWrapper<YbOrgTd> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("AKB020", number);
+        YbOrgTd orgTd = orgTdMapper.selectOne(queryWrapper);
+        if (null == orgTd){
+            return new ApiResponse(ErrorCodeEnum.SYSTEM_ERROR.getCode(),"机构不存在!");
+        }
+
+        // 查询机构是否在库，不在库则创建，否则更新
+        YbInstitutionInfo local = this.getInstitutionInfo(number);
+        if (local == null) {
+            return insertInstitution(req, orgTd.getAkb021());
+        }
+        return updateInstitution(req, local, orgTd.getAkb021());
+    }
+
+    /**
+     * 更新机构
+     * @param req
+     * @param local
+     * @param institutionName
+     * @return
+     */
+    private ApiResponse updateInstitution(
+            final InstitutionInfoAddReq req, final YbInstitutionInfo local, String institutionName) {
+        // 待更新信息
+        InstitutionInfo updateInfo = new InstitutionInfo();
+        BeanUtils.copyProperties(req, updateInfo);
+        updateInfo.setInstitutionName(institutionName);
+        updateInfo.setOrganizeId(local.getOrganizeId());
+
+        // 查询法人信息，若已存在则更新，否则创建
+        ApiResponse legalAccountResp = findAccount(req.getLegalIdCard(), req.getLegalPhone());
+        if (legalAccountResp.getData() != null) {
+            // 查询已存在的法人信息，并更新
+            JSONObject data = (JSONObject) legalAccountResp.getData();
+            JSONObject resultObj = organizationsService.updateAccounts(
+                    data.getString("accountId"), req.getLegalName(), req.getLegalIdCard(), req.getLegalPhone());
+            if (resultObj.containsKey("errCode")) {
+                log.error("更新外部用户（法人）信息异常，{}", resultObj);
+                return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
+            }
+            updateInfo.setLegalAccountId(data.getString("accountId"));
+        } else {
+            // 创建法人信息
+            JSONObject createAccount = organizationsService.createAccounts(
+                    req.getLegalName(), req.getLegalIdCard(), req.getLegalPhone());
+            if (createAccount.containsKey("errCode")) {
+                log.error("创建外部用户（法人）信息异常，{}", createAccount);
+                return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), createAccount.getString("msg"));
+            }
+            updateInfo.setLegalAccountId(createAccount.getString("accountId"));
+        }
+
+        // 查询经办人信息，若已存在则更新，否则创建
+        ApiResponse accountResp = findAccount(req.getContactIdCard(), req.getContactPhone());
+        if (accountResp.getData() != null) {
+            // 查询已存在的经办人信息，并更新
+            JSONObject data = (JSONObject) accountResp.getData();
+            JSONObject resultObj = organizationsService.updateAccounts(
+                    data.getString("accountId"), req.getContactName(), req.getContactIdCard(), req.getContactPhone());
+            if (resultObj.containsKey("errCode")) {
+                log.error("更新外部用户（经办人）信息异常，{}", resultObj);
+                return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
+            }
+            updateInfo.setAccountId(data.getString("accountId"));
+        } else {
+            // 创建经办人信息
+            JSONObject createAccount = organizationsService.createAccounts(
+                    req.getContactName(), req.getContactIdCard(), req.getContactPhone());
+            if (createAccount.containsKey("errCode")) {
+                log.error("创建外部用户（经办人）信息异常，{}", createAccount);
+                return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), createAccount.getString("msg"));
+            }
+            updateInfo.setAccountId(createAccount.getString("accountId"));
+        }
+
+        // 更新外部机构
+        JSONObject resultObj = organizationsService.updateOrgans(updateInfo);
+        if (resultObj.containsKey("errCode")) {
+            log.error("更新外部用户信息异常，{}", resultObj);
+            return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
+        }
+
+        // 法人信息变更，将新法人绑定为经办人，原法人解绑
+        if (!StringUtils.equals(local.getLegalAccountId(), updateInfo.getLegalAccountId())) {
+            JSONObject bindResult = organizationsService.bindAgent(
+                    updateInfo.getOrganizeId(), updateInfo.getNumber(), updateInfo.getLegalAccountId(), null);
+            if (bindResult.containsKey("errCode")) {
+                log.error("外部机构将法人绑定为经办人信息异常，{}", bindResult);
+            }
+            JSONObject unbindResult = organizationsService.unbindAgent(
+                    updateInfo.getOrganizeId(), updateInfo.getNumber(), local.getLegalAccountId(), null);
+            if (unbindResult.containsKey("errCode")) {
+                log.error("外部机构解绑法人信息异常，{}", unbindResult);
+            }
+        }
+
+        // 经办人信息变更，将新经办人绑定，原经办人解绑
+        if (!StringUtils.equals(local.getAccountId(), updateInfo.getAccountId())) {
+            JSONObject bindResult = organizationsService.bindAgent(
+                    updateInfo.getOrganizeId(), updateInfo.getNumber(), updateInfo.getAccountId(), null);
+            if (bindResult.containsKey("errCode")) {
+                log.error("外部机构绑定经办人信息异常，{}", bindResult);
+            }
+            JSONObject unbindResult = organizationsService.unbindAgent(
+                    updateInfo.getOrganizeId(), updateInfo.getNumber(), local.getAccountId(), null);
+            if (unbindResult.containsKey("errCode")) {
+                log.error("外部机构解绑经办人信息异常，{}", unbindResult);
+            }
+        }
+
+        // 更新本地机构
+        updateInstitutionInfo(updateInfo);
+
+        // 添加更新记录
+        YbInstitutionInfoChange institutionInfo =
+                JSONObject.parseObject(JSONObject.toJSONString(updateInfo), YbInstitutionInfoChange.class);
+        addYbInstitutionInfoChange(institutionInfo);
+        return ApiResponse.success();
+    }
+
+    /**
+     * 新增机构
+     * @param req
+     * @return
+     */
+    private ApiResponse insertInstitution(final InstitutionInfoAddReq req, String institutionName) {
+        // 待存储信息
+        InstitutionInfo saveInfo = new InstitutionInfo();
+        BeanUtils.copyProperties(req, saveInfo);
+        saveInfo.setInstitutionName(institutionName);
+
+        // 查询或创建法人信息，获取法人的accountId
+        ApiResponse legalAccountResp = findAccount(req.getLegalIdCard(), req.getLegalPhone());
+        if (legalAccountResp.getData() != null) {
+            // 查询已存在的法人信息
+            JSONObject data = (JSONObject) legalAccountResp.getData();
+            // 使用查询的法人信息比对入参的信息，若不一致则返回校验失败
+            if (!StringUtils.equals(data.getString("licenseNumber"), req.getLegalIdCard())
+                    || !StringUtils.equals(data.getString("mobile"), req.getLegalPhone())) {
+                return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), "ERR-P：法人身份信息校验失败");
+            }
+            saveInfo.setLegalAccountId(data.getString("accountId"));
+        } else {
+            // 创建法人信息
+            JSONObject createAccount = organizationsService.createAccounts(
+                    req.getLegalName(), req.getLegalIdCard(), req.getLegalPhone());
+            if (createAccount.containsKey("errCode")) {
+                log.error("创建外部用户（法人）信息异常，{}", createAccount);
+                return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), createAccount.getString("msg"));
+            }
+            saveInfo.setLegalAccountId(createAccount.getString("accountId"));
+        }
+
+        // 查询或创建经办人信息，获取经办人的accountId
+        ApiResponse accountResp = findAccount(req.getContactIdCard(), req.getContactPhone());
+        if (accountResp.getData() != null) {
+            // 查询已存在的经办人信息
+            JSONObject data = (JSONObject) accountResp.getData();
+            // 使用查询的经办人信息比对入参的信息，若不一致则返回校验失败
+            if (!StringUtils.equals(data.getString("licenseNumber"), req.getContactIdCard())
+                    || !StringUtils.equals(data.getString("mobile"), req.getContactPhone())) {
+                return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), "ERR-P：经办人身份信息校验失败");
+            }
+            saveInfo.setAccountId(data.getString("accountId"));
+        } else {
+            // 创建经办人信息
+            JSONObject createAccount = organizationsService.createAccounts(
+                    req.getContactName(), req.getContactIdCard(), req.getContactPhone());
+            if (createAccount.containsKey("errCode")) {
+                log.error("创建外部用户（经办人）信息异常，{}", createAccount);
+                return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), createAccount.getString("msg"));
+            }
+            saveInfo.setAccountId(createAccount.getString("accountId"));
+        }
+
+        // 创建外部机构
+        JSONObject createOrgan = organizationsService.createOrgans(saveInfo);
+        if (createOrgan.containsKey("errCode")) {
+            log.error("创建外部机构信息异常，{}", createOrgan);
+            return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), createOrgan.getString("msg"));
+        }
+        saveInfo.setOrganizeId(createOrgan.getString("organizeId"));
+
+        // 存储本地机构
+        YbInstitutionInfo institutionInfo = JSONObject.parseObject(JSONObject.toJSONString(saveInfo), YbInstitutionInfo.class);
+        institutionInfoMapper.insert(institutionInfo);
+
+        return ApiResponse.success();
+    }
+
+    /**
+     * 查询第三方用户accountId
+     * @param idCode
+     * @param mobile
+     * @return
+     */
+    private ApiResponse findAccount(String idCode, String mobile) {
+        // 使用证件号查询accountId
+        JSONObject result1 = organizationsService.listAccounts(idCode, null);
+        // 接口调用错误，直接返回
+        if (result1.containsKey("errCode") && !"-1".equals(result1.getString("errCode"))) {
+            log.error("查询外部用户（法人）信息异常，证件号：{}，{}", idCode, result1);
+            return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), result1.getString("msg"));
+        }
+        // 返回列表不为空，则取第一个用户的accountId
+        if (null != result1.getJSONArray("accounts") && result1.getJSONArray("accounts").size() > 0) {
+            log.info("[查询外部用户] 证件号：{}，结果：{}", idCode, result1.toJSONString());
+            return ApiResponse.success(result1.getJSONArray("accounts").get(0));
+        }
+
+        // 使用手机号查询accountId
+        JSONObject result2 = organizationsService.listAccounts(null, mobile);
+        // 接口调用错误，直接返回
+        if (result2.containsKey("errCode") && !"-1".equals(result2.getString("errCode"))) {
+            log.error("查询外部用户（法人）信息异常，手机号：{}，{}", result2);
+            return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), result2.getString("msg"));
+        }
+        // 返回列表不为空，则取第一个用户的accountId
+        if (null != result2.getJSONArray("accounts") && result2.getJSONArray("accounts").size() > 0) {
+            log.info("[查询外部用户] 手机号：{}，结果：{}", mobile, result2.toJSONString());
+            return ApiResponse.success(result2.getJSONArray("accounts").getJSONObject(0));
+        }
+        log.info("[查询外部用户] 证件号：{}，手机号：{}，无结果", idCode, mobile);
+        return ApiResponse.success();
+    }
 
 }

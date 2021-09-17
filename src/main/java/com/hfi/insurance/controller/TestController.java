@@ -6,6 +6,7 @@ import com.hfi.insurance.aspect.anno.LogAnnotation;
 import com.hfi.insurance.common.ApiResponse;
 import com.hfi.insurance.model.YbFlowInfo;
 import com.hfi.insurance.model.sign.req.GetRecordInfoReq;
+import com.hfi.insurance.service.OrganizationsService;
 import com.hfi.insurance.service.impl.YbFlowInfoServiceImpl;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -45,4 +46,16 @@ public class TestController {
         Page<YbFlowInfo> page = ybFlowInfoService.getSignedRecord("", req);
         return ApiResponse.success(page);
     }
+
+    @Autowired
+    private OrganizationsService organizationsService;
+
+    @RequestMapping(value = "/institution/listAccounts", method = RequestMethod.GET)
+    @LogAnnotation
+    public ApiResponse listAccounts(String idCode, String mobile) {
+        JSONObject result = organizationsService.listAccounts(idCode, mobile);
+        System.out.println("idCode:" + idCode + ", result:" + result.toJSONString());
+        return ApiResponse.success(result);
+    }
+
 }

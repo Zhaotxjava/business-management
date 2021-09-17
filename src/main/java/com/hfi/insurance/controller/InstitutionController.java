@@ -93,7 +93,7 @@ public class InstitutionController {
         if (StringUtils.isBlank(req.getContactPhone())) {
             return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(), "联系人手机号不能为空");
         }
-        return institutionInfoService.updateInstitutionInfo(req);
+        return institutionInfoService.newUpdateInstitutionInfo(req);
     }
 
     @PostMapping("import")

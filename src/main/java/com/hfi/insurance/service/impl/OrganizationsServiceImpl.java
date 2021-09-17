@@ -65,12 +65,30 @@ public class OrganizationsServiceImpl implements OrganizationsService {
     }
 
     @Override
-    public JSONObject queryAccounts(String accountId, String idCode) {
+    public JSONObject listAccounts(String idCode, String mobile) {
+        Map<String, String> headMap = new HashMap<>();
+        convertHead(headMap, "");
+        Map<String, String> params = new HashMap<>();
+        params.put("pageIndex", "1");
+        params.put("pageSize", "10");
+        if (StringUtils.isNotEmpty(idCode)) {
+            params.put("licenseNumber", idCode);
+        }
+        if (StringUtils.isNotEmpty(mobile)) {
+            params.put("mobile", mobile);
+        }
+        String result = HttpUtil.doGet(url + "/V1/accounts/outerAccounts/list", headMap, params);
+        log.info("查询外部用户【{} {}】接口响应{}", idCode, mobile, result);
+        return convertResult(result);
+    }
+
+    @Override
+    public JSONObject queryAccounts(String accountId, String uniqueId) {
         Map<String, String> headMap = new HashMap<>();
         convertHead(headMap, "");
         Map<String, String> params = new HashMap<>();
         params.put("accountId", accountId);
-        params.put("licenseNumber", idCode);
+        params.put("uniqueId", uniqueId);
         String result = HttpUtil.doGet(url + "/V1/accounts/outerAccounts/query", headMap, params);
         log.info("查询外部用户【{}】接口响应{}", accountId, result);
         return convertResult(result);
