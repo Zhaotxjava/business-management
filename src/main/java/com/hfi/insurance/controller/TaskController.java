@@ -30,6 +30,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -47,28 +50,36 @@ public class TaskController {
     private SignedService signedService;
     @Autowired
     private YbFlowInfoMapper ybFlowInfoMapper;
-    @Resource
-    private IYbInstitutionInfoService institutionInfoService;
+
+    private static List<Integer> flowStatusList = new ArrayList<>();
+
+    static {
+        flowStatusList.add(0);
+        flowStatusList.add(1);
+        flowStatusList.add(9);
+        flowStatusList.add(10);
+
+    }
 
     @RequestMapping(value = "/sign/signedStatusUpdate", method = RequestMethod.POST)
     @ApiOperation("signedStatusUpdate")
-    @Scheduled(cron = "0/10 * *  * * ? ")
+//    @Scheduled(cron = "* 0/10 *  * * ? ")
     public void signedStatusUpdate() {
-
+        //流程状态（0草稿，1 签署中，2完成，3 撤销，4终止，5过 期，6删除，7拒 签，8作废，9已归 档，10预盖章）
         QueryWrapper<YbFlowInfo> objectQueryWrapper = new QueryWrapper<>();
+
         List<YbFlowInfo> list = ybFlowInfoMapper.selectList(objectQueryWrapper);
         for (YbFlowInfo ybFlowInfo : list
         ) {
             JSONObject signDetail = signedService.getSignDetail(ybFlowInfo.getFlowId());
-            log.info("流程id：{}，流程状态：{}", ybFlowInfo.getFlowId(), signDetail.getString("flowStatus"));
 
             if (signDetail.containsKey("errCode")) {
-//                log.error("查询流程详情错误，错误原因：{}",signDetail.getString("msg"));
+                log.warn("查询流程id：{}详情错误，错误原因：{}",ybFlowInfo.getFlowId(),signDetail.getString("msg"));
                 continue;
             } else {
                 String singers = signDetail.getString("signers");
                 List<SingerInfoRes> singerInfos = JSON.parseArray(singers, SingerInfoRes.class);
-                log.info("signedStatusUpdate List<SingerInfoRes>={}", JSONObject.toJSONString(singerInfos));
+                log.info("查询流程id：{},signedStatusUpdate List<SingerInfoRes>={}", ybFlowInfo.getFlowId(),JSONObject.toJSONString(singerInfos));
 //                YbInstitutionInfo institutionInfo = institutionInfoService.getInstitutionInfo(ybFlowInfo.getNumber());
 //
 //                if (institutionInfo != null && institutionInfo.getAccountId() != null) {
