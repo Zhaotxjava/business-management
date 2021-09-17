@@ -29,6 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -211,7 +212,7 @@ public class PicController {
     @RequestMapping(value = "/upload/getPicByNumberList", method = RequestMethod.POST)
     @ApiOperation("获取机构图片地址")
     @ApiImplicitParams({
-            @ApiImplicitParam(paramType = "body", name = "number", value = "机构代码", dataType = "Set<String>", required = true),})
+            @ApiImplicitParam( name = "number", value = "机构代码", dataType = "String",allowMultiple =true,  required = true),})
     //file要与表单上传的名字相同
     @LogAnnotation
     public ApiResponse<List<YbInstitutionPicPath>> getPicByNumber(@RequestBody Set<String> number) {
@@ -243,11 +244,30 @@ public class PicController {
             @ApiImplicitParam(paramType = "query", name = "number", value = "机构代码", dataType = "String", required = true),})
     @ApiOperation("获取机构图片BASE64")
     @LogAnnotation
-    public ApiResponse showImg(@RequestParam String filePath) {
+    public ApiResponse getPicBase64(@RequestParam String filePath) {
         if(StringUtils.isBlank(filePath)){
             return ApiResponse.fail(ErrorCodeEnum.PARAM_ERROR," 入参为空");
         }
         return ApiResponse.success(PicUploadUtil.getBase64(filePath));
+    }
+
+    @RequestMapping(value = "/upload/getPicBase64List", method = RequestMethod.GET)
+    @ApiImplicitParams({
+            @ApiImplicitParam(allowMultiple =true, name = "filePaths", value = "机构代码", dataType = "String", required = true),})
+    @ApiOperation("获取机构图片BASE64列表")
+    @LogAnnotation
+    public ApiResponse getPicBase64List(@RequestBody List<String> filePaths) {
+        if(filePaths.isEmpty()){
+            return ApiResponse.fail(ErrorCodeEnum.PARAM_ERROR," 入参为空");
+        }
+        List<String> pathList = new ArrayList<>();
+        filePaths.forEach(path ->{
+            if(StringUtils.isNotBlank(path)){
+                pathList.add(PicUploadUtil.getBase64(path));
+            }
+
+        });
+        return ApiResponse.success(pathList);
     }
 
 //    @GetMapping("/loadimg")
@@ -283,73 +303,73 @@ public class PicController {
 //        }
 //    }
 
-    @RequestMapping(value = "/upload/toSystem", method = RequestMethod.POST)
-    @ResponseBody
-    @ApiOperation("上传单个图片到E签宝")
-    @ApiImplicitParams({
-            @ApiImplicitParam(paramType = "header", name = "number", value = "机构代码", dataType = "String", required = true),
-            @ApiImplicitParam(paramType = "header", name = "orgInstitutionCode", value = "机构", dataType = "String", required = false),
-            @ApiImplicitParam(paramType = "header", name = "operationId", value = "操作码", dataType = "String", required = true),
-            @ApiImplicitParam(paramType = "header", name = "picType", value = "图片类型", dataType = "String", required = true)
-    })
-    //file要与表单上传的名字相同
-    public ApiResponse<PicPathRes> uploadToFileSystem(MultipartFile file, HttpServletRequest request) {
-        ApiResponse apiResponse = PicUploadUtil.checkOneFile(file);
-        if (!apiResponse.isSuccess()) {
-            return apiResponse;
-        }
-        String number = request.getHeader("number");
-        String orgInstitutionCode = request.getHeader("orgInstitutionCode");
-        String operationId = request.getHeader("operationId");
-        String picType = request.getHeader("picType");
-        PicType p = PicType.getPicType(picType);
-        if (p.equals(PicType.UNKNOW)) {
-            return ApiResponse.fail(ErrorCodeEnum.PARAM_ERROR, " picType非法：" + picType);
-        }
-        PicCommitPath picCommit = PicUploadUtil.picCommitPath.get(operationId);
-        if (Objects.isNull(picCommit)) {
-            picCommit = new PicCommitPath();
-        }
-
-        String fileSuffix = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
-        DateFormat df = new SimpleDateFormat("yyyyMMdd");
-        Calendar calendar = Calendar.getInstance();
-        String dateName = df.format(calendar.getTime());
-        String fileName = picType + "_" + number + "_" + dateName + "_"
-                + UUID.randomUUID().toString().replace("-", "").substring(0, 11) + fileSuffix;
-        log.info("/upload/one 上传单个图片入参operationId={} file.isEmpty={},number={},orgInstitutionCode={},fileName={}"
-                , operationId, file.isEmpty(), number, orgInstitutionCode, fileName);
-        JSONObject uploadJson = signedService.upload(file, fileName);
-        ApiResponse response = signedService.isResultSuccess(uploadJson);
-        if (!response.isSuccess()) {
-            return response;
-        }
-        log.info("上传单个图片返回：{}", uploadJson);
-        String fileKey = uploadJson.getString("fileKey");
-        if (StringUtils.isBlank(fileKey)) {
-            return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), "上传单个图片未获取到key：" + uploadJson.getString("msg"));
-        }
-//        JSONObject downloadUrlJson=  signedService.getDownloadUrl(null,fileKey);
-//        log.info("上传单个图片返回：{}",downloadUrlJson);
-//        response = signedService.isResultSuccess(downloadUrlJson);
+//    @RequestMapping(value = "/upload/toSystem", method = RequestMethod.POST)
+//    @ResponseBody
+//    @ApiOperation("上传单个图片到E签宝")
+//    @ApiImplicitParams({
+//            @ApiImplicitParam(paramType = "header", name = "number", value = "机构代码", dataType = "String", required = true),
+//            @ApiImplicitParam(paramType = "header", name = "orgInstitutionCode", value = "机构", dataType = "String", required = false),
+//            @ApiImplicitParam(paramType = "header", name = "operationId", value = "操作码", dataType = "String", required = true),
+//            @ApiImplicitParam(paramType = "header", name = "picType", value = "图片类型", dataType = "String", required = true)
+//    })
+//    //file要与表单上传的名字相同
+//    public ApiResponse<PicPathRes> uploadToFileSystem(MultipartFile file, HttpServletRequest request) {
+//        ApiResponse apiResponse = PicUploadUtil.checkOneFile(file);
+//        if (!apiResponse.isSuccess()) {
+//            return apiResponse;
+//        }
+//        String number = request.getHeader("number");
+//        String orgInstitutionCode = request.getHeader("orgInstitutionCode");
+//        String operationId = request.getHeader("operationId");
+//        String picType = request.getHeader("picType");
+//        PicType p = PicType.getPicType(picType);
+//        if (p.equals(PicType.UNKNOW)) {
+//            return ApiResponse.fail(ErrorCodeEnum.PARAM_ERROR, " picType非法：" + picType);
+//        }
+//        PicCommitPath picCommit = PicUploadUtil.picCommitPath.get(operationId);
+//        if (Objects.isNull(picCommit)) {
+//            picCommit = new PicCommitPath();
+//        }
+//
+//        String fileSuffix = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
+//        DateFormat df = new SimpleDateFormat("yyyyMMdd");
+//        Calendar calendar = Calendar.getInstance();
+//        String dateName = df.format(calendar.getTime());
+//        String fileName = picType + "_" + number + "_" + dateName + "_"
+//                + UUID.randomUUID().toString().replace("-", "").substring(0, 11) + fileSuffix;
+//        log.info("/upload/one 上传单个图片入参operationId={} file.isEmpty={},number={},orgInstitutionCode={},fileName={}"
+//                , operationId, file.isEmpty(), number, orgInstitutionCode, fileName);
+//        JSONObject uploadJson = signedService.upload(file, fileName);
+//        ApiResponse response = signedService.isResultSuccess(uploadJson);
 //        if (!response.isSuccess()) {
 //            return response;
 //        }
-//        String downloadUrl = downloadUrlJson.getString("downloadUrl");
-
-        switch (p) {
-            case XKZ:
-                picCommit.getXkz().add(fileKey);
-                break;
-            case YYZZ:
-                picCommit.getYyzz().add(fileKey);
-                break;
-            default:
-                picCommit.getXkz().add(fileKey);
-        }
-        PicUploadUtil.picCommitPath.put(operationId, picCommit);
-        return apiResponse;
-    }
+//        log.info("上传单个图片返回：{}", uploadJson);
+//        String fileKey = uploadJson.getString("fileKey");
+//        if (StringUtils.isBlank(fileKey)) {
+//            return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), "上传单个图片未获取到key：" + uploadJson.getString("msg"));
+//        }
+////        JSONObject downloadUrlJson=  signedService.getDownloadUrl(null,fileKey);
+////        log.info("上传单个图片返回：{}",downloadUrlJson);
+////        response = signedService.isResultSuccess(downloadUrlJson);
+////        if (!response.isSuccess()) {
+////            return response;
+////        }
+////        String downloadUrl = downloadUrlJson.getString("downloadUrl");
+//
+//        switch (p) {
+//            case XKZ:
+//                picCommit.getXkz().add(fileKey);
+//                break;
+//            case YYZZ:
+//                picCommit.getYyzz().add(fileKey);
+//                break;
+//            default:
+//                picCommit.getXkz().add(fileKey);
+//        }
+//        PicUploadUtil.picCommitPath.put(operationId, picCommit);
+//        return apiResponse;
+//    }
 
 //    @RequestMapping(value = "/upload/getPicUrl", method = RequestMethod.POST)
 //    @ResponseBody

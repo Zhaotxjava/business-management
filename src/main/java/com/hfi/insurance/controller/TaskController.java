@@ -1,5 +1,6 @@
 package com.hfi.insurance.controller;
 
+import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
@@ -31,10 +32,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * @author jthealth-NZH
@@ -63,10 +61,11 @@ public class TaskController {
 
     @RequestMapping(value = "/sign/signedStatusUpdate", method = RequestMethod.POST)
     @ApiOperation("signedStatusUpdate")
-//    @Scheduled(cron = "* 0/10 *  * * ? ")
+    @Scheduled(cron = "* 0/10 *  * * ? ")
     public void signedStatusUpdate() {
         //流程状态（0草稿，1 签署中，2完成，3 撤销，4终止，5过 期，6删除，7拒 签，8作废，9已归 档，10预盖章）
         QueryWrapper<YbFlowInfo> objectQueryWrapper = new QueryWrapper<>();
+        objectQueryWrapper.between("update_time",DateUtil.yesterday(),new Date());
 
         List<YbFlowInfo> list = ybFlowInfoMapper.selectList(objectQueryWrapper);
         for (YbFlowInfo ybFlowInfo : list
