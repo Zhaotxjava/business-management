@@ -13,11 +13,9 @@ import com.hfi.insurance.common.PageDto;
 import com.hfi.insurance.enums.ErrorCodeEnum;
 import com.hfi.insurance.mapper.YbInstitutionInfoChangeMapper;
 import com.hfi.insurance.mapper.YbInstitutionInfoMapper;
+import com.hfi.insurance.mapper.YbInstitutionPicPathMapper;
 import com.hfi.insurance.mapper.YbOrgTdMapper;
-import com.hfi.insurance.model.InstitutionInfo;
-import com.hfi.insurance.model.YbInstitutionInfo;
-import com.hfi.insurance.model.YbInstitutionInfoChange;
-import com.hfi.insurance.model.YbOrgTd;
+import com.hfi.insurance.model.*;
 import com.hfi.insurance.model.dto.InstitutionInfoAddReq;
 import com.hfi.insurance.model.dto.OrgTdQueryReq;
 import com.hfi.insurance.model.dto.YbInstitutionInfoChangeReq;
@@ -41,6 +39,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -68,6 +67,8 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
     private Cache<String, String> caffeineCache;
     @Resource
     private YbInstitutionInfoChangeMapper ybInstitutionInfoChangeMapper;
+    @Autowired
+    private YbInstitutionPicPathMapper ybInstitutionPicPathMapper;
 
 
     @Override
@@ -94,10 +95,34 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
 //        if (StringUtils.isNotBlank(institutionName)){
 //            queryWrapper.eq("institution_name",institutionName);
 //        }
-        List<YbInstitutionInfo> ybInstitutionInfos = institutionInfoMapper.selectInstitutionInfoAndOrg(institutionNumber,number, institutionName, current-1, limit);
-        int total = institutionInfoMapper.selectCountInstitutionInfoAndOrg(institutionNumber,number, institutionName);
-        Page<YbInstitutionInfo> page = new Page<>(current,limit);
-        page.setRecords(ybInstitutionInfos);
+        List<YbInstitutionInfo> ybInstitutionInfos = institutionInfoMapper.selectInstitutionInfoAndOrg(institutionNumber, number, institutionName, current - 1, limit);
+        int total = institutionInfoMapper.selectCountInstitutionInfoAndOrg(institutionNumber, number, institutionName);
+        Page<YbInstitutionInfoChange> page = new Page<>(current, limit);
+
+
+        List<YbInstitutionInfoChange> list = new ArrayList<>();
+        QueryWrapper<YbInstitutionPicPath> objectQueryWrapper = new QueryWrapper<>();
+
+        for (int i = 0; i < ybInstitutionInfos.size(); i++) {
+            YbInstitutionInfo ybInstitutionInfo = ybInstitutionInfos.get(i);
+            YbInstitutionInfoChange change = new YbInstitutionInfoChange();
+            BeanUtils.copyProperties(ybInstitutionInfo, change);
+            objectQueryWrapper.eq("number", ybInstitutionInfo.getNumber());
+            YbInstitutionPicPath ybInstitutionPicPath = ybInstitutionPicPathMapper.selectOne(objectQueryWrapper);
+            objectQueryWrapper.clear();
+            if (Objects.isNull(ybInstitutionPicPath)) {
+
+            } else {
+                log.info("ybInstitutionPicPath.getPicPath() ={}",ybInstitutionPicPath.getPicPath());
+                JSONObject jsonObject1 = JSONObject.parseObject(ybInstitutionPicPath.getPicPath());
+                change.setLicensePicture(String.valueOf(jsonObject1.get("xkzList")));
+                change.setBusinessPicture(String.valueOf(jsonObject1.get("yyzzList")));
+            }
+            list.add(change);
+        }
+
+//        page.setRecords(ybInstitutionInfos);
+        page.setRecords(list);
         page.setTotal(total);
         return new ApiResponse(page);
     }
@@ -241,7 +266,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
             //判断经办人（联系人）是否存在于系统内
             JSONObject agentAccountObj = organizationsService.queryAccounts(agentAccountId, "");
             log.info("查询外部用户【{}】接口响应{}", accountId, agentAccountObj);
-            if (null == agentAccountObj.getString("accountId")){
+            if (null == agentAccountObj.getString("accountId")) {
                 agentAccountExist = false;
             }
             if (agentAccountObj.containsKey("errCode")) {

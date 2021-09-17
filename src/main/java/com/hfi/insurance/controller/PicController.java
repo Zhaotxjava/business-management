@@ -28,7 +28,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.*;
 
 /**
@@ -212,6 +216,39 @@ public class PicController {
         List<YbInstitutionPicPath> ybInstitutionPicPaths = ybInstitutionPicPathMapper.selectList(objectQueryWrapper);
         //返回的图片列表
         return ApiResponse.success(ybInstitutionPicPaths);
+    }
+
+    @GetMapping("/loadimg")
+    public void getImg2(HttpServletResponse response, String imgPath ) {
+
+        //这里省略掉通过id去读取图片的步骤。
+        File file = new File("imgPath");//imgPath为服务器图片地址
+
+        if(file.exists() && file.isFile()){
+
+            FileInputStream fis = null;
+            OutputStream os = null;
+
+            try {
+                fis = new FileInputStream(file);
+                os = response.getOutputStream();
+                int count = 0;
+                byte[] buffer = new byte[1024 * 8];
+                while ((count = fis.read(buffer)) != -1) {
+                    os.write(buffer, 0, count);
+                    os.flush();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                try {
+                    fis.close();
+                    os.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
 }
