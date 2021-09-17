@@ -10,10 +10,13 @@ import com.hfi.insurance.model.dto.PicCommitPath;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.web.multipart.MultipartFile;
+import sun.misc.BASE64Encoder;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -82,6 +85,38 @@ public class PicUploadUtil {
         picCommitPath.put(operationId,picCommit);
         return ApiResponse.success();
     }
+
+//    public static String getImageStr(File file, String fileType) throws IOException {
+//        String fileContentBase64 = null;
+//        String base64Str = "data:" + fileType + ";base64,";
+//        String content = null;
+//        //将图片文件转化为字节数组字符串，并对其进行Base64编码处理
+//        InputStream in = null;
+//        byte[] data = null;
+//        //读取图片字节数组
+//        try {
+//            in = new FileInputStream(file);
+//            data = new byte[in.available()];
+//            in.read(data);
+//            in.close();
+//            //对字节数组Base64编码
+//            if (data == null || data.length == 0) {
+//                return null;
+//            }
+//            content = Base64.encodeBytes(data);
+//            if (content == null || "".equals(content)) {
+//                return null;
+//            }
+//            fileContentBase64 = base64Str + content;
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        } finally {
+//            if (in != null) {
+//                in.close();
+//            }
+//        }
+//        return fileContentBase64;
+//    }
 
     public static ApiResponse cacheFileInFileSystem(MultipartFile file, String operationId, String picType,String dir,String bumber) throws IOException {
         ApiResponse apiResponse = checkOneFile(file);
@@ -359,5 +394,30 @@ public class PicUploadUtil {
 
     }
 
+    public static String getBase64(String filePath){
+        String imgStr = "";
+        try {
+
+            File file = new File(filePath);
+            FileInputStream fis = new FileInputStream(file);
+            byte[] buffer = new byte[(int) file.length()];
+            int offset = 0;
+            int numRead = 0;
+            while (offset < buffer.length && (numRead = fis.read(buffer, offset, buffer.length - offset)) >= 0) {
+                offset += numRead;
+            }
+
+            if (offset != buffer.length) {
+                throw new IOException("Could not completely read file "
+                        + file.getName());
+            }
+            fis.close();
+            BASE64Encoder encoder = new BASE64Encoder();
+            imgStr = encoder.encode(buffer);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "data:image/jpeg;base64,"+imgStr;
+    }
 
 }

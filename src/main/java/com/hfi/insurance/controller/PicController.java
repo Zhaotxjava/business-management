@@ -1,6 +1,8 @@
 package com.hfi.insurance.controller;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.hfi.insurance.aspect.anno.LogAnnotation;
 import com.hfi.insurance.common.ApiResponse;
 import com.hfi.insurance.config.PicUploadConfig;
@@ -24,15 +26,18 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import sun.misc.BASE64Encoder;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * @author jthealth-NZH
@@ -62,7 +67,7 @@ public class PicController {
     @Autowired
     private YbInstitutionPicPathMapper ybInstitutionPicPathMapper;
 
-//
+    //
 //    @RequestMapping(value = "/upload/batch", method = RequestMethod.POST)
 //    @ApiOperation("上传批量图片")
 //    @ApiImplicitParams({
@@ -115,37 +120,37 @@ public class PicController {
 //        return res;
 //    }
 //
-//    @RequestMapping(value = "/upload/one", method = RequestMethod.POST)
-//    @ResponseBody
-//    @ApiOperation("上传单个图片")
-//    @ApiImplicitParams({
-//            @ApiImplicitParam(paramType = "header", name = "number", value = "机构代码", dataType = "String", required = true),
-//            @ApiImplicitParam(paramType = "header", name = "orgInstitutionCode", value = "机构", dataType = "String", required = false),
-//            @ApiImplicitParam(paramType = "header", name = "operationId", value = "操作码", dataType = "String", required = true),
-//            @ApiImplicitParam(paramType = "header", name = "picType", value = "图片类型", dataType = "String", required = true)
-//    })
-//    //file要与表单上传的名字相同
-//    public ApiResponse<PicPathRes> cacheFile(MultipartFile file, HttpServletRequest request) {
-//        String number = request.getHeader("number");
-//        String orgInstitutionCode = request.getHeader("orgInstitutionCode");
-//        String operationId = request.getHeader("operationId");
-//        String picType = request.getHeader("picType");
-//        PicType p = PicType.getPicType(picType);
-//        if(p.equals(PicType.UNKNOW)){
-//            return ApiResponse.fail(ErrorCodeEnum.PARAM_ERROR," picType非法："+picType);
-//        }
-//
-//        log.info("/upload/one 上传单个图片入参operationId={} file.isEmpty={},number={},orgInstitutionCode={}"
-//                , operationId, file.isEmpty(), number, orgInstitutionCode);
-//        ApiResponse apiResponse = null;
-//        try {
-//            apiResponse = PicUploadUtil.cacheFile(file, operationId, picType,picUploadConfig.getUploadPathImg(),number);
-//        } catch (IOException e) {
-//            log.error("",e);
-//           return ApiResponse.fail(ErrorCodeEnum.FILE_UPLOAD_ERROR);
-//        }
-//        return apiResponse;
-//    }
+    @RequestMapping(value = "/upload/one", method = RequestMethod.POST)
+    @ResponseBody
+    @ApiOperation("上传单个图片")
+    @ApiImplicitParams({
+            @ApiImplicitParam(paramType = "header", name = "number", value = "机构代码", dataType = "String", required = true),
+            @ApiImplicitParam(paramType = "header", name = "orgInstitutionCode", value = "机构", dataType = "String", required = false),
+            @ApiImplicitParam(paramType = "header", name = "operationId", value = "操作码", dataType = "String", required = true),
+            @ApiImplicitParam(paramType = "header", name = "picType", value = "图片类型", dataType = "String", required = true)
+    })
+    //file要与表单上传的名字相同
+    public ApiResponse<PicPathRes> cacheFile(MultipartFile file, HttpServletRequest request) {
+        String number = request.getHeader("number");
+        String orgInstitutionCode = request.getHeader("orgInstitutionCode");
+        String operationId = request.getHeader("operationId");
+        String picType = request.getHeader("picType");
+        PicType p = PicType.getPicType(picType);
+        if (p.equals(PicType.UNKNOW)) {
+            return ApiResponse.fail(ErrorCodeEnum.PARAM_ERROR, " picType非法：" + picType);
+        }
+
+        log.info("/upload/one 上传单个图片入参operationId={} file.isEmpty={},number={},orgInstitutionCode={}"
+                , operationId, file.isEmpty(), number, orgInstitutionCode);
+        ApiResponse apiResponse = null;
+        try {
+            apiResponse = PicUploadUtil.cacheFile(file, operationId, picType, picUploadConfig.getUploadPathImg(), number);
+        } catch (IOException e) {
+            log.error("", e);
+            return ApiResponse.fail(ErrorCodeEnum.FILE_UPLOAD_ERROR);
+        }
+        return apiResponse;
+    }
 
 //    @RequestMapping(value = "/upload/one2", method = RequestMethod.POST)
 //    @ResponseBody
@@ -209,20 +214,45 @@ public class PicController {
         return res;
     }
 
-//    @RequestMapping(value = "/upload/getPicByNumber", method = RequestMethod.POST)
-//    @ApiOperation("获取机构图片")
-//    @ApiImplicitParams({
-//            @ApiImplicitParam(paramType = "body", name = "number", value = "机构代码", dataType = "Set<String>", required = true),})
-//    //file要与表单上传的名字相同
-//    @LogAnnotation
-//    public ApiResponse<List<YbInstitutionPicPath>> getPicByNumber(@RequestBody Set<String> number ) {
-//        QueryWrapper<YbInstitutionPicPath> objectQueryWrapper = new QueryWrapper<>();
-//        objectQueryWrapper.in("number",number);
-//        List<YbInstitutionPicPath> ybInstitutionPicPaths = ybInstitutionPicPathMapper.selectList(objectQueryWrapper);
-//        //返回的图片列表
-//        return ApiResponse.success(ybInstitutionPicPaths);
-//    }
-//
+    @RequestMapping(value = "/upload/getPicByNumberList", method = RequestMethod.POST)
+    @ApiOperation("获取机构图片地址")
+    @ApiImplicitParams({
+            @ApiImplicitParam(paramType = "body", name = "number", value = "机构代码", dataType = "Set<String>", required = true),})
+    //file要与表单上传的名字相同
+    @LogAnnotation
+    public ApiResponse<List<YbInstitutionPicPath>> getPicByNumber(@RequestBody Set<String> number) {
+        QueryWrapper<YbInstitutionPicPath> objectQueryWrapper = new QueryWrapper<>();
+        objectQueryWrapper.in("number", number);
+        List<YbInstitutionPicPath> ybInstitutionPicPaths = ybInstitutionPicPathMapper.selectList(objectQueryWrapper);
+        log.info("查询结果：{}",JSONObject.toJSONString(ybInstitutionPicPaths));
+        //返回的图片列表
+        return ApiResponse.success(ybInstitutionPicPaths);
+    }
+
+    @RequestMapping(value = "/upload/getPicByNumber", method = RequestMethod.POST)
+    @ApiOperation("获取机构图片地址")
+    @ApiImplicitParams({
+            @ApiImplicitParam(paramType = "query", name = "number", value = "机构代码", dataType = "String", required = true),})
+    //file要与表单上传的名字相同
+    @LogAnnotation
+    public ApiResponse<List<YbInstitutionPicPath>> getPicByNumber(@RequestBody String number) {
+        QueryWrapper<YbInstitutionPicPath> objectQueryWrapper = new QueryWrapper<>();
+        objectQueryWrapper.eq("number",number);
+        List<YbInstitutionPicPath> ybInstitutionPicPath = ybInstitutionPicPathMapper.selectList(objectQueryWrapper);
+
+        log.info("查询结果：{}",JSONObject.toJSONString(ybInstitutionPicPath));
+        //返回的图片列表
+        return ApiResponse.success(ybInstitutionPicPath);
+    }
+
+    @RequestMapping(value = "/upload/getPicBase64", method = RequestMethod.POST)
+    @ApiOperation("获取机构图片BASE64")
+    @LogAnnotation
+    public String showImg(String filePath) {
+        return PicUploadUtil.getBase64(filePath);
+
+    }
+
 //    @GetMapping("/loadimg")
 //    public void getImg2(HttpServletResponse response, String imgPath ) {
 //
@@ -324,31 +354,51 @@ public class PicController {
         return apiResponse;
     }
 
-    @RequestMapping(value = "/upload/getPicUrl", method = RequestMethod.POST)
-    @ResponseBody
-    @ApiOperation("获取图片地址")
-    @ApiImplicitParams({
-            @ApiImplicitParam(paramType = "header", name = "number", value = "机构代码", dataType = "String", required = true),
-            @ApiImplicitParam(paramType = "header", name = "fileKey", value = "图片类型", dataType = "String", required = true)
-    })
-    //file要与表单上传的名字相同
-    public ApiResponse<PicPathRes> getPicUrl(HttpServletRequest request) {
-        String number = request.getHeader("number");
-
-        YbInstitutionPicPath ybInstitutionPicPath = ybInstitutionPicPathMapper.selectById(number);
-        String picPath = ybInstitutionPicPath.getPicPath();
-//        PicPathRes picPathRes = JSONObject.toJavaObject(JSONObject.toJSON(picPath),PicPathRes.class);
-        String fileKey = request.getHeader("fileKey");
-
-        JSONObject uploadJson = signedService.getDownloadUrl(null, fileKey);
-        ApiResponse response = signedService.isResultSuccess(uploadJson);
-        if (!response.isSuccess()) {
-            return response;
-        } else {
-            response.setData(uploadJson);
-        }
-        return response;
-    }
+//    @RequestMapping(value = "/upload/getPicUrl", method = RequestMethod.POST)
+//    @ResponseBody
+//    @ApiOperation("获取图片地址")
+//    @ApiImplicitParams({
+//            @ApiImplicitParam(paramType = "header", name = "number", value = "机构代码", dataType = "String", required = true),
+//            @ApiImplicitParam(paramType = "header", name = "fileKey", value = "图片类型", dataType = "String", required = true)
+//    })
+//    //file要与表单上传的名字相同
+//    public ApiResponse<PicPathRes> getPicUrl(HttpServletRequest request) {
+//        String number = request.getHeader("number");
+//
+//        YbInstitutionPicPath ybInstitutionPicPath = ybInstitutionPicPathMapper.selectById(number);
+//        String picPath = ybInstitutionPicPath.getPicPath();
+//        JSONObject jsonObject1 = JSONObject.parseObject(picPath);
+////        JSONArray jsonArray = jsonObject1.getJSONArray("xkzList");
+//        PicPathRes picPathRes = JSONObject.toJavaObject(jsonObject1,PicPathRes.class);
+//
+//        List<String> xkzListRes = new ArrayList<>();
+//        List<String> xkzList=picPathRes.getXkzList();
+//        for (int i = 0; i < xkzList.size(); i++) {
+//            String fileKey = String.valueOf(xkzList.get(i));
+//            log.info("fileKey = {}",fileKey);
+//            JSONObject uploadJson = signedService.getDownloadUrl(null, fileKey);
+//            ApiResponse response = signedService.isResultSuccess(uploadJson);
+//            if (response.isSuccess()) {
+//                xkzListRes.add(uploadJson.getString("downloadUrl"));
+//            }
+//        }
+//        List<String> yyzzListRes = new ArrayList<>();
+//        List<String> yyzzList=picPathRes.getYyzzList();
+//
+//        for (int i = 0; i < yyzzList.size(); i++) {
+//            String fileKey = String.valueOf(yyzzList.get(i));
+//            log.info("fileKey = {}",fileKey);
+//            JSONObject uploadJson = signedService.getDownloadUrl(null, fileKey);
+//            ApiResponse response = signedService.isResultSuccess(uploadJson);
+//            if (response.isSuccess()) {
+//                yyzzListRes.add(uploadJson.getString("downloadUrl"));
+//            }
+//        }
+//        PicPathRes res = new PicPathRes();
+//        res.setXkzList(xkzListRes);
+//        res.setYyzzList(yyzzListRes);
+//        return ApiResponse.success(res);
+//    }
 
 
 //    @RequestMapping(value = "/upload/commit", method = RequestMethod.POST)
