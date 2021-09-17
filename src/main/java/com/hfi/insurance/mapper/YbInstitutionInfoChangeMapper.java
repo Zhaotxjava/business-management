@@ -12,4 +12,6 @@ public interface YbInstitutionInfoChangeMapper  extends BaseMapper<YbInstitution
 
 
     List<YbInstitutionInfoChange> selectChangeList(YbInstitutionInfoChangeReq ybInstitutionInfoChangeReq);
+
+    Integer selectChangeCount(YbInstitutionInfoChangeReq ybInstitutionInfoChangeReq);
 }
