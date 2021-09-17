@@ -427,11 +427,8 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         String number = ybInstitutionInfoChangeReq.getNumber();
         String institutionName = ybInstitutionInfoChangeReq.getInstitutionName();
         if (!StringUtils.isEmpty(number) || !StringUtils.isEmpty(institutionName)) {
-            Integer pageNum = ybInstitutionInfoChangeReq.getPageNum();
-            Integer pageSize = ybInstitutionInfoChangeReq.getPageSize();
 
-            ybInstitutionInfoChangeReq.setPageNum(pageNum - 1);
-            List<YbInstitutionInfoChange> YbInstitutionInfoChangeList = ybInstitutionInfoChangeMapper.selectChangeList(ybInstitutionInfoChangeReq);
+            List<YbInstitutionInfoChange> YbInstitutionInfoChangeList = ybInstitutionInfoChangeMapper.selectexportChangeList(ybInstitutionInfoChangeReq);
             List<YbInstitutionInfoChange> resList = new ArrayList<>();
             if (YbInstitutionInfoChangeList.size() > 0) {
                 YbInstitutionInfoChangeList.forEach(c -> {
@@ -464,7 +461,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
                     resList.add(c);
                 });
                 Integer ybInstitutionInfoChangeCount = ybInstitutionInfoChangeMapper.selectChangeCount(ybInstitutionInfoChangeReq);
-                Page<YbInstitutionInfoChange> page = new Page<>(ybInstitutionInfoChangeReq.getPageNum(), ybInstitutionInfoChangeCount);
+                Page<YbInstitutionInfoChange> page = new Page<>();
                 page.setRecords(resList);
                 page.setTotal(ybInstitutionInfoChangeCount);
 

@@ -30,11 +30,11 @@
 
     SELECT  * FROM   yb_institution_info_change
      <include refid="ChangeWhere"/>
-
+       order by update_time desc
    </select>
 
     <select id="selectChangeCount" parameterType="com.hfi.insurance.model.dto.YbInstitutionInfoChangeReq" resultType="int">
-          select count(*) from yb_institution_info_change
+         select count(*) from yb_institution_info_change
 
         <include refid="ChangeWhere"/>
 
