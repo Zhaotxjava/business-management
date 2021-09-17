@@ -12,6 +12,8 @@ public interface OrganizationsService {
 
     JSONObject queryAccounts(String accountId, String uniqueId);
 
+    JSONObject deleteAccounts(String accountId);
+
     JSONObject updateAccounts(String accountId, String name, String idCode, String mobile);
 
     JSONObject createOrgans(InstitutionInfo institutionInfo);

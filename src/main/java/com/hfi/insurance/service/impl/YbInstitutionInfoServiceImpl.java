@@ -767,6 +767,10 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         JSONObject createOrgan = organizationsService.createOrgans(saveInfo);
         if (createOrgan.containsKey("errCode")) {
             log.error("创建外部机构信息异常，{}", createOrgan);
+            // 法人校验失败，则删除在库法人（避免出现不可达的错误数据）
+            if (StringUtils.equals("法定代表人证件校验未通过", createOrgan.getString("msg"))) {
+                organizationsService.deleteAccounts(saveInfo.getLegalAccountId());
+            }
             return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), createOrgan.getString("msg"));
         }
         saveInfo.setOrganizeId(createOrgan.getString("organizeId"));

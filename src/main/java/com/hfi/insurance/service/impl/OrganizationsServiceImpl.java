@@ -95,6 +95,17 @@ public class OrganizationsServiceImpl implements OrganizationsService {
     }
 
     @Override
+    public JSONObject deleteAccounts(String accountId) {
+        Map<String, String> headMap = new HashMap<>();
+        convertHead(headMap, "");
+        Map<String, String> params = new HashMap<>();
+        params.put("accountId", accountId);
+        String result = HttpUtil.doGet(url + "/V1/accounts/outerAccounts/delete", headMap, params);
+        log.info("删除外部用户【{}】接口响应{}", accountId, result);
+        return convertResult(result);
+    }
+
+    @Override
     public JSONObject updateAccounts(String accountId, String name, String idCode, String mobile) {
         Map<String, String> headMap = new HashMap<>();
         JSONObject jsonObject = new JSONObject();
