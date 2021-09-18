@@ -172,8 +172,10 @@ public class InstitutionController {
         ybInstitutionInfoChangeReq.setNumber(number);
         ybInstitutionInfoChangeReq.setInstitutionName(institutionName);
         SimpleDateFormat  sdf=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        ybInstitutionInfoChangeReq.setMaxupdateTime(sdf.parse(maxupdateTime));
-        ybInstitutionInfoChangeReq.setMinupdateTime(sdf.parse(minupdateTime));
+        if (!StringUtils.isEmpty(minupdateTime) &&!StringUtils.isEmpty(maxupdateTime) ){
+            ybInstitutionInfoChangeReq.setMaxupdateTime(sdf.parse(maxupdateTime));
+            ybInstitutionInfoChangeReq.setMinupdateTime(sdf.parse(minupdateTime));
+        }
         institutionInfoService.exportExcel(ybInstitutionInfoChangeReq,response);
     }
 
