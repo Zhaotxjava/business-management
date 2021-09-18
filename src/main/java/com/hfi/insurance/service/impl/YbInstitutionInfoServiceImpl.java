@@ -487,10 +487,9 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
             int rowIndex = 0;
             int colIndex = 0;
             //表头
-            String[] headers = {"id", "机构编号", "机构名称", "统一社会信用代码", "机构法人姓名"
+            String[] headers = {"机构编号", "机构名称", "统一社会信用代码", "机构法人姓名"
                     , "机构法人证件类型", "机构法人证件号", "机构法人手机号", "经办人姓名"
-                    , "经办人证件类型", "经办人证件号", "经办人手机号", "天印系统经办人用户标识"
-                    , "天印系统法人用户标识", "天印系统机构标记", "修改时间"};
+                    , "经办人证件类型", "经办人证件号", "经办人手机号","修改时间"};
 
             XSSFRow headerRow = sheet.createRow(rowIndex++);
             for (int i = 0; i < headers.length; i++) {

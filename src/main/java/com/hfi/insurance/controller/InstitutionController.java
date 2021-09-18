@@ -23,6 +23,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -163,8 +164,12 @@ public class InstitutionController {
 
     @GetMapping("/exportExcel")
     @ApiOperation("导出机构信息变更记录表")
-    public void exportExcel(@RequestBody YbInstitutionInfoChangeReq  ybInstitutionInfoChangeReq, HttpServletResponse response) {
-
+    public void exportExcel( String   number, String  institutionName, Date minupdateTime,Date maxupdateTime, HttpServletResponse response) {
+        YbInstitutionInfoChangeReq ybInstitutionInfoChangeReq = new YbInstitutionInfoChangeReq();
+        ybInstitutionInfoChangeReq.setNumber(number);
+        ybInstitutionInfoChangeReq.setInstitutionName(institutionName);
+        ybInstitutionInfoChangeReq.setMaxupdateTime(maxupdateTime);
+        ybInstitutionInfoChangeReq.setMinupdateTime(minupdateTime);
         institutionInfoService.exportExcel(ybInstitutionInfoChangeReq,response);
     }
 
