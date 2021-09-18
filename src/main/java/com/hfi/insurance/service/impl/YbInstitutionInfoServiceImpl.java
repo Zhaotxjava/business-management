@@ -136,28 +136,28 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         Integer pageNum = req.getPageNum();
         req.setPageNum(pageNum - 1);
         List<InstitutionInfoRes> ybInstitutionInfos = institutionInfoMapper.selectOrgForCreateFlow(req);
-       //todo 添加保险公司
+        //todo 添加保险公司
         int pageIndex = 1;
         int size = 1;
         List<InstitutionInfoRes> insuranceList = new ArrayList<>();
         List<QueryOuterOrgResult> queryOuterOrgResultList = new ArrayList<>();
-        while (size > 0){
-            String orgInfoListStr = organizationsService.queryByOrgName("",pageIndex);
+        while (size > 0) {
+            String orgInfoListStr = organizationsService.queryByOrgName("", pageIndex);
             JSONObject object = JSONObject.parseObject(orgInfoListStr);
             if ("0".equals(object.getString("errCode"))) {
                 String data = object.getString("data");
                 List<QueryOuterOrgResult> queryOuterOrgResults = JSON.parseArray(data, QueryOuterOrgResult.class);
-                if (0 == queryOuterOrgResults.size()){
+                if (0 == queryOuterOrgResults.size()) {
                     size = 0;
                 }
-                pageIndex ++;
+                pageIndex++;
                 queryOuterOrgResultList.addAll(queryOuterOrgResults);
-            }else {
+            } else {
                 break;
             }
         }
-        log.info("外部机构数量：【{}】",queryOuterOrgResultList.size());
-        for(QueryOuterOrgResult result : queryOuterOrgResultList){
+        log.info("外部机构数量：【{}】", queryOuterOrgResultList.size());
+        for (QueryOuterOrgResult result : queryOuterOrgResultList) {
             BindedAgentBean bindedAgentBean = CollectionUtils.firstElement(result.getAgentAccounts());
             String organizeNo = result.getOrganizeNo();
             if (bindedAgentBean != null && organizeNo.startsWith("bx")) {
@@ -433,31 +433,38 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
             if (YbInstitutionInfoChangeList.size() > 0) {
                 YbInstitutionInfoChangeList.forEach(c -> {
 
-                    JSONArray xkzJson = JSONObject.parseArray(c.getLicensePicture());
-                    List<String> xkzList = new ArrayList<>();
-                    if (!Objects.isNull(xkzJson) && !xkzJson.isEmpty()) {
-                        log.info("jsonArray={}", xkzJson);
-                        for (int i = 0; i < xkzJson.size(); i++) {
-                            if (StringUtils.isNotBlank(xkzJson.getString(i))) {
-                                String base64 = PicUploadUtil.getBase64(xkzJson.getString(i));
-                                xkzList.add(base64);
+                    if (StringUtils.isNotBlank(c.getLicensePicture())) {
+                        JSONArray xkzJson = JSONObject.parseArray(c.getLicensePicture());
+                        List<String> xkzList = new ArrayList<>();
+                        if (!Objects.isNull(xkzJson) && !xkzJson.isEmpty()) {
+//                        log.info("jsonArray={}", xkzJson);
+                            for (int i = 0; i < xkzJson.size(); i++) {
+                                if (StringUtils.isNotBlank(xkzJson.getString(i))) {
+                                    String base64 = PicUploadUtil.getBase64(xkzJson.getString(i));
+                                    xkzList.add(base64);
+                                }
                             }
                         }
+                        c.setLicensePicture(JSONObject.toJSONString(xkzList));
+                    }else {
+                        c.setLicensePicture("");
                     }
 
-                    JSONArray yyzzJson = JSONObject.parseArray(c.getBusinessPicture());
-                    List<String> yyzzList = new ArrayList<>();
-                    if (!Objects.isNull(yyzzJson) && !yyzzJson.isEmpty()) {
-                        for (int i = 0; i < yyzzJson.size(); i++) {
-                            if (StringUtils.isNotBlank(yyzzJson.getString(i))) {
-                                String base64 = PicUploadUtil.getBase64(yyzzJson.getString(i));
-                                yyzzList.add(base64);
+                    if (StringUtils.isNotBlank(c.getBusinessPicture())) {
+                        JSONArray yyzzJson = JSONObject.parseArray(c.getBusinessPicture());
+                        List<String> yyzzList = new ArrayList<>();
+                        if (!Objects.isNull(yyzzJson) && !yyzzJson.isEmpty()) {
+                            for (int i = 0; i < yyzzJson.size(); i++) {
+                                if (StringUtils.isNotBlank(yyzzJson.getString(i))) {
+                                    String base64 = PicUploadUtil.getBase64(yyzzJson.getString(i));
+                                    yyzzList.add(base64);
+                                }
                             }
                         }
+                        c.setBusinessPicture(JSONObject.toJSONString(yyzzList));
+                    }else {
+                        c.setBusinessPicture("");
                     }
-
-                    c.setLicensePicture(JSONObject.toJSONString(xkzList));
-                    c.setBusinessPicture(JSONObject.toJSONString(yyzzList));
                     resList.add(c);
                 });
                 Integer ybInstitutionInfoChangeCount = ybInstitutionInfoChangeMapper.selectChangeCount(ybInstitutionInfoChangeReq);
@@ -489,7 +496,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
             //表头
             String[] headers = {"机构编号", "机构名称", "统一社会信用代码", "机构法人姓名"
                     , "机构法人证件类型", "机构法人证件号", "机构法人手机号", "经办人姓名"
-                    , "经办人证件类型", "经办人证件号", "经办人手机号","修改时间"};
+                    , "经办人证件类型", "经办人证件号", "经办人手机号", "修改时间"};
 
             XSSFRow headerRow = sheet.createRow(rowIndex++);
             for (int i = 0; i < headers.length; i++) {
@@ -576,8 +583,8 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         QueryWrapper<YbOrgTd> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("AKB020", number);
         YbOrgTd orgTd = orgTdMapper.selectOne(queryWrapper);
-        if (null == orgTd){
-            return new ApiResponse(ErrorCodeEnum.SYSTEM_ERROR.getCode(),"机构不存在!");
+        if (null == orgTd) {
+            return new ApiResponse(ErrorCodeEnum.SYSTEM_ERROR.getCode(), "机构不存在!");
         }
 
         // 查询机构是否在库，不在库则创建，否则更新
@@ -590,6 +597,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
 
     /**
      * 更新机构
+     *
      * @param req
      * @param local
      * @param institutionName
@@ -704,6 +712,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
 
     /**
      * 新增机构
+     *
      * @param req
      * @return
      */
@@ -791,6 +800,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
 
     /**
      * 查询第三方用户accountId
+     *
      * @param idCode
      * @param mobile
      * @return
