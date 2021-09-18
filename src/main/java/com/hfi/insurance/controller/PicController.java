@@ -243,12 +243,17 @@ public class PicController {
     @ApiImplicitParams({
             @ApiImplicitParam(paramType = "query", name = "number", value = "机构代码", dataType = "String", required = true),})
     @ApiOperation("获取机构图片BASE64")
-    @LogAnnotation
+//    @LogAnnotation
     public ApiResponse getPicBase64(@RequestParam String filePath) {
+        log.info("获取机构图片BASE64 filePath={}",filePath);
+        ApiResponse response;
         if(StringUtils.isBlank(filePath)){
-            return ApiResponse.fail(ErrorCodeEnum.PARAM_ERROR," 入参为空");
+            response = ApiResponse.fail(ErrorCodeEnum.PARAM_ERROR," 入参为空");
+        }else {
+            response = ApiResponse.success(PicUploadUtil.getBase64(filePath));
         }
-        return ApiResponse.success(PicUploadUtil.getBase64(filePath));
+        return response;
+
     }
 
     @RequestMapping(value = "/upload/getPicBase64List", method = RequestMethod.GET)
