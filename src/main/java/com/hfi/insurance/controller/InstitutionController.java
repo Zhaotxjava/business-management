@@ -13,6 +13,7 @@ import com.hfi.insurance.service.IYbInstitutionInfoService;
 import com.hfi.insurance.utils.ImportExcelUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +23,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -162,14 +164,16 @@ public class InstitutionController {
     }
 
 
+    @SneakyThrows
     @GetMapping("/exportExcel")
     @ApiOperation("导出机构信息变更记录表")
-    public void exportExcel( String   number, String  institutionName, Date minupdateTime,Date maxupdateTime, HttpServletResponse response) {
+    public void exportExcel( String number, String  institutionName, String minupdateTime,String maxupdateTime, HttpServletResponse response) {
         YbInstitutionInfoChangeReq ybInstitutionInfoChangeReq = new YbInstitutionInfoChangeReq();
         ybInstitutionInfoChangeReq.setNumber(number);
         ybInstitutionInfoChangeReq.setInstitutionName(institutionName);
-        ybInstitutionInfoChangeReq.setMaxupdateTime(maxupdateTime);
-        ybInstitutionInfoChangeReq.setMinupdateTime(minupdateTime);
+        SimpleDateFormat  sdf=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        ybInstitutionInfoChangeReq.setMaxupdateTime(sdf.parse(maxupdateTime));
+        ybInstitutionInfoChangeReq.setMinupdateTime(sdf.parse(minupdateTime));
         institutionInfoService.exportExcel(ybInstitutionInfoChangeReq,response);
     }
 
