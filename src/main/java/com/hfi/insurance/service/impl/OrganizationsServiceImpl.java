@@ -96,11 +96,13 @@ public class OrganizationsServiceImpl implements OrganizationsService {
 
     @Override
     public JSONObject deleteAccounts(String accountId) {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("accountId", accountId);
+//        log.info("headMap={};params={}",JSONObject.toJSONString(headMap),JSONObject.toJSONString(params));
+//        String result = HttpUtil.doGet(url + "/V1/accounts/outerAccounts/delete", headMap, params);
         Map<String, String> headMap = new HashMap<>();
-        convertHead(headMap, "");
-        Map<String, String> params = new HashMap<>();
-        params.put("accountId", accountId);
-        String result = HttpUtil.doGet(url + "/V1/accounts/outerAccounts/delete", headMap, params);
+        convertHead(headMap, jsonObject.toJSONString());
+        String result = HttpUtil.doPost(url + "/V1/accounts/outerAccounts/delete", headMap, jsonObject.toJSONString());
         log.info("删除外部用户【{}】接口响应{}", accountId, result);
         return convertResult(result);
     }
