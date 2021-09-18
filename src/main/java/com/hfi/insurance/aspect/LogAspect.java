@@ -8,6 +8,7 @@ package com.hfi.insurance.aspect;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hfi.insurance.aspect.anno.LogAnnotation;
+import org.apache.poi.ss.usermodel.Header;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.Signature;
@@ -17,6 +18,9 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.servlet.http.HttpServletRequest;
 
 
 @Aspect
@@ -79,6 +83,9 @@ public class LogAspect {
             info.append("-入参:");
             int count = 0;
             for (Object item : point.getArgs()) {
+                if(item instanceof MultipartFile || item instanceof MultipartFile [] || item instanceof HttpServletRequest){
+                    continue;
+                }
                 if (count++ == 0) {
                     info.append(objectMapper.writeValueAsString(item));
                 } else {

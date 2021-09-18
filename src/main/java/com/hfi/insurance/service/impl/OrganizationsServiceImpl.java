@@ -11,10 +11,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -60,10 +57,28 @@ public class OrganizationsServiceImpl implements OrganizationsService {
         jsonObject.put("licenseType", "IDCard");
         jsonObject.put("loginMobile", mobile);
         jsonObject.put("name", name);
-        jsonObject.put("uniqueId", idCode);
+        jsonObject.put("uniqueId", UUID.randomUUID().toString());
         convertHead(headMap, jsonObject.toJSONString());
         String result = HttpUtil.doPost(url + "/V1/accounts/outerAccounts/create", headMap, jsonObject.toJSONString());
         log.info("创建外部用户【{}】接口响应{}", name, result);
+        return convertResult(result);
+    }
+
+    @Override
+    public JSONObject listAccounts(String idCode, String mobile) {
+        Map<String, String> headMap = new HashMap<>();
+        convertHead(headMap, "");
+        Map<String, String> params = new HashMap<>();
+        params.put("pageIndex", "1");
+        params.put("pageSize", "10");
+        if (StringUtils.isNotEmpty(idCode)) {
+            params.put("licenseNumber", idCode);
+        }
+        if (StringUtils.isNotEmpty(mobile)) {
+            params.put("mobile", mobile);
+        }
+        String result = HttpUtil.doGet(url + "/V1/accounts/outerAccounts/list", headMap, params);
+        log.info("查询外部用户【{} {}】接口响应{}", idCode, mobile, result);
         return convertResult(result);
     }
 
@@ -80,6 +95,19 @@ public class OrganizationsServiceImpl implements OrganizationsService {
     }
 
     @Override
+    public JSONObject deleteAccounts(String accountId) {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("accountId", accountId);
+//        log.info("headMap={};params={}",JSONObject.toJSONString(headMap),JSONObject.toJSONString(params));
+//        String result = HttpUtil.doGet(url + "/V1/accounts/outerAccounts/delete", headMap, params);
+        Map<String, String> headMap = new HashMap<>();
+        convertHead(headMap, jsonObject.toJSONString());
+        String result = HttpUtil.doPost(url + "/V1/accounts/outerAccounts/delete", headMap, jsonObject.toJSONString());
+        log.info("删除外部用户【{}】接口响应{}", accountId, result);
+        return convertResult(result);
+    }
+
+    @Override
     public JSONObject updateAccounts(String accountId, String name, String idCode, String mobile) {
         Map<String, String> headMap = new HashMap<>();
         JSONObject jsonObject = new JSONObject();
@@ -89,7 +117,6 @@ public class OrganizationsServiceImpl implements OrganizationsService {
         jsonObject.put("licenseType", "IDCard");
         jsonObject.put("loginMobile", mobile);
         jsonObject.put("name", name);
-        jsonObject.put("uniqueId", idCode);
         convertHead(headMap, jsonObject.toJSONString());
         String result = HttpUtil.doPost(url + "/V1/accounts/outerAccounts/update", headMap, jsonObject.toJSONString());
         log.info("更新外部用户【{}】接口响应{}", name, result);
@@ -107,7 +134,13 @@ public class OrganizationsServiceImpl implements OrganizationsService {
         jsonObject.put("legalMobile", institutionInfo.getLegalPhone());
         jsonObject.put("legalName", institutionInfo.getLegalName());
         jsonObject.put("licenseNumber", institutionInfo.getOrgInstitutionCode());
-        jsonObject.put("licenseType", "SOCNO");
+//        jsonObject.put("licenseType", "SOCNO");
+//        if(StringUtils.isNotBlank(institutionInfo.getLicenseType())){
+//            jsonObject.put("licenseType", institutionInfo.getLicenseType());
+//        }else {
+//            jsonObject.put("licenseType", "CRED_ORG_UNKNOWN");
+//        }
+        jsonObject.put("licenseType", "OTHERNO");
         jsonObject.put("organizeName", institutionInfo.getInstitutionName());
         jsonObject.put("organizeNo", institutionInfo.getNumber());
         convertHead(headMap, jsonObject.toJSONString());
@@ -139,6 +172,7 @@ public class OrganizationsServiceImpl implements OrganizationsService {
         jsonObject.put("legalName", institutionInfo.getLegalName());
         jsonObject.put("licenseNumber", institutionInfo.getOrgInstitutionCode());
         jsonObject.put("licenseType", "SOCNO");
+//        jsonObject.put("licenseType", "CRED_ORG_UNKNOWN");
         jsonObject.put("organizeName", institutionInfo.getInstitutionName());
         jsonObject.put("organizeId", institutionInfo.getOrganizeId());
         jsonObject.put("organizeNo", institutionInfo.getNumber());
@@ -148,14 +182,20 @@ public class OrganizationsServiceImpl implements OrganizationsService {
         return convertResult(result);
     }
 
+
     @Override
     public JSONObject bindAgent(String organizeId, String organizeNo, String accountId, String uniqueId) {
+        return bindAgent(organizeId, organizeNo, accountId, uniqueId, "0");
+    }
+
+    @Override
+    public JSONObject bindAgent(String organizeId, String organizeNo, String accountId, String uniqueId, String isDefault) {
         Map<String, String> headMap = new HashMap<>();
 
         List<JSONObject> agentList = new ArrayList<>();
         JSONObject agent = new JSONObject();
         agent.put("accountId", accountId);
-        agent.put("isDefault", "0");
+        agent.put("isDefault", isDefault);
         agent.put("uniqueId", uniqueId);
         agentList.add(agent);
 
@@ -216,6 +256,8 @@ public class OrganizationsServiceImpl implements OrganizationsService {
         log.info("根据机构编号【{}】查询内部机构信息接口响应{}", organizeNo, result);
         return convertResult(result);
     }
+
+
 
     @Override
     public String queryByOrgName(String organizeName,int pageIndex) {

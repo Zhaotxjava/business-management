@@ -5,26 +5,27 @@ import com.hfi.insurance.common.ApiResponse;
 import com.hfi.insurance.enums.ErrorCodeEnum;
 import com.hfi.insurance.model.ExcelSheetPO;
 import com.hfi.insurance.model.YbInstitutionInfo;
+import com.hfi.insurance.model.YbInstitutionInfoChange;
 import com.hfi.insurance.model.dto.InstitutionInfoAddReq;
 import com.hfi.insurance.model.dto.InstitutionInfoQueryReq;
+import com.hfi.insurance.model.dto.YbInstitutionInfoChangeReq;
 import com.hfi.insurance.service.IYbInstitutionInfoService;
 import com.hfi.insurance.utils.ImportExcelUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -50,6 +51,15 @@ public class InstitutionController {
             return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(), ErrorCodeEnum.PARAM_ERROR.getMessage());
         }
         return institutionInfoService.getInstitutionInfoList(token, req.getNumber(), req.getInstitutionName(), req.getPageNum(), req.getPageSize());
+    }
+
+
+
+    @PostMapping("/getInstitutionInfoChangeList")
+    @ApiOperation("分页查询外部机构变更表信息")
+    public ApiResponse getInstitutionInfoChangeList(@RequestBody YbInstitutionInfoChangeReq  ybInstitutionInfoChangeReq) {
+
+        return institutionInfoService.getInstitutionInfoChangeList(ybInstitutionInfoChangeReq);
     }
 
     @PostMapping("getInstitutionInfoByNumber")
@@ -86,7 +96,7 @@ public class InstitutionController {
         if (StringUtils.isBlank(req.getContactPhone())) {
             return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(), "联系人手机号不能为空");
         }
-        return institutionInfoService.updateInstitutionInfo(req);
+        return institutionInfoService.newUpdateInstitutionInfo(req);
     }
 
     @PostMapping("import")
@@ -144,4 +154,40 @@ public class InstitutionController {
         });
         institutionInfoService.saveBatch(list);
     }
+
+
+    @PostMapping("/addYbInstitutionInfoChange")
+    @ApiOperation("插入机构信息变更记录")
+    public void addYbInstitutionInfoChange(@RequestBody YbInstitutionInfoChange  ybInstitutionInfoChange) {
+
+        institutionInfoService.addYbInstitutionInfoChange(ybInstitutionInfoChange);
+    }
+
+
+    @SneakyThrows
+    @GetMapping("/exportExcel")
+    @ApiOperation("导出机构信息变更记录表")
+    public void exportExcel( String number, String  institutionName, String minupdateTime,String maxupdateTime, HttpServletResponse response) {
+        YbInstitutionInfoChangeReq ybInstitutionInfoChangeReq = new YbInstitutionInfoChangeReq();
+        ybInstitutionInfoChangeReq.setNumber(number);
+        ybInstitutionInfoChangeReq.setInstitutionName(institutionName);
+        SimpleDateFormat  sdf=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        if (!StringUtils.isEmpty(minupdateTime) &&!StringUtils.isEmpty(maxupdateTime) ){
+            ybInstitutionInfoChangeReq.setMaxupdateTime(sdf.parse(maxupdateTime));
+            ybInstitutionInfoChangeReq.setMinupdateTime(sdf.parse(minupdateTime));
+        }
+        institutionInfoService.exportExcel(ybInstitutionInfoChangeReq,response);
+    }
+
+
+    @GetMapping("/exportExcel2")
+    @ApiOperation("测试不用管")
+    public void exportExcel2( HttpServletResponse response) {
+
+        institutionInfoService.exportExcel2(response);
+    }
+
+
+
+
 }

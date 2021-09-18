@@ -5,11 +5,14 @@ import java.util.List;
 
 public enum ErrorCodeEnum {
     SUCCESS("200", "success"),
+
+    FAILURE("201","条件不能为空"),
     SYSTEM_ERROR("500", "系统错误"),
     PARAM_ERROR("50901", "参数错误"),
     NETWORK_ERROR("50904", "对方服务器连接失败"),
     DATA_NOT_READY_ERROR("50905", "数据还未准备结束"),
     RESPONES_ERROR("50906", "接口响应错误"),
+    FILE_UPLOAD_ERROR("50908","文件上传失败"),
     TOKEN_EXPIRED("50907", "token已经过期，请重新登录！！");
 
     /**

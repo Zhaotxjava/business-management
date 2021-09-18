@@ -29,6 +29,8 @@ public class InstitutionInfo {
     private String legalAccountId;
     private String organizeId;  //机构id
     private String updateTime;
+    @ApiModelProperty("证件类型")
+    private String licenseType;
 
 
 }
