@@ -1,7 +1,10 @@
 package com.hfi.insurance.model.dto;
 
+import com.hfi.insurance.common.ApiResponse;
+import com.hfi.insurance.enums.ErrorCodeEnum;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * @Author ChenZX
@@ -34,4 +37,27 @@ public class InstitutionInfoAddReq {
 
     @ApiModelProperty("联系人手机号")
     private String contactPhone;
+
+    public static ApiResponse checkInstitutionInfoAddReq(InstitutionInfoAddReq req) {
+        StringBuilder sb = new StringBuilder();
+        //入参已经进行不为空校验
+        if (!(18 == req.getLegalIdCard().length())) {
+            sb.append("法人身份证号长度应为18位。");
+        }
+        if (!(18 == req.getContactIdCard().length())) {
+            sb.append("经办人身份证号长度应为18位。");
+        }
+        if (!(11 == req.getLegalPhone().length())) {
+            sb.append("法人手机号长度应为11位。");
+        }
+        if (!(11 == req.getContactPhone().length())) {
+            sb.append("经办人手机号长度应为11位。");
+        }
+
+        if (sb.length() > 0) {
+            return ApiResponse.fail(ErrorCodeEnum.PARAM_ERROR, sb.toString());
+        } else {
+            return ApiResponse.success();
+        }
+    }
 }

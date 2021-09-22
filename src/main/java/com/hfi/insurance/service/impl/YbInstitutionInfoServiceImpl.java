@@ -838,4 +838,6 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         return ApiResponse.success();
     }
 
+
+
 }
