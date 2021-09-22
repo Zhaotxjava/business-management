@@ -39,10 +39,7 @@ import org.springframework.util.CollectionUtils;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -136,6 +133,14 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         Integer pageNum = req.getPageNum();
         req.setPageNum(pageNum - 1);
         List<InstitutionInfoRes> ybInstitutionInfos = institutionInfoMapper.selectOrgForCreateFlow(req);
+
+        log.info("过滤前有{}个，{}",ybInstitutionInfos.size(),JSONObject.toJSONString(ybInstitutionInfos));
+        ybInstitutionInfos.removeIf(item -> (StringUtils.isBlank(item.getAccountId()))
+                || StringUtils.isBlank(item.getOrganizeId())
+                || StringUtils.isBlank(item.getLegalIdCard())
+        );
+        log.info("过滤后有{}个，{}",ybInstitutionInfos.size(),JSONObject.toJSONString(ybInstitutionInfos));
+
       /* //todo 添加保险公司
         int pageIndex = 1;
         int size = 1;

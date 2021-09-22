@@ -8,14 +8,9 @@ import com.hfi.insurance.config.PicUploadConfig;
 import com.hfi.insurance.enums.ErrorCodeEnum;
 import com.hfi.insurance.enums.PicType;
 import com.hfi.insurance.mapper.YbInstitutionPicPathMapper;
-import com.hfi.insurance.model.PicPathRes;
-import com.hfi.insurance.model.YbInstitutionInfo;
-import com.hfi.insurance.model.YbInstitutionInfoChange;
-import com.hfi.insurance.model.YbInstitutionPicPath;
+import com.hfi.insurance.model.*;
 import com.hfi.insurance.model.dto.PicCommitPath;
-import com.hfi.insurance.service.IYbInstitutionInfoService;
-import com.hfi.insurance.service.IYbInstitutionPicPathService;
-import com.hfi.insurance.service.SignedService;
+import com.hfi.insurance.service.*;
 import com.hfi.insurance.utils.PicUploadUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -63,6 +58,9 @@ public class PicController {
 
     @Autowired
     private YbInstitutionPicPathMapper ybInstitutionPicPathMapper;
+
+    @Autowired
+    private IYbOrgTdService iYbOrgTdService;
 
     //
 //    @RequestMapping(value = "/upload/batch", method = RequestMethod.POST)
@@ -177,6 +175,7 @@ public class PicController {
     @LogAnnotation
     public ApiResponse<PicPathRes> commit(HttpServletRequest request) {
         String number = request.getHeader("number");
+        String institutionName = request.getHeader("institutionName");
         String orgInstitutionCode = request.getHeader("orgInstitutionCode");
         String operationId = request.getHeader("operationId");
 //        String picType = request.getHeader("picType");
@@ -195,10 +194,14 @@ public class PicController {
                 if (b) {
                     YbInstitutionInfoChange change = new YbInstitutionInfoChange();
                     YbInstitutionInfo ybInstitutionInfo = iYbInstitutionInfoService.getInstitutionInfo(number);
-                    if(Objects.nonNull(ybInstitutionInfo)){
-                        BeanUtils.copyProperties(ybInstitutionInfo,change);
-                    }else {
+
+                    if (Objects.nonNull(ybInstitutionInfo)) {
+                        BeanUtils.copyProperties(ybInstitutionInfo, change);
+                    } else {
+                        YbOrgTd orgTd = iYbOrgTdService.getYbOrgTdByNumber(number);
                         change.setNumber(picPath.getNumber());
+                        change.setInstitutionName(orgTd.getAkb021());
+                        change.setInstitutionName(institutionName);
                         change.setOrgInstitutionCode(orgInstitutionCode);
                     }
                     change.setLicensePicture(JSONObject.toJSONString(data.getXkzList()));
@@ -219,14 +222,14 @@ public class PicController {
     @RequestMapping(value = "/upload/getPicByNumberList", method = RequestMethod.POST)
     @ApiOperation("获取机构图片地址")
     @ApiImplicitParams({
-            @ApiImplicitParam( name = "number", value = "机构代码", dataType = "String",allowMultiple =true,  required = true),})
+            @ApiImplicitParam(name = "number", value = "机构代码", dataType = "String", allowMultiple = true, required = true),})
     //file要与表单上传的名字相同
     @LogAnnotation
     public ApiResponse<List<YbInstitutionPicPath>> getPicByNumber(@RequestBody Set<String> number) {
         QueryWrapper<YbInstitutionPicPath> objectQueryWrapper = new QueryWrapper<>();
         objectQueryWrapper.in("number", number);
         List<YbInstitutionPicPath> ybInstitutionPicPaths = ybInstitutionPicPathMapper.selectList(objectQueryWrapper);
-        log.info("查询结果：{}",JSONObject.toJSONString(ybInstitutionPicPaths));
+        log.info("查询结果：{}", JSONObject.toJSONString(ybInstitutionPicPaths));
         //返回的图片列表
         return ApiResponse.success(ybInstitutionPicPaths);
     }
@@ -239,9 +242,9 @@ public class PicController {
     @LogAnnotation
     public ApiResponse<List<YbInstitutionPicPath>> getPicByNumber(@RequestParam String number) {
         QueryWrapper<YbInstitutionPicPath> objectQueryWrapper = new QueryWrapper<>();
-        objectQueryWrapper.eq("number",number);
+        objectQueryWrapper.eq("number", number);
         YbInstitutionPicPath ybInstitutionPicPath = ybInstitutionPicPathMapper.selectOne(objectQueryWrapper);
-        log.info("查询结果：{}",JSONObject.toJSONString(ybInstitutionPicPath));
+        log.info("查询结果：{}", JSONObject.toJSONString(ybInstitutionPicPath));
         //返回的图片列表
         return ApiResponse.success(ybInstitutionPicPath);
     }
@@ -252,11 +255,11 @@ public class PicController {
     @ApiOperation("获取机构图片BASE64")
 //    @LogAnnotation
     public ApiResponse getPicBase64(@RequestParam String filePath) {
-        log.info("获取机构图片BASE64 filePath={}",filePath);
+        log.info("获取机构图片BASE64 filePath={}", filePath);
         ApiResponse response;
-        if(StringUtils.isBlank(filePath)){
-            response = ApiResponse.fail(ErrorCodeEnum.PARAM_ERROR," 入参为空");
-        }else {
+        if (StringUtils.isBlank(filePath)) {
+            response = ApiResponse.fail(ErrorCodeEnum.PARAM_ERROR, " 入参为空");
+        } else {
             response = ApiResponse.success(PicUploadUtil.getBase64(filePath));
         }
         return response;
@@ -265,16 +268,16 @@ public class PicController {
 
     @RequestMapping(value = "/upload/getPicBase64List", method = RequestMethod.GET)
     @ApiImplicitParams({
-            @ApiImplicitParam(allowMultiple =true, name = "filePaths", value = "机构代码", dataType = "String", required = true),})
+            @ApiImplicitParam(allowMultiple = true, name = "filePaths", value = "机构代码", dataType = "String", required = true),})
     @ApiOperation("获取机构图片BASE64列表")
     @LogAnnotation
     public ApiResponse getPicBase64List(@RequestBody List<String> filePaths) {
-        if(filePaths.isEmpty()){
-            return ApiResponse.fail(ErrorCodeEnum.PARAM_ERROR," 入参为空");
+        if (filePaths.isEmpty()) {
+            return ApiResponse.fail(ErrorCodeEnum.PARAM_ERROR, " 入参为空");
         }
         List<String> pathList = new ArrayList<>();
-        filePaths.forEach(path ->{
-            if(StringUtils.isNotBlank(path)){
+        filePaths.forEach(path -> {
+            if (StringUtils.isNotBlank(path)) {
                 pathList.add(PicUploadUtil.getBase64(path));
             }
 
