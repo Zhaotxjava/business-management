@@ -9,6 +9,7 @@ import com.hfi.insurance.enums.ErrorCodeEnum;
 import com.hfi.insurance.enums.PicType;
 import com.hfi.insurance.mapper.YbInstitutionPicPathMapper;
 import com.hfi.insurance.model.PicPathRes;
+import com.hfi.insurance.model.YbInstitutionInfo;
 import com.hfi.insurance.model.YbInstitutionInfoChange;
 import com.hfi.insurance.model.YbInstitutionPicPath;
 import com.hfi.insurance.model.dto.PicCommitPath;
@@ -22,6 +23,7 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -192,10 +194,12 @@ public class PicController {
                 boolean b = iYbInstitutionPicPathService.saveOrUpdate(picPath);
                 if (b) {
                     YbInstitutionInfoChange change = new YbInstitutionInfoChange();
+                    YbInstitutionInfo ybInstitutionInfo = iYbInstitutionInfoService.getInstitutionInfo(number);
+                    BeanUtils.copyProperties(ybInstitutionInfo,change);
                     change.setLicensePicture(JSONObject.toJSONString(data.getXkzList()));
                     change.setBusinessPicture(JSONObject.toJSONString(data.getYyzzList()));
-                    change.setNumber(picPath.getNumber());
-                    change.setOrgInstitutionCode(orgInstitutionCode);
+//                    change.setNumber(picPath.getNumber());
+//                    change.setOrgInstitutionCode(orgInstitutionCode);
                     iYbInstitutionInfoService.addYbInstitutionInfoChange(change);
                     return res;
                 } else {
