@@ -195,11 +195,14 @@ public class PicController {
                 if (b) {
                     YbInstitutionInfoChange change = new YbInstitutionInfoChange();
                     YbInstitutionInfo ybInstitutionInfo = iYbInstitutionInfoService.getInstitutionInfo(number);
-                    BeanUtils.copyProperties(ybInstitutionInfo,change);
+                    if(Objects.nonNull(ybInstitutionInfo)){
+                        BeanUtils.copyProperties(ybInstitutionInfo,change);
+                    }else {
+                        change.setNumber(picPath.getNumber());
+                        change.setOrgInstitutionCode(orgInstitutionCode);
+                    }
                     change.setLicensePicture(JSONObject.toJSONString(data.getXkzList()));
                     change.setBusinessPicture(JSONObject.toJSONString(data.getYyzzList()));
-//                    change.setNumber(picPath.getNumber());
-//                    change.setOrgInstitutionCode(orgInstitutionCode);
                     iYbInstitutionInfoService.addYbInstitutionInfoChange(change);
                     return res;
                 } else {
