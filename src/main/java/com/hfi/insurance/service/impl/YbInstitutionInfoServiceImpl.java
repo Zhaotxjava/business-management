@@ -221,7 +221,6 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         institutionInfo.setInstitutionName(orgTd.getAkb021());
 
         // 是否更新
-        boolean updated = false;
         YbInstitutionInfoChange change = new YbInstitutionInfoChange();
         BeanUtils.copyProperties(cacheInfo, change);
 
@@ -272,8 +271,6 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
                 if (resultObj.containsKey("errCode")) {
                     log.error("更新外部用户（法人）信息异常，{}", resultObj);
                     return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
-                } else {
-                    updated = true;
                 }
             }
         }
@@ -313,8 +310,6 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
                     if (resultObj.containsKey("errCode")) {
                         log.error("更新外部用户（联系人）信息异常，{}", resultObj);
                         return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
-                    } else {
-                        updated = true;
                     }
                 }
             }
@@ -395,9 +390,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         institutionInfo.setOrganizeId(organizeId);
         // 4>机构创建完成以后，更新数据库
         updateInstitutionInfo(institutionInfo);
-        if (updated) {
-            addYbInstitutionInfoChange(change);
-        }
+        addYbInstitutionInfoChange(change);
         return new ApiResponse(ErrorCodeEnum.SUCCESS);
     }
 
@@ -701,10 +694,10 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         // 更新本地机构
         updateInstitutionInfo(updateInfo);
 
-        // 添加更新记录
-        YbInstitutionInfoChange institutionInfo =
+        // 添加变更记录
+        YbInstitutionInfoChange changeInfo =
                 JSONObject.parseObject(JSONObject.toJSONString(updateInfo), YbInstitutionInfoChange.class);
-        addYbInstitutionInfoChange(institutionInfo);
+        addYbInstitutionInfoChange(changeInfo);
 
         log.info("[更新机构] 结束 {}", institutionName);
         return ApiResponse.success();
@@ -793,6 +786,10 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         // 存储本地机构
         YbInstitutionInfo institutionInfo = JSONObject.parseObject(JSONObject.toJSONString(saveInfo), YbInstitutionInfo.class);
         institutionInfoMapper.insert(institutionInfo);
+        // 添加变更记录
+        YbInstitutionInfoChange changeInfo =
+                JSONObject.parseObject(JSONObject.toJSONString(institutionInfo), YbInstitutionInfoChange.class);
+        addYbInstitutionInfoChange(changeInfo);
 
         log.info("[新增机构] 结束 {}", institutionName);
         return ApiResponse.success();
