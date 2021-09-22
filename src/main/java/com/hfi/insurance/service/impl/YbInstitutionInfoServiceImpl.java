@@ -221,7 +221,6 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         institutionInfo.setInstitutionName(orgTd.getAkb021());
 
         // 是否更新
-        boolean updated = false;
         YbInstitutionInfoChange change = new YbInstitutionInfoChange();
         BeanUtils.copyProperties(cacheInfo, change);
 
@@ -272,8 +271,6 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
                 if (resultObj.containsKey("errCode")) {
                     log.error("更新外部用户（法人）信息异常，{}", resultObj);
                     return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
-                } else {
-                    updated = true;
                 }
             }
         }
@@ -313,8 +310,6 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
                     if (resultObj.containsKey("errCode")) {
                         log.error("更新外部用户（联系人）信息异常，{}", resultObj);
                         return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
-                    } else {
-                        updated = true;
                     }
                 }
             }
@@ -395,9 +390,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         institutionInfo.setOrganizeId(organizeId);
         // 4>机构创建完成以后，更新数据库
         updateInstitutionInfo(institutionInfo);
-        if (updated) {
-            addYbInstitutionInfoChange(change);
-        }
+        addYbInstitutionInfoChange(change);
         return new ApiResponse(ErrorCodeEnum.SUCCESS);
     }
 
@@ -436,31 +429,38 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
             if (YbInstitutionInfoChangeList.size() > 0) {
                 YbInstitutionInfoChangeList.forEach(c -> {
 
-                    JSONArray xkzJson = JSONObject.parseArray(c.getLicensePicture());
-                    List<String> xkzList = new ArrayList<>();
-                    if (!Objects.isNull(xkzJson) && !xkzJson.isEmpty()) {
-                        log.info("jsonArray={}", xkzJson);
-                        for (int i = 0; i < xkzJson.size(); i++) {
-                            if (StringUtils.isNotBlank(xkzJson.getString(i))) {
-                                String base64 = PicUploadUtil.getBase64(xkzJson.getString(i));
-                                xkzList.add(base64);
+                    if (StringUtils.isNotBlank(c.getLicensePicture())) {
+                        JSONArray xkzJson = JSONObject.parseArray(c.getLicensePicture());
+                        List<String> xkzList = new ArrayList<>();
+                        if (!Objects.isNull(xkzJson) && !xkzJson.isEmpty()) {
+//                        log.info("jsonArray={}", xkzJson);
+                            for (int i = 0; i < xkzJson.size(); i++) {
+                                if (StringUtils.isNotBlank(xkzJson.getString(i))) {
+                                    String base64 = PicUploadUtil.getBase64(xkzJson.getString(i));
+                                    xkzList.add(base64);
+                                }
                             }
                         }
+                        c.setLicensePicture(JSONObject.toJSONString(xkzList));
+                    }else {
+                        c.setLicensePicture("");
                     }
 
-                    JSONArray yyzzJson = JSONObject.parseArray(c.getBusinessPicture());
-                    List<String> yyzzList = new ArrayList<>();
-                    if (!Objects.isNull(yyzzJson) && !yyzzJson.isEmpty()) {
-                        for (int i = 0; i < yyzzJson.size(); i++) {
-                            if (StringUtils.isNotBlank(yyzzJson.getString(i))) {
-                                String base64 = PicUploadUtil.getBase64(yyzzJson.getString(i));
-                                yyzzList.add(base64);
+                    if (StringUtils.isNotBlank(c.getBusinessPicture())) {
+                        JSONArray yyzzJson = JSONObject.parseArray(c.getBusinessPicture());
+                        List<String> yyzzList = new ArrayList<>();
+                        if (!Objects.isNull(yyzzJson) && !yyzzJson.isEmpty()) {
+                            for (int i = 0; i < yyzzJson.size(); i++) {
+                                if (StringUtils.isNotBlank(yyzzJson.getString(i))) {
+                                    String base64 = PicUploadUtil.getBase64(yyzzJson.getString(i));
+                                    yyzzList.add(base64);
+                                }
                             }
                         }
+                        c.setBusinessPicture(JSONObject.toJSONString(yyzzList));
+                    }else {
+                        c.setBusinessPicture("");
                     }
-
-                    c.setLicensePicture(JSONObject.toJSONString(xkzList));
-                    c.setBusinessPicture(JSONObject.toJSONString(yyzzList));
                     resList.add(c);
                 });
                 Integer ybInstitutionInfoChangeCount = ybInstitutionInfoChangeMapper.selectChangeCount(ybInstitutionInfoChangeReq);
@@ -696,10 +696,10 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         // 更新本地机构
         updateInstitutionInfo(updateInfo);
 
-        // 添加更新记录
-        YbInstitutionInfoChange institutionInfo =
+        // 添加变更记录
+        YbInstitutionInfoChange changeInfo =
                 JSONObject.parseObject(JSONObject.toJSONString(updateInfo), YbInstitutionInfoChange.class);
-        addYbInstitutionInfoChange(institutionInfo);
+        addYbInstitutionInfoChange(changeInfo);
 
         log.info("[更新机构] 结束 {}", institutionName);
         return ApiResponse.success();
@@ -787,6 +787,10 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         // 存储本地机构
         YbInstitutionInfo institutionInfo = JSONObject.parseObject(JSONObject.toJSONString(saveInfo), YbInstitutionInfo.class);
         institutionInfoMapper.insert(institutionInfo);
+        // 添加变更记录
+        YbInstitutionInfoChange changeInfo =
+                JSONObject.parseObject(JSONObject.toJSONString(institutionInfo), YbInstitutionInfoChange.class);
+        addYbInstitutionInfoChange(changeInfo);
 
         log.info("[新增机构] 结束 {}", institutionName);
         return ApiResponse.success();
@@ -794,6 +798,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
 
     /**
      * 查询第三方用户accountId
+     *
      * @param idCode
      * @param mobile
      * @return
