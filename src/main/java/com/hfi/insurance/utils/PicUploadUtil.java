@@ -417,7 +417,7 @@ public class PicUploadUtil {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        String fileSuffix = filePath.substring(filePath.lastIndexOf("."));
+        String fileSuffix = filePath.substring(filePath.lastIndexOf(".")+1);
         return "data:image/"+fileSuffix+";base64,"+imgStr;
     }
 

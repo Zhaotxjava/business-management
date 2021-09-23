@@ -141,9 +141,10 @@ public class PicController {
         try {
             apiResponse = PicUploadUtil.cacheFile(file, operationId, picType, picUploadConfig.getUploadPathImg(), number);
         } catch (IOException e) {
-            log.error("", e);
+            log.error("/upload/one 上传单个图片异常", e);
             return ApiResponse.fail(ErrorCodeEnum.FILE_UPLOAD_ERROR);
         }
+        log.info("/upload/one 上传单个图片出参",JSONObject.toJSONString(apiResponse));
         return apiResponse;
     }
 
@@ -195,10 +196,12 @@ public class PicController {
                     YbInstitutionInfoChange change = new YbInstitutionInfoChange();
                     YbInstitutionInfo ybInstitutionInfo = iYbInstitutionInfoService.getInstitutionInfo(number);
 
-                    if (Objects.nonNull(ybInstitutionInfo)) {
+                    if (Objects.nonNull(ybInstitutionInfo) || StringUtils.isNotBlank(ybInstitutionInfo.getInstitutionName())) {
                         BeanUtils.copyProperties(ybInstitutionInfo, change);
                     } else {
                         YbOrgTd orgTd = iYbOrgTdService.getYbOrgTdByNumber(number);
+                        log.info("ybInstitutionInfo 查询结果：{} orgTd = {}"
+                                ,JSONObject.toJSONString(ybInstitutionInfo),JSONObject.toJSONString(orgTd));
                         change.setNumber(picPath.getNumber());
                         change.setInstitutionName(orgTd.getAkb021());
                         change.setInstitutionName(institutionName);
@@ -209,13 +212,15 @@ public class PicController {
                     iYbInstitutionInfoService.addYbInstitutionInfoChange(change);
                     return res;
                 } else {
-                    log.info("图片保存失败");
+                    log.info("/upload/commit 提交图片失败operationId={} number={}"
+                            , operationId, number );
                     return ApiResponse.fail(ErrorCodeEnum.RESPONES_ERROR.getCode(), "图片保存失败");
                 }
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
+        log.info("/upload/commit 提交图片出参res={}", JSONObject.toJSONString(res));
         return res;
     }
 
@@ -262,6 +267,7 @@ public class PicController {
         } else {
             response = ApiResponse.success(PicUploadUtil.getBase64(filePath));
         }
+        log.info("获取机构图片BASE64结果={}",response.getCode());
         return response;
 
     }
