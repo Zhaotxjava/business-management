@@ -188,7 +188,7 @@ public class InstitutionController {
     }
 
 
-    @GetMapping("getInstitutionInfobxList")
+    @PostMapping("getInstitutionInfobxList")
     @ResponseBody
     @ApiOperation("筛选保险公司按钮")
     public ApiResponse getInstitutionInfobxList(InstitutionInfoQueryReq institutionInfoQueryReq) {
