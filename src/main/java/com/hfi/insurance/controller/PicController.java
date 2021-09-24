@@ -11,6 +11,7 @@ import com.hfi.insurance.mapper.YbInstitutionPicPathMapper;
 import com.hfi.insurance.model.*;
 import com.hfi.insurance.model.dto.PicCommitPath;
 import com.hfi.insurance.service.*;
+import com.hfi.insurance.utils.FTPUploadUtil;
 import com.hfi.insurance.utils.PicUploadUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -62,59 +63,11 @@ public class PicController {
     @Autowired
     private IYbOrgTdService iYbOrgTdService;
 
-    //
-//    @RequestMapping(value = "/upload/batch", method = RequestMethod.POST)
-//    @ApiOperation("上传批量图片")
-//    @ApiImplicitParams({
-//            @ApiImplicitParam(paramType = "header", name = "number", value = "机构代码", dataType = "String", required = true),
-//            @ApiImplicitParam(paramType = "header", name = "orgInstitutionCode", value = "机构", dataType = "String", required = false)
-//    })
-//    @ResponseBody
-//    //file要与表单上传的名字相同
-//    @LogAnnotation
-//    public ApiResponse<PicPathRes> uploadFiles(MultipartFile[] xkz, MultipartFile[] yyzz, HttpServletRequest request) {
-//        String number = request.getHeader("number");
-//        String orgInstitutionCode = request.getHeader("orgInstitutionCode");
-//        log.info("/upload/batch 上传图片入参 xkz.length={},yyzz.length={},number={},orgInstitutionCode={}"
-//                , xkz.length, yyzz.length, number, orgInstitutionCode);
-//        if (xkz.length <= 0 && yyzz.length <= 0) {
-//            log.info("未获取到图片");
-//            return ApiResponse.fail(ErrorCodeEnum.PARAM_ERROR.getCode(), "未获取到图片");
-//        }
-//        ApiResponse check = PicUploadUtil.checkFile(xkz);
-//        if (!check.isSuccess()) {
-//            return check;
-//        }
-//        check = PicUploadUtil.checkFile(yyzz);
-//        if (!check.isSuccess()) {
-//            return check;
-//        }
-//        //返回的图片列表
-//        ApiResponse<PicPathRes> res = PicUploadUtil.uploadFiles2(xkz, yyzz, picUploadConfig.getUploadPathImg(),number);
-//        if (res.isSuccess()) {
-//            PicPathRes data = res.getData();
-//            YbInstitutionPicPath picPath = new YbInstitutionPicPath();
-//            picPath.setNumber(number);
-//            picPath.setPicPath(JSONObject.toJSONString(data));
-//            boolean b = iYbInstitutionPicPathService.saveOrUpdate(picPath);
-//            if (b) {
-//                YbInstitutionInfo ybInstitutionInfo = iYbInstitutionInfoService.getInstitutionInfo(number);
-//                YbInstitutionInfoChange change = new YbInstitutionInfoChange();
-//                BeanUtils.copyProperties(ybInstitutionInfo,change);
-//                change.setLicensePicture(JSONObject.toJSONString(data.getXkzList()));
-//                change.setBusinessPicture(JSONObject.toJSONString(data.getYyzzList()));
-////                change.setNumber(picPath.getNumber());
-////                change.setOrgInstitutionCode(orgInstitutionCode);
-//                iYbInstitutionInfoService.addYbInstitutionInfoChange(change);
-//                return res;
-//            } else {
-//                log.info("图片保存失败");
-//                return ApiResponse.fail(ErrorCodeEnum.RESPONES_ERROR.getCode(), "图片保存失败");
-//            }
-//        }
-//        return res;
-//    }
-//
+    @Autowired
+    private FTPUploadUtil ftpUploadUtil;
+
+
+
     @RequestMapping(value = "/upload/one", method = RequestMethod.POST)
     @ResponseBody
     @ApiOperation("上传单个图片")
@@ -125,6 +78,7 @@ public class PicController {
             @ApiImplicitParam(paramType = "header", name = "picType", value = "图片类型", dataType = "String", required = true)
     })
     //file要与表单上传的名字相同
+    //20210924 此方法图片保存在后台服务器里
     public ApiResponse<PicPathRes> cacheFile(MultipartFile file, HttpServletRequest request) {
         String number = request.getHeader("number");
         String orgInstitutionCode = request.getHeader("orgInstitutionCode");
@@ -148,21 +102,39 @@ public class PicController {
         return apiResponse;
     }
 
-//    @RequestMapping(value = "/upload/one2", method = RequestMethod.POST)
-//    @ResponseBody
-//    //file要与表单上传的名字相同
-//    public ApiResponse<PicPathRes> cacheFile2(MultipartFile file, HttpServletRequest request) {
-//        String number = request.getHeader("number");
-//        String orgInstitutionCode = request.getHeader("orgInstitutionCode");
-//        String operationId = request.getHeader("operationId");
-//        String picType = request.getHeader("picType");
-//
-//        log.info("上传图片入参operationId={} file.isEmpty={},number={},orgInstitutionCode={}"
-//                , operationId, file.isEmpty(), number, orgInstitutionCode);
-//        ApiResponse apiResponse = PicUploadUtil.cacheFile(file, operationId, picType,picUploadConfig.getUploadPathImg());
-//
-//        return apiResponse;
-//    }
+    @RequestMapping(value = "/upload/one/ftp", method = RequestMethod.POST)
+    @ResponseBody
+    @ApiOperation("FTP上传单个图片")
+    @ApiImplicitParams({
+            @ApiImplicitParam(paramType = "header", name = "number", value = "机构代码", dataType = "String", required = true),
+            @ApiImplicitParam(paramType = "header", name = "orgInstitutionCode", value = "机构", dataType = "String", required = false),
+            @ApiImplicitParam(paramType = "header", name = "operationId", value = "操作码", dataType = "String", required = true),
+            @ApiImplicitParam(paramType = "header", name = "picType", value = "图片类型", dataType = "String", required = true)
+    })
+    //file要与表单上传的名字相同
+    //20210924 此方法图片保存在后台服务器里
+    public ApiResponse<PicPathRes> cacheFileFTP(MultipartFile file, HttpServletRequest request) {
+        String number = request.getHeader("number");
+        String orgInstitutionCode = request.getHeader("orgInstitutionCode");
+        String operationId = request.getHeader("operationId");
+        String picType = request.getHeader("picType");
+        PicType p = PicType.getPicType(picType);
+        if (p.equals(PicType.UNKNOW)) {
+            return ApiResponse.fail(ErrorCodeEnum.PARAM_ERROR, " picType非法：" + picType);
+        }
+
+        log.info("/upload/one/ftp FTP上传单个图片入参operationId={} file.isEmpty={},number={},orgInstitutionCode={}"
+                , operationId, file.isEmpty(), number, orgInstitutionCode);
+        ApiResponse apiResponse = null;
+        try {
+            apiResponse = ftpUploadUtil.cacheFile(file,operationId,p,number);
+        } catch (IOException e) {
+            log.error("/upload/one/ftp FTP上传单个图片异常", e);
+            return ApiResponse.fail(ErrorCodeEnum.FILE_UPLOAD_ERROR);
+        }
+        log.info("/upload/one/ftp FTP上传单个图片出参",JSONObject.toJSONString(apiResponse));
+        return apiResponse;
+    }
 
     @RequestMapping(value = "/upload/commit", method = RequestMethod.POST)
     @ResponseBody
@@ -185,7 +157,7 @@ public class PicController {
                 , operationId, number, orgInstitutionCode);
         ApiResponse<PicPathRes> res = new ApiResponse<>();
         try {
-            res = PicUploadUtil.fileCommit(operationId, picUploadConfig.getUploadPathImg());
+            res = PicUploadUtil.fileCommit(operationId);
             if (res.isSuccess()) {
                 PicPathRes data = res.getData();
                 YbInstitutionPicPath picPath = new YbInstitutionPicPath();
@@ -290,7 +262,108 @@ public class PicController {
         });
         return ApiResponse.success(pathList);
     }
-
+    //
+//    @RequestMapping(value = "/upload/batch", method = RequestMethod.POST)
+//    @ApiOperation("上传批量图片")
+//    @ApiImplicitParams({
+//            @ApiImplicitParam(paramType = "header", name = "number", value = "机构代码", dataType = "String", required = true),
+//            @ApiImplicitParam(paramType = "header", name = "orgInstitutionCode", value = "机构", dataType = "String", required = false)
+//    })
+//    @ResponseBody
+//    //file要与表单上传的名字相同
+//    @LogAnnotation
+//    public ApiResponse<PicPathRes> uploadFiles(MultipartFile[] xkz, MultipartFile[] yyzz, HttpServletRequest request) {
+//        String number = request.getHeader("number");
+//        String orgInstitutionCode = request.getHeader("orgInstitutionCode");
+//        log.info("/upload/batch 上传图片入参 xkz.length={},yyzz.length={},number={},orgInstitutionCode={}"
+//                , xkz.length, yyzz.length, number, orgInstitutionCode);
+//        if (xkz.length <= 0 && yyzz.length <= 0) {
+//            log.info("未获取到图片");
+//            return ApiResponse.fail(ErrorCodeEnum.PARAM_ERROR.getCode(), "未获取到图片");
+//        }
+//        ApiResponse check = PicUploadUtil.checkFile(xkz);
+//        if (!check.isSuccess()) {
+//            return check;
+//        }
+//        check = PicUploadUtil.checkFile(yyzz);
+//        if (!check.isSuccess()) {
+//            return check;
+//        }
+//        //返回的图片列表
+//        ApiResponse<PicPathRes> res = PicUploadUtil.uploadFiles2(xkz, yyzz, picUploadConfig.getUploadPathImg(),number);
+//        if (res.isSuccess()) {
+//            PicPathRes data = res.getData();
+//            YbInstitutionPicPath picPath = new YbInstitutionPicPath();
+//            picPath.setNumber(number);
+//            picPath.setPicPath(JSONObject.toJSONString(data));
+//            boolean b = iYbInstitutionPicPathService.saveOrUpdate(picPath);
+//            if (b) {
+//                YbInstitutionInfo ybInstitutionInfo = iYbInstitutionInfoService.getInstitutionInfo(number);
+//                YbInstitutionInfoChange change = new YbInstitutionInfoChange();
+//                BeanUtils.copyProperties(ybInstitutionInfo,change);
+//                change.setLicensePicture(JSONObject.toJSONString(data.getXkzList()));
+//                change.setBusinessPicture(JSONObject.toJSONString(data.getYyzzList()));
+////                change.setNumber(picPath.getNumber());
+////                change.setOrgInstitutionCode(orgInstitutionCode);
+//                iYbInstitutionInfoService.addYbInstitutionInfoChange(change);
+//                return res;
+//            } else {
+//                log.info("图片保存失败");
+//                return ApiResponse.fail(ErrorCodeEnum.RESPONES_ERROR.getCode(), "图片保存失败");
+//            }
+//        }
+//        return res;
+//    }
+//
+//    @RequestMapping(value = "/upload/one", method = RequestMethod.POST)
+//    @ResponseBody
+//    @ApiOperation("上传单个图片")
+//    @ApiImplicitParams({
+//            @ApiImplicitParam(paramType = "header", name = "number", value = "机构代码", dataType = "String", required = true),
+//            @ApiImplicitParam(paramType = "header", name = "orgInstitutionCode", value = "机构", dataType = "String", required = false),
+//            @ApiImplicitParam(paramType = "header", name = "operationId", value = "操作码", dataType = "String", required = true),
+//            @ApiImplicitParam(paramType = "header", name = "picType", value = "图片类型", dataType = "String", required = true)
+//    })
+//    //file要与表单上传的名字相同
+//    //20210924 此方法图片保存在后台服务器里
+//    public ApiResponse<PicPathRes> cacheFile(MultipartFile file, HttpServletRequest request) {
+//        String number = request.getHeader("number");
+//        String orgInstitutionCode = request.getHeader("orgInstitutionCode");
+//        String operationId = request.getHeader("operationId");
+//        String picType = request.getHeader("picType");
+//        PicType p = PicType.getPicType(picType);
+//        if (p.equals(PicType.UNKNOW)) {
+//            return ApiResponse.fail(ErrorCodeEnum.PARAM_ERROR, " picType非法：" + picType);
+//        }
+//
+//        log.info("/upload/one 上传单个图片入参operationId={} file.isEmpty={},number={},orgInstitutionCode={}"
+//                , operationId, file.isEmpty(), number, orgInstitutionCode);
+//        ApiResponse apiResponse = null;
+//        try {
+//            apiResponse = PicUploadUtil.cacheFile(file, operationId, picType, picUploadConfig.getUploadPathImg(), number);
+//        } catch (IOException e) {
+//            log.error("/upload/one 上传单个图片异常", e);
+//            return ApiResponse.fail(ErrorCodeEnum.FILE_UPLOAD_ERROR);
+//        }
+//        log.info("/upload/one 上传单个图片出参",JSONObject.toJSONString(apiResponse));
+//        return apiResponse;
+//    }
+//
+//    @RequestMapping(value = "/upload/one2", method = RequestMethod.POST)
+//    @ResponseBody
+//    //file要与表单上传的名字相同
+//    public ApiResponse<PicPathRes> cacheFile2(MultipartFile file, HttpServletRequest request) {
+//        String number = request.getHeader("number");
+//        String orgInstitutionCode = request.getHeader("orgInstitutionCode");
+//        String operationId = request.getHeader("operationId");
+//        String picType = request.getHeader("picType");
+//
+//        log.info("上传图片入参operationId={} file.isEmpty={},number={},orgInstitutionCode={}"
+//                , operationId, file.isEmpty(), number, orgInstitutionCode);
+//        ApiResponse apiResponse = PicUploadUtil.cacheFile(file, operationId, picType,picUploadConfig.getUploadPathImg());
+//
+//        return apiResponse;
+//    }
 //    @GetMapping("/loadimg")
 //    public void getImg2(HttpServletResponse response, String imgPath ) {
 //

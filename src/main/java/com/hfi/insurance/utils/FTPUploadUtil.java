@@ -1,5 +1,9 @@
 package com.hfi.insurance.utils;
 
+import com.hfi.insurance.common.ApiResponse;
+import com.hfi.insurance.enums.ErrorCodeEnum;
+import com.hfi.insurance.enums.PicType;
+import com.hfi.insurance.model.dto.PicCommitPath;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
@@ -11,10 +15,10 @@ import sun.misc.BASE64Decoder;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
+
 
 /**
  * @author ruicai
@@ -61,23 +65,57 @@ public class FTPUploadUtil {
     @Value("${uploadFile.port}")
     private Integer uploadPort;
 
+
+    public ApiResponse cacheFile(MultipartFile file, String operationId, PicType type,String bumber) throws IOException {
+        ApiResponse apiResponse = PicUploadUtil.checkOneFile(file);
+        if(!apiResponse.isSuccess()){
+            return apiResponse;
+        }
+        PicCommitPath picCommit = PicUploadUtil.picCommitPath.get(operationId);
+        if (Objects.isNull(picCommit)) {
+            picCommit = new PicCommitPath();
+        }
+        String path = uploadFile(file,bumber);
+//        String path = uploadOneFile();
+        switch (type){
+            case XKZ:
+                picCommit.getXkz().add(path);
+                break;
+            case YYZZ:
+                picCommit.getYyzz().add(path);
+                break;
+            default:
+                return ApiResponse.fail(ErrorCodeEnum.PARAM_ERROR,"图片类型非法");
+        }
+        PicUploadUtil.picCommitPath.put(operationId,picCommit);
+        return ApiResponse.success(path);
+    }
+
     /**
      * 上传文件
+     *
      * @param multipartFile
      * @return
      */
-    public String uploadFile(MultipartFile multipartFile) throws IOException {
+    public String uploadFile(MultipartFile multipartFile, String number) throws IOException {
         log.info("[上传文件] 文件大小：" + multipartFile.getSize());
 
         FTPClient ftpClient = new FTPClient();
         ftpClient.connect(uploadHost, uploadPort);
+        log.info("文件上传配置：{}",uploadHost+":"+uploadPort);
         ftpClient.login(userName, password);
         ftpClient.changeWorkingDirectory(uploadDir);
         ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
         ftpClient.enterLocalPassiveMode();
-        String fileName = multipartFile.getOriginalFilename();
-        fileName = fileName.substring(fileName.lastIndexOf(".") + 1);
-        fileName = System.currentTimeMillis() + "." + fileName;
+//        String fileName = multipartFile.getOriginalFilename();
+//        fileName = fileName.substring(fileName.lastIndexOf(".") + 1);
+//        fileName = number+"_"+System.currentTimeMillis() + "." + fileName;
+        String fileSuffix = multipartFile.getOriginalFilename().substring(multipartFile.getOriginalFilename().lastIndexOf("."));
+        DateFormat df = new SimpleDateFormat("yyyyMMdd");
+        Calendar calendar = Calendar.getInstance();
+        String dateName = df.format(calendar.getTime());
+        String fileName = number + "_" + dateName + "_"
+                + UUID.randomUUID().toString().replace("-", "").substring(0, 15) + fileSuffix;
 
         try (InputStream inputStream = new ByteArrayInputStream(multipartFile.getBytes())) {
             ftpClient.storeFile(fileName, inputStream);
@@ -90,6 +128,7 @@ public class FTPUploadUtil {
 
     /**
      * 批量上传文件
+     *
      * @param multipartFiles
      * @return
      */
@@ -97,7 +136,7 @@ public class FTPUploadUtil {
         List<String> urls = new ArrayList<>();
 
         FTPClient ftpClient = new FTPClient();
-        ftpClient.connect(uploadHost,uploadPort);
+        ftpClient.connect(uploadHost, uploadPort);
         ftpClient.login(userName, password);
         ftpClient.changeWorkingDirectory(uploadDir);
         ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
@@ -124,6 +163,7 @@ public class FTPUploadUtil {
 
     /**
      * 上传base64图片
+     *
      * @param pics
      * @return
      * @throws IOException
@@ -132,7 +172,7 @@ public class FTPUploadUtil {
         List<String> urls = new ArrayList<>();
 
         FTPClient ftpClient = new FTPClient();
-        ftpClient.connect(uploadHost,uploadPort);
+        ftpClient.connect(uploadHost, uploadPort);
         ftpClient.login(userName, password);
         ftpClient.changeWorkingDirectory(uploadDir);
         ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
