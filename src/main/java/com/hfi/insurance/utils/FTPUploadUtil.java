@@ -5,6 +5,7 @@ import com.hfi.insurance.enums.ErrorCodeEnum;
 import com.hfi.insurance.enums.PicType;
 import com.hfi.insurance.model.dto.PicCommitPath;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.springframework.beans.factory.annotation.Value;
@@ -76,6 +77,9 @@ public class FTPUploadUtil {
             picCommit = new PicCommitPath();
         }
         String path = uploadFile(file,bumber);
+        if(StringUtils.isBlank(path)){
+            return ApiResponse.fail(ErrorCodeEnum.FILE_UPLOAD_ERROR);
+        }
 //        String path = uploadOneFile();
         switch (type){
             case XKZ:
@@ -102,11 +106,11 @@ public class FTPUploadUtil {
 
         FTPClient ftpClient = new FTPClient();
         ftpClient.connect(uploadHost, uploadPort);
-        log.info("文件上传配置：{}",uploadHost+":"+uploadPort);
         ftpClient.login(userName, password);
         ftpClient.changeWorkingDirectory(uploadDir);
         ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
-        ftpClient.enterLocalPassiveMode();
+//        ftpClient.enterRemotePassiveMode();
+        ftpClient.enterLocalActiveMode();
 //        String fileName = multipartFile.getOriginalFilename();
 //        fileName = fileName.substring(fileName.lastIndexOf(".") + 1);
 //        fileName = number+"_"+System.currentTimeMillis() + "." + fileName;
@@ -116,14 +120,17 @@ public class FTPUploadUtil {
         String dateName = df.format(calendar.getTime());
         String fileName = number + "_" + dateName + "_"
                 + UUID.randomUUID().toString().replace("-", "").substring(0, 15) + fileSuffix;
-
+        log.info("文件上传 fileName={}",fileName);
         try (InputStream inputStream = new ByteArrayInputStream(multipartFile.getBytes())) {
-            ftpClient.storeFile(fileName, inputStream);
+            boolean b = ftpClient.storeFile(fileName, inputStream);
+            ftpClient.logout();
+            if(b){
+                return uploadPath + fileName;
+            }else {
+                return null;
+            }
         }
 
-        ftpClient.logout();
-
-        return uploadPath + fileName;
     }
 
     /**
