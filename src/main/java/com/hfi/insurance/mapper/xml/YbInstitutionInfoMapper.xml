@@ -155,4 +155,18 @@
             </if>
         </where>
     </select>
+
+
+
+
+
+    <select id="getInstitutionInfobxList"  parameterType="com.hfi.insurance.model.dto.InstitutionInfoQueryReq" resultType="com.hfi.insurance.model.YbInstitutionInfo">
+
+     SELECT  * from  yb_institution_info
+     where
+     number like concat("%","bx","%")
+     limit #{pageNum},#{pageSize}
+    </select>
+
+
 </mapper>
