@@ -132,7 +132,7 @@ public class PicController {
             log.error("/upload/one/ftp FTP上传单个图片异常", e);
             return ApiResponse.fail(ErrorCodeEnum.FILE_UPLOAD_ERROR);
         }
-        log.info("/upload/one/ftp FTP上传单个图片出参",JSONObject.toJSONString(apiResponse));
+        log.info("/upload/one/ftp FTP上传单个图片出参:{}",JSONObject.toJSONString(apiResponse));
         return apiResponse;
     }
 

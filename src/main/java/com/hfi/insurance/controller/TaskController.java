@@ -51,6 +51,8 @@ public class TaskController {
 
     private static List<Integer> flowStatusList = new ArrayList<>();
 
+    private long MAX_TIMEOUT = 72000000;
+
     static {
         flowStatusList.add(0);
         flowStatusList.add(1);
@@ -143,6 +145,17 @@ public class TaskController {
             }
         }
 
+    }
+
+    @RequestMapping(value = "/pic/cleanPicCommitMap", method = RequestMethod.POST)
+    @ApiOperation("cleanPicCommitMap")
+    @Scheduled(cron = "0 0 */2 * * ?")
+    public void cleanPicCommitMap(){
+        PicUploadUtil.picCommitPath.forEach( (k,v) -> {
+            if(System.currentTimeMillis() - v.getCreateTime() > MAX_TIMEOUT){
+                PicUploadUtil.picCommitPath.remove(k);
+            }
+        });
     }
 
 }
