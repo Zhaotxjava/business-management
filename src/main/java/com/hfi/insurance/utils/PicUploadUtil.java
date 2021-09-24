@@ -32,6 +32,7 @@ public class PicUploadUtil {
 
     public static Map<String, PicCommit> picCommitMap = new HashMap<>();
     public static Map<String, PicCommitPath> picCommitPath = new HashMap<>();
+//    public static Map<String, PicCommitPath> picCommitFTP = new HashMap<>();
 
     public static ApiResponse<PicPathRes> uploadFiles2(MultipartFile[] xxk, MultipartFile[] yyzz, String dir,String number) {
         try {
@@ -144,7 +145,7 @@ public class PicUploadUtil {
     }
 
 
-    public static ApiResponse<PicPathRes> fileCommit(String id,String dir) throws IOException {
+    public static ApiResponse<PicPathRes> fileCommit(String id) throws IOException {
         PicCommitPath picCommit = picCommitPath.get(id);
         if(Objects.isNull(picCommit)){
             log.info("fileCommit id = {},未检测到需要提交的图片",id);

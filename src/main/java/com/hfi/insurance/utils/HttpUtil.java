@@ -149,7 +149,7 @@ public class HttpUtil {
      * @return
      */
     public static String doPost(String url, Map<String, String> headers, String params) {
-        log.info("请求参数：{}", params);
+        log.info("请求地址：{}请求参数：{}",url, params);
         HttpPost httpPost = new HttpPost(url);
         String data = null;
         try {

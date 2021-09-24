@@ -68,17 +68,18 @@ public class TaskController {
         objectQueryWrapper.between("update_time",DateUtil.yesterday(),new Date());
 
         List<YbFlowInfo> list = ybFlowInfoMapper.selectList(objectQueryWrapper);
+        log.info("定时查询签署一共：{}个",list.size());
         for (YbFlowInfo ybFlowInfo : list
         ) {
             JSONObject signDetail = signedService.getSignDetail(ybFlowInfo.getFlowId());
 
             if (signDetail.containsKey("errCode")) {
-                log.warn("查询流程id：{}详情错误，错误原因：{}",ybFlowInfo.getFlowId(),signDetail.getString("msg"));
+//                log.warn("查询流程id：{}详情错误，错误原因：{}",ybFlowInfo.getFlowId(),signDetail.getString("msg"));
                 continue;
             } else {
                 String singers = signDetail.getString("signers");
                 List<SingerInfoRes> singerInfos = JSON.parseArray(singers, SingerInfoRes.class);
-                log.info("查询流程id：{},signedStatusUpdate List<SingerInfoRes>={}", ybFlowInfo.getFlowId(),JSONObject.toJSONString(singerInfos));
+//                log.info("查询流程id：{},signedStatusUpdate List<SingerInfoRes>={}", ybFlowInfo.getFlowId(),JSONObject.toJSONString(singerInfos));
 //                YbInstitutionInfo institutionInfo = institutionInfoService.getInstitutionInfo(ybFlowInfo.getNumber());
 //
 //                if (institutionInfo != null && institutionInfo.getAccountId() != null) {

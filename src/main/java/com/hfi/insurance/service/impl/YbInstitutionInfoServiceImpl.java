@@ -150,6 +150,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         while (size > 0){
             String orgInfoListStr = organizationsService.queryByOrgName("",pageIndex);
             JSONObject object = JSONObject.parseObject(orgInfoListStr);
+            log.info("getOrgTdListForCreateFlow 调用E签宝queryByOrgName查询机构{}",object.toJSONString());
             if ("0".equals(object.getString("errCode"))) {
                 String data = object.getString("data");
                 List<QueryOuterOrgResult> queryOuterOrgResults = JSON.parseArray(data, QueryOuterOrgResult.class);
@@ -850,7 +851,5 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         log.info("[查询外部用户] 证件号：{}，手机号：{}，无结果", idCode, mobile);
         return ApiResponse.success();
     }
-
-
 
 }
