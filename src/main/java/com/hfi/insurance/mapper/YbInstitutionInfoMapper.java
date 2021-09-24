@@ -3,6 +3,7 @@ package com.hfi.insurance.mapper;
 import com.hfi.insurance.model.InstitutionInfo;
 import com.hfi.insurance.model.YbInstitutionInfo;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.hfi.insurance.model.dto.InstitutionInfoQueryReq;
 import com.hfi.insurance.model.dto.OrgTdQueryReq;
 import com.hfi.insurance.model.dto.res.InstitutionInfoRes;
 import org.apache.ibatis.annotations.Param;
@@ -35,4 +36,6 @@ public interface YbInstitutionInfoMapper extends BaseMapper<YbInstitutionInfo> {
     List<InstitutionInfoRes>  selectOrgForCreateFlow(OrgTdQueryReq req);
 
     int selectCountOrgForCreateFlow(OrgTdQueryReq req);
+
+    List<YbInstitutionInfo> getInstitutionInfobxList(InstitutionInfoQueryReq institutionInfoQueryReq);
 }

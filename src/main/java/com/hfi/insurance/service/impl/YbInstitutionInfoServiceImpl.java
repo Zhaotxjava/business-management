@@ -18,6 +18,7 @@ import com.hfi.insurance.mapper.YbInstitutionPicPathMapper;
 import com.hfi.insurance.mapper.YbOrgTdMapper;
 import com.hfi.insurance.model.*;
 import com.hfi.insurance.model.dto.InstitutionInfoAddReq;
+import com.hfi.insurance.model.dto.InstitutionInfoQueryReq;
 import com.hfi.insurance.model.dto.OrgTdQueryReq;
 import com.hfi.insurance.model.dto.YbInstitutionInfoChangeReq;
 import com.hfi.insurance.model.dto.res.InstitutionInfoRes;
@@ -573,6 +574,18 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
             colIndex = 0;
         }
         ExcelUtil.xlsDownloadFile(response, workbook);
+
+    }
+
+    @Override
+    public ApiResponse getInstitutionInfobxList(InstitutionInfoQueryReq institutionInfoQueryReq) {
+
+        institutionInfoQueryReq.setPageNum(institutionInfoQueryReq.getPageNum()-1);
+        List<YbInstitutionInfo> ybInstitutionInfos = institutionInfoMapper.getInstitutionInfobxList(institutionInfoQueryReq);
+        if (ybInstitutionInfos.size()>0){
+            return ApiResponse.success(ybInstitutionInfos);
+        }
+        return  new ApiResponse("200","无保险公司");
 
     }
 
