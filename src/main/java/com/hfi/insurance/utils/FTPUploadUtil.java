@@ -1,5 +1,6 @@
 package com.hfi.insurance.utils;
 
+import com.alibaba.fastjson.JSONObject;
 import com.hfi.insurance.common.ApiResponse;
 import com.hfi.insurance.enums.ErrorCodeEnum;
 import com.hfi.insurance.enums.PicType;
@@ -34,7 +35,7 @@ public class FTPUploadUtil {
      * 公网访问根路径
      */
     @Value("${uploadFile.path}")
-    private String uploadPath;
+    public String uploadPath;
 
     /**
      * 存储相对地址
@@ -75,6 +76,7 @@ public class FTPUploadUtil {
         PicCommitPath picCommit = PicUploadUtil.picCommitPath.get(operationId);
         if (Objects.isNull(picCommit)) {
             picCommit = new PicCommitPath();
+            log.info("+++++++++++++++++++++++++++++++{}"+JSONObject.toJSONString(picCommit));
         }
         String path = uploadFile(file,bumber);
         if(StringUtils.isBlank(path)){
@@ -83,10 +85,10 @@ public class FTPUploadUtil {
 //        String path = uploadOneFile();
         switch (type){
             case XKZ:
-                picCommit.getXkz().add(path);
+                picCommit.getXkzList().add(path);
                 break;
             case YYZZ:
-                picCommit.getYyzz().add(path);
+                picCommit.getYyzzList().add(path);
                 break;
             default:
                 return ApiResponse.fail(ErrorCodeEnum.PARAM_ERROR,"图片类型非法");
@@ -125,7 +127,8 @@ public class FTPUploadUtil {
             boolean b = ftpClient.storeFile(fileName, inputStream);
             ftpClient.logout();
             if(b){
-                return uploadPath + fileName;
+//                return uploadPath + fileName;
+                return fileName;
             }else {
                 return null;
             }

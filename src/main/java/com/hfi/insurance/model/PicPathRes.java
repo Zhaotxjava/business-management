@@ -1,6 +1,8 @@
 package com.hfi.insurance.model;
 
 import lombok.Data;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +14,9 @@ import java.util.List;
  * @Version 1.0
  */
 @Data
+@Component
 public class PicPathRes {
+    private String url;
     private List<String> xkzList;
     private List<String> yyzzList;
 }

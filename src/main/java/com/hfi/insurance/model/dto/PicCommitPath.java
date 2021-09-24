@@ -1,6 +1,8 @@
 package com.hfi.insurance.model.dto;
 
 import lombok.Data;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
@@ -13,26 +15,36 @@ import java.util.List;
  * @Version 1.0
  */
 @Data
+@Component
 public class PicCommitPath {
-    private List<String> xkz;
-    private List<String> yyzz;
+
+    private String url;
+    private List<String> xkzList;
+    private List<String> yyzzList;
     private long createTime;
 
     public PicCommitPath() {
-        this.xkz = new ArrayList<>();
-        this.yyzz = new ArrayList<>();
+        this.xkzList = new ArrayList<>();
+        this.yyzzList = new ArrayList<>();
         this.createTime = System.currentTimeMillis();;
     }
 
+    public PicCommitPath(String url) {
+        this.xkzList = new ArrayList<>();
+        this.yyzzList = new ArrayList<>();
+        this.createTime = System.currentTimeMillis();
+        this.url = url;
+    }
+
     public PicCommitPath(long createTime) {
-        this.xkz = new ArrayList<>();
-        this.yyzz = new ArrayList<>();
+        this.xkzList = new ArrayList<>();
+        this.yyzzList = new ArrayList<>();
         this.createTime = createTime;
     }
 
     public PicCommitPath(List<String> xkz, List<String> yyzz, long createTime) {
-        this.xkz = xkz;
-        this.yyzz = yyzz;
+        this.xkzList = xkz;
+        this.yyzzList = yyzz;
         this.createTime = createTime;
     }
 }

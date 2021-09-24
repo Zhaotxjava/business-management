@@ -26,6 +26,7 @@ import com.hfi.insurance.model.sign.BindedAgentBean;
 import com.hfi.insurance.model.sign.QueryOuterOrgResult;
 import com.hfi.insurance.service.IYbInstitutionInfoService;
 import com.hfi.insurance.service.OrganizationsService;
+import com.hfi.insurance.utils.FTPUploadUtil;
 import com.hfi.insurance.utils.PicUploadUtil;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -70,6 +71,8 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
     private YbInstitutionInfoChangeMapper ybInstitutionInfoChangeMapper;
     @Autowired
     private YbInstitutionPicPathMapper ybInstitutionPicPathMapper;
+    @Autowired
+    private FTPUploadUtil ftpUploadUtil;
 
 
     @Override
@@ -181,7 +184,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         int total = institutionInfoMapper.selectCountOrgForCreateFlow(req);
         Page<InstitutionInfoRes> page = new Page<>(req.getPageNum(), req.getPageSize());
         page.setRecords(ybInstitutionInfos);
-        page.setTotal(total);
+        page.setTotal(ybInstitutionInfos.size());
         return page;
     }
 
@@ -443,8 +446,9 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
 //                        log.info("jsonArray={}", xkzJson);
                             for (int i = 0; i < xkzJson.size(); i++) {
                                 if (StringUtils.isNotBlank(xkzJson.getString(i))) {
-                                    String base64 = PicUploadUtil.getBase64(xkzJson.getString(i));
-                                    xkzList.add(base64);
+//                                    String base64 = PicUploadUtil.getBase64(xkzJson.getString(i));
+//                                    xkzList.add(base64);
+                                    xkzList.add(ftpUploadUtil.uploadPath + xkzJson.getString(i));
                                 }
                             }
                         }
@@ -459,8 +463,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
                         if (!Objects.isNull(yyzzJson) && !yyzzJson.isEmpty()) {
                             for (int i = 0; i < yyzzJson.size(); i++) {
                                 if (StringUtils.isNotBlank(yyzzJson.getString(i))) {
-                                    String base64 = PicUploadUtil.getBase64(yyzzJson.getString(i));
-                                    yyzzList.add(base64);
+                                    yyzzList.add(ftpUploadUtil.uploadPath + yyzzJson.getString(i));
                                 }
                             }
                         }
