@@ -15,6 +15,8 @@ import com.hfi.insurance.model.dto.res.InstitutionInfoRes;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import java.util.List;
+import java.util.Set;
 
 /**
  * <p>
@@ -52,4 +54,6 @@ public interface IYbInstitutionInfoService extends IService<YbInstitutionInfo> {
     void exportExcel2(HttpServletResponse response);
 
     ApiResponse getInstitutionInfobxList(InstitutionInfoQueryReq institutionInfoQueryReq);
+
+    List<YbInstitutionInfo> findLegalInstitution(Set<String> inputSet);
 }

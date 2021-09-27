@@ -3,6 +3,7 @@ package com.hfi.insurance.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -853,6 +854,22 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         }
         log.info("[查询外部用户] 证件号：{}，手机号：{}，无结果", idCode, mobile);
         return ApiResponse.success();
+    }
+
+    /**
+     * 通过列表查询yb_institution_info表中字段account_id | legal_account_id | organize_id都不为空的机构
+     * @param inputSet
+     * @return
+     */
+    @Override
+    public List<YbInstitutionInfo> findLegalInstitution(Set<String> inputSet){
+        QueryWrapper<YbInstitutionInfo> queryWrapper = new QueryWrapper<>();
+        queryWrapper.isNotNull("account_id");
+        queryWrapper.isNotNull("legal_account_id");
+        queryWrapper.isNotNull("organize_id");
+        queryWrapper.in("number",inputSet);
+        List<YbInstitutionInfo> list = institutionInfoMapper.selectList(queryWrapper);
+        return list;
     }
 
 }
