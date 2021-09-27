@@ -73,7 +73,7 @@ mybatis-plus:
 
 ############# upload file
 uploadFile:
-  path: http://192.50.10.39:21/file/
+  path: http://172.16.29.54:8097/file/
   dir: /file
   userName: yibao
   password: yibao
