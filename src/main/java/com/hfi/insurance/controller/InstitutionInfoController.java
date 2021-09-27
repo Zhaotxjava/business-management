@@ -59,9 +59,18 @@ public class InstitutionInfoController {
         model.addAttribute("number", hospitalid); //医院编码
         model.addAttribute("areaCode", platid); ///统筹区编码
         //默认外部机构
+//        int flag = 2;
+//        if (StringUtils.isNotBlank(loginaccount) && !loginaccount.startsWith("hz")) {
+//            flag = 1;
+//        }
+        //默认外部机构
         int flag = 2;
-        if (StringUtils.isNotBlank(loginaccount) && !loginaccount.startsWith("hz")) {
-            flag = 1;
+        if (StringUtils.isNotBlank(loginaccount)) {
+            if (loginaccount.startsWith("bx")) {
+                flag = 3;
+            } else if (!loginaccount.startsWith("hz")) {
+                flag = 1;
+            }
         }
         long timeStamp = System.currentTimeMillis();
         String tokenStr = loginaccount + "&" + hospitalid + "&" + platid + "&" + timeStamp;
@@ -97,9 +106,14 @@ public class InstitutionInfoController {
         model.addAttribute("areaCode", platid); ///统筹区编码
         //默认外部机构
         int flag = 2;
-        if (StringUtils.isNotBlank(loginaccount) && !loginaccount.startsWith("hz")) {
-            flag = 1;
+        if (StringUtils.isNotBlank(loginaccount)) {
+            if (loginaccount.startsWith("bx")) {
+                flag = 3;
+            } else if (!loginaccount.startsWith("hz")) {
+                flag = 1;
+            }
         }
+
         long timeStamp = System.currentTimeMillis();
         String tokenStr = loginaccount + "&" + hospitalid + "&" + platid + "&" + timeStamp;
         String token = DigestUtils.sha256Hex(tokenStr);

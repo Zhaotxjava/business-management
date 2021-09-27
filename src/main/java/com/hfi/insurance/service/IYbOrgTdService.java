@@ -22,4 +22,5 @@ public interface IYbOrgTdService extends IService<YbOrgTd> {
 
     List<YbOrgTd> getYbOrgTdList(List<String> number);
 
+    YbOrgTd getYbOrgTdByNumber(String number);
 }

@@ -7,7 +7,10 @@ import com.hfi.insurance.model.dto.YbInstitutionInfoChangeReq;
 
 import java.util.Date;
 import java.util.List;
-
+/**
+ * @author ZTX
+ * @since 2021-09-17
+ */
 public interface YbInstitutionInfoChangeMapper  extends BaseMapper<YbInstitutionInfoChange> {
 
 

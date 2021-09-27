@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.hfi.insurance.common.ApiResponse;
 import com.hfi.insurance.enums.ErrorCodeEnum;
 import com.hfi.insurance.enums.PicType;
+
 import com.hfi.insurance.model.PicPathRes;
 import com.hfi.insurance.model.dto.PicCommit;
 import com.hfi.insurance.model.dto.PicCommitPath;
@@ -33,36 +34,36 @@ public class PicUploadUtil {
     public static Map<String, PicCommit> picCommitMap = new HashMap<>();
     public static Map<String, PicCommitPath> picCommitPath = new HashMap<>();
 
-    public static ApiResponse<PicPathRes> uploadFiles2(MultipartFile[] xxk, MultipartFile[] yyzz, String dir,String number) {
-        try {
-            //创建文件在服务器端存放路径
-//            String dir = request.getServletContext().getRealPath("/upload");
-            log.info("入参文件数xxk：{}。yyzz：{}。开始上传文件到此路径：{}", xxk.length, yyzz.length, dir);
-            if (xxk.length <= 0 && yyzz.length <= 0) {
-                return ApiResponse.fail(ErrorCodeEnum.RESPONES_ERROR.getCode(), ErrorCodeEnum.RESPONES_ERROR.getMessage() + "，文件数量为空");
-            }
-            List<String> xkzList = new ArrayList<>();
-            List<String> yyzzList = new ArrayList<>();
-
-            uploadFilesHelper(xxk, xkzList, PicType.XKZ, dir,number);
-            uploadFilesHelper(yyzz, yyzzList, PicType.YYZZ, dir,number);
-
-            PicPathRes res = new PicPathRes();
-            res.setXkzList(xkzList);
-            res.setYyzzList(yyzzList);
-            return ApiResponse.success(res);
-        } catch (Exception e) {
-            log.error("", e);
-            return ApiResponse.fail("图片上传失败:{}", e.getMessage());
-        }
-    }
-
-//    public static ApiResponse cacheFile(MultipartFile file, String operationId, String picType){
+//    public static ApiResponse<PicCommitPath> uploadFiles2(MultipartFile[] xxk, MultipartFile[] yyzz, String dir, String number) {
+//        try {
+//            //创建文件在服务器端存放路径
+////            String dir = request.getServletContext().getRealPath("/upload");
+//            log.info("入参文件数xxk：{}。yyzz：{}。开始上传文件到此路径：{}", xxk.length, yyzz.length, dir);
+//            if (xxk.length <= 0 && yyzz.length <= 0) {
+//                return ApiResponse.fail(ErrorCodeEnum.RESPONES_ERROR.getCode(), ErrorCodeEnum.RESPONES_ERROR.getMessage() + "，文件数量为空");
+//            }
+//            List<String> xkzList = new ArrayList<>();
+//            List<String> yyzzList = new ArrayList<>();
+//
+//            uploadFilesHelper(xxk, xkzList, PicType.XKZ, dir, number);
+//            uploadFilesHelper(yyzz, yyzzList, PicType.YYZZ, dir, number);
+//
+//            PicCommitPath res = new PicCommitPath();
+//            res.setXkzList(xkzList);
+//            res.setYyzzList(yyzzList);
+//            return ApiResponse.success(res);
+//        } catch (Exception e) {
+//            log.error("", e);
+//            return ApiResponse.fail("图片上传失败:{}", e.getMessage());
+//        }
+//    }
+//
+    //    public static ApiResponse cacheFile(MultipartFile file, String operationId, String picType){
 //        return cacheFile(file,operationId,picType,"");
 //    }
-    public static ApiResponse cacheFile(MultipartFile file, String operationId, String picType,String dir,String bumber) throws IOException {
+    public static ApiResponse cacheFile(MultipartFile file, String operationId, String picType, String dir, String bumber) throws IOException {
         ApiResponse apiResponse = checkOneFile(file);
-        if(!apiResponse.isSuccess()){
+        if (!apiResponse.isSuccess()) {
             return apiResponse;
         }
         PicCommitPath picCommit = picCommitPath.get(operationId);
@@ -70,19 +71,19 @@ public class PicUploadUtil {
             picCommit = new PicCommitPath();
         }
         PicType type = PicType.getPicType(picType);
-        String path = uploadOneFile(file,dir,type,bumber);
+        String path = uploadOneFile(file, dir, type, bumber);
 //        String path = uploadOneFile();
-        switch (type){
+        switch (type) {
             case XKZ:
-                picCommit.getXkz().add(path);
+                picCommit.getXkzList().add(path);
                 break;
             case YYZZ:
-                picCommit.getYyzz().add(path);
+                picCommit.getYyzzList().add(path);
                 break;
             default:
-                return ApiResponse.fail(ErrorCodeEnum.PARAM_ERROR,"图片类型非法");
+                return ApiResponse.fail(ErrorCodeEnum.PARAM_ERROR, "图片类型非法");
         }
-        picCommitPath.put(operationId,picCommit);
+        picCommitPath.put(operationId, picCommit);
         return ApiResponse.success();
     }
 
@@ -117,47 +118,64 @@ public class PicUploadUtil {
 //        }
 //        return fileContentBase64;
 //    }
+//
+//    public static ApiResponse cacheFileInFileSystem(MultipartFile file, String operationId, String picType, String dir, String bumber) throws IOException {
+//        ApiResponse apiResponse = checkOneFile(file);
+//        if (!apiResponse.isSuccess()) {
+//            return apiResponse;
+//        }
+//        PicCommitPath picCommit = picCommitPath.get(operationId);
+//        if (Objects.isNull(picCommit)) {
+//            picCommit = new PicCommitPath();
+//        }
+//        PicType type = PicType.getPicType(picType);
+//        String path = uploadOneFile(file, dir, type, bumber);
+//        switch (type) {
+//            case XKZ:
+//                picCommit.getXkzList().add(path);
+//                break;
+//            case YYZZ:
+//                picCommit.getYyzzList().add(path);
+//                break;
+//            default:
+//                return ApiResponse.fail(ErrorCodeEnum.PARAM_ERROR, "图片类型非法");
+//        }
+//        picCommitPath.put(operationId, picCommit);
+//        return ApiResponse.success();
+//    }
 
-    public static ApiResponse cacheFileInFileSystem(MultipartFile file, String operationId, String picType,String dir,String bumber) throws IOException {
-        ApiResponse apiResponse = checkOneFile(file);
-        if(!apiResponse.isSuccess()){
-            return apiResponse;
-        }
-        PicCommitPath picCommit = picCommitPath.get(operationId);
-        if (Objects.isNull(picCommit)) {
-            picCommit = new PicCommitPath();
-        }
-        PicType type = PicType.getPicType(picType);
-        String path = uploadOneFile(file,dir,type,bumber);
-        switch (type){
-            case XKZ:
-                picCommit.getXkz().add(path);
-                break;
-            case YYZZ:
-                picCommit.getYyzz().add(path);
-                break;
-            default:
-                return ApiResponse.fail(ErrorCodeEnum.PARAM_ERROR,"图片类型非法");
-        }
-        picCommitPath.put(operationId,picCommit);
-        return ApiResponse.success();
-    }
 
-
-    public static ApiResponse<PicPathRes> fileCommit(String id,String dir) throws IOException {
+    public static ApiResponse<PicPathRes> fileCommit(String id, PicCommitPath inputPicPath) throws IOException {
         PicCommitPath picCommit = picCommitPath.get(id);
-        if(Objects.isNull(picCommit)){
-            log.info("fileCommit id = {},未检测到需要提交的图片",id);
-            return ApiResponse.fail(ErrorCodeEnum.RESPONES_ERROR.getCode(),"未检测到需要提交的图片");
+        if (Objects.isNull(picCommit)) {
+            log.info("fileCommit id = {},未检测到需要提交的图片", id);
+            return ApiResponse.fail(ErrorCodeEnum.RESPONES_ERROR.getCode(), "未检测到需要提交的图片");
         }
 //        List<String> xkz = new ArrayList<>();
 //        List<String> yyzz = new ArrayList<>();
 //        commitFileList(picCommit.getXkz(),xkz,dir,PicType.XKZ);
 //        commitFileList(picCommit.getYyzz(),yyzz,dir,PicType.YYZZ);
         PicPathRes picPathRes = new PicPathRes();
-        picPathRes.setXkzList(picCommit.getXkz());
-        picPathRes.setYyzzList(picCommit.getYyzz());
+        picPathRes.setXkzList(picCommit.getXkzList());
+        picPathRes.setYyzzList(picCommit.getYyzzList());
+        //合并提交的图片和现有的图片
+        if (Objects.nonNull(inputPicPath)) {
+            if (Objects.nonNull(inputPicPath.getXkzList())) {
+                picPathRes.getXkzList().addAll(inputPicPath.getXkzList());
+            }
+            if (Objects.nonNull(inputPicPath.getYyzzList())) {
+                picPathRes.getYyzzList().addAll(inputPicPath.getYyzzList());
+            }
+        }
+
         picCommitPath.remove(id);
+        if (picPathRes.getXkzList().size() > 5) {
+            return ApiResponse.fail(ErrorCodeEnum.FILE_UPLOAD_ERROR, " 许可证文件数量大于5");
+        }
+        if (picPathRes.getYyzzList().size() > 5) {
+            return ApiResponse.fail(ErrorCodeEnum.FILE_UPLOAD_ERROR, " 营业执照文件数量大于5");
+        }
+
         return ApiResponse.success(picPathRes);
 
     }
@@ -179,37 +197,37 @@ public class PicUploadUtil {
 //        return ApiResponse.success(picPathRes);
 //
 //    }
-
-    public static void uploadFilesHelper(MultipartFile[] file, List<String> fileNameList, PicType picType, String dir,String number) throws IOException {
-
-        File fileDir = new File(dir);
-        boolean b = false;
-        if (!fileDir.exists()) {
-            b = fileDir.mkdirs();
-        }
-        //生成文件在服务器端存放的名字
-        for (int i = 0; i < file.length; i++) {
-            if (file[i].isEmpty()) {
-                continue;
-            }
-            String filePath = uploadOneFile(file[i],dir,picType,number);
-            fileNameList.add(filePath);
-//            String fileSuffix = file[i].getOriginalFilename().substring(file[i].getOriginalFilename().lastIndexOf("."));
-//            DateFormat df = new SimpleDateFormat("yyyyMMdd");
-//            Calendar calendar = Calendar.getInstance();
-//            String dateName = df.format(calendar.getTime());
-//            String fileName = picType + "_" +number+"_"+dateName+"_"
-//                    + UUID.randomUUID().toString().replace("-", "").substring(0,11) + fileSuffix;
-//            String filePath = fileDir + "/" + fileName;
-//            File files = new File(filePath);
-//            log.info("文件名：{} 保存地址:{}", fileName, filePath);
+//
+//    public static void uploadFilesHelper(MultipartFile[] file, List<String> fileNameList, PicType picType, String dir, String number) throws IOException {
+//
+//        File fileDir = new File(dir);
+//        boolean b = false;
+//        if (!fileDir.exists()) {
+//            b = fileDir.mkdirs();
+//        }
+//        //生成文件在服务器端存放的名字
+//        for (int i = 0; i < file.length; i++) {
+//            if (file[i].isEmpty()) {
+//                continue;
+//            }
+//            String filePath = uploadOneFile(file[i], dir, picType, number);
 //            fileNameList.add(filePath);
-//            //上传
-//            file[i].transferTo(files);
-        }
-    }
+////            String fileSuffix = file[i].getOriginalFilename().substring(file[i].getOriginalFilename().lastIndexOf("."));
+////            DateFormat df = new SimpleDateFormat("yyyyMMdd");
+////            Calendar calendar = Calendar.getInstance();
+////            String dateName = df.format(calendar.getTime());
+////            String fileName = picType + "_" +number+"_"+dateName+"_"
+////                    + UUID.randomUUID().toString().replace("-", "").substring(0,11) + fileSuffix;
+////            String filePath = fileDir + "/" + fileName;
+////            File files = new File(filePath);
+////            log.info("文件名：{} 保存地址:{}", fileName, filePath);
+////            fileNameList.add(filePath);
+////            //上传
+////            file[i].transferTo(files);
+//        }
+//    }
 
-    private final static Integer FILE_SIZE = 50;//文件上传限制大小
+    private final static Integer FILE_SIZE = 200;//文件上传限制大小
     private final static String FILE_UNIT = "K";//文件上传限制单位（B,K,M,G）
 
     /**
@@ -288,12 +306,12 @@ public class PicUploadUtil {
         return false;
     }
 
-    private static void commitFileList(List<MultipartFile> list,List<String> fileNameList,String dir,PicType picType) throws IOException {
-        if(!list.isEmpty()){
+    private static void commitFileList(List<MultipartFile> list, List<String> fileNameList, String dir, PicType picType) throws IOException {
+        if (!list.isEmpty()) {
             //生成文件在服务器端存放的名字
             for (int i = 0; i < list.size(); i++) {
                 MultipartFile f = list.get(i);
-                String filePath = uploadOneFile(f,dir,picType,"");
+                String filePath = uploadOneFile(f, dir, picType, "");
                 fileNameList.add(filePath);
             }
         }
@@ -301,12 +319,13 @@ public class PicUploadUtil {
 
     /**
      * 上传单个文件，返回文件地址
+     *
      * @param f
      * @param dir
      * @return
      * @throws IOException
      */
-    private static String uploadOneFile(MultipartFile f,String dir,PicType picType,String number) throws IOException {
+    private static String uploadOneFile(MultipartFile f, String dir, PicType picType, String number) throws IOException {
         File fileDir = new File(dir);
         boolean b = false;
         if (!fileDir.exists()) {
@@ -314,17 +333,17 @@ public class PicUploadUtil {
         }
         String filePath = Strings.EMPTY;
 //        if(!f.isEmpty()){
-            String fileSuffix = f.getOriginalFilename().substring(f.getOriginalFilename().lastIndexOf("."));
-            DateFormat df = new SimpleDateFormat("yyyyMMdd");
-            Calendar calendar = Calendar.getInstance();
-            String dateName = df.format(calendar.getTime());
-            String fileName = picType.getCode() + "_" +number+"_"+dateName+"_"
-                    + UUID.randomUUID().toString().replace("-", "").substring(0,11) + fileSuffix;
-            filePath = fileDir + "/" + fileName;
-            File files = new File(filePath);
-            log.info("文件名：{} 保存地址:{}", fileName, filePath);
-            //上传
-            f.transferTo(files);
+        String fileSuffix = f.getOriginalFilename().substring(f.getOriginalFilename().lastIndexOf("."));
+        DateFormat df = new SimpleDateFormat("yyyyMMdd");
+        Calendar calendar = Calendar.getInstance();
+        String dateName = df.format(calendar.getTime());
+        String fileName = picType.getCode() + "_" + number + "_" + dateName + "_"
+                + UUID.randomUUID().toString().replace("-", "").substring(0, 11) + fileSuffix;
+        filePath = fileDir + "/" + fileName;
+        File files = new File(filePath);
+        log.info("文件名：{} 保存地址:{}", fileName, filePath);
+        //上传
+        f.transferTo(files);
 //        }
         return filePath;
 
@@ -365,12 +384,13 @@ public class PicUploadUtil {
 
     /**
      * 上传单个文件，返回文件地址
+     *
      * @param f
      * @param dir
      * @return
      * @throws IOException
      */
-    private static String uploadOneFileToSystem(MultipartFile f,String dir,PicType picType,String number) throws IOException {
+    private static String uploadOneFileToSystem(MultipartFile f, String dir, PicType picType, String number) throws IOException {
         File fileDir = new File(dir);
         boolean b = false;
         if (!fileDir.exists()) {
@@ -382,8 +402,8 @@ public class PicUploadUtil {
         DateFormat df = new SimpleDateFormat("yyyyMMdd");
         Calendar calendar = Calendar.getInstance();
         String dateName = df.format(calendar.getTime());
-        String fileName = picType.getCode() + "_" +number+"_"+dateName+"_"
-                + UUID.randomUUID().toString().replace("-", "").substring(0,11) + fileSuffix;
+        String fileName = picType.getCode() + "_" + number + "_" + dateName + "_"
+                + UUID.randomUUID().toString().replace("-", "").substring(0, 11) + fileSuffix;
         filePath = fileDir + "/" + fileName;
         File files = new File(filePath);
         log.info("文件名：{} 保存地址:{}", fileName, filePath);
@@ -394,7 +414,7 @@ public class PicUploadUtil {
 
     }
 
-    public static String getBase64(String filePath){
+    public static String getBase64(String filePath) {
         String imgStr = "";
         try {
 
@@ -417,8 +437,8 @@ public class PicUploadUtil {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        String fileSuffix = filePath.substring(filePath.lastIndexOf("."));
-        return "data:image/"+fileSuffix+";base64,"+imgStr;
+        String fileSuffix = filePath.substring(filePath.lastIndexOf(".") + 1);
+        return "data:image/" + fileSuffix + ";base64," + imgStr;
     }
 
 }

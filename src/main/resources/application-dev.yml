@@ -67,3 +67,12 @@ logging:
 
 mybatis-plus:
   mapper-locations: classpath*:com/hfi/insurance/mapper/**/*.xml
+
+############# upload file
+uploadFile:
+  path: https://jsbceshi.hfi-health.com:18188/appsImg/
+  dir: /home/imgTestZmz
+  userName: imgTestZmz
+  password: img123_hfi_health
+  host: 192.20.97.35
+  port: 21

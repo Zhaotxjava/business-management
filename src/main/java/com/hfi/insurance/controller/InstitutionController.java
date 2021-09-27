@@ -1,5 +1,6 @@
 package com.hfi.insurance.controller;
 
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.hfi.insurance.common.ApiResponse;
 import com.hfi.insurance.enums.ErrorCodeEnum;
@@ -9,6 +10,7 @@ import com.hfi.insurance.model.YbInstitutionInfoChange;
 import com.hfi.insurance.model.dto.InstitutionInfoAddReq;
 import com.hfi.insurance.model.dto.InstitutionInfoQueryReq;
 import com.hfi.insurance.model.dto.YbInstitutionInfoChangeReq;
+import com.hfi.insurance.model.dto.res.CheckImportInstitutionRes;
 import com.hfi.insurance.service.IYbInstitutionInfoService;
 import com.hfi.insurance.utils.ImportExcelUtil;
 import io.swagger.annotations.Api;
@@ -16,6 +18,7 @@ import io.swagger.annotations.ApiOperation;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.checkerframework.checker.units.qual.C;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -24,9 +27,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * @Author ChenZX
@@ -54,10 +55,9 @@ public class InstitutionController {
     }
 
 
-
     @PostMapping("/getInstitutionInfoChangeList")
     @ApiOperation("分页查询外部机构变更表信息")
-    public ApiResponse getInstitutionInfoChangeList(@RequestBody YbInstitutionInfoChangeReq  ybInstitutionInfoChangeReq) {
+    public ApiResponse getInstitutionInfoChangeList(@RequestBody YbInstitutionInfoChangeReq ybInstitutionInfoChangeReq) {
 
         return institutionInfoService.getInstitutionInfoChangeList(ybInstitutionInfoChangeReq);
     }
@@ -97,6 +97,47 @@ public class InstitutionController {
             return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(), "联系人手机号不能为空");
         }
         return institutionInfoService.newUpdateInstitutionInfo(req);
+    }
+
+    @PostMapping("checkImportInstitution")
+    @ApiOperation("批量导入机构，并检查合法性")
+    public ApiResponse checkImportInstitution(@RequestParam("file") MultipartFile multipartFile) {
+        log.info("checkImportInstitution 开始：");
+        List<ExcelSheetPO> excelSheetList = new ArrayList<>();
+        try {
+            excelSheetList = ImportExcelUtil.readExcel(multipartFile);
+            log.info("文件解析出参：{}", JSONObject.toJSONString(excelSheetList));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        CheckImportInstitutionRes res = new CheckImportInstitutionRes();
+        if(!excelSheetList.isEmpty()){
+            ExcelSheetPO excelSheetPO = excelSheetList.get(0);
+//            List<Object> numberRow = excelSheetPO.getDataList().get(0);
+            Set<String> allNumber = new HashSet<>();
+            for (int i = 0; i < excelSheetPO.getDataList().size(); i++) {
+                //去掉重复
+//                log.info("-----------------------------{}",excelSheetPO.getDataList().get(i).get(0));
+                allNumber.add(String.valueOf(excelSheetPO.getDataList().get(i).get(0)));
+            }
+//            log.info("-----------------------------{}",allNumber.toString());
+            //todo 判断是否符合正确的机构
+            List<YbInstitutionInfo> list = institutionInfoService.findLegalInstitution(allNumber);
+
+            list.forEach(y->{
+                res.getSuccessSet().add(y.getNumber());
+            });
+            allNumber.forEach(number ->{
+                if(!res.getSuccessSet().contains(number)){
+                    res.getFailSet().add(number);
+                }
+            });
+//            log.info("-----------------------------{}",JSONObject.toJSONString(res));
+        }else {
+            return ApiResponse.fail(ErrorCodeEnum.PARAM_ERROR," 请检查入参文件是否正确");
+        }
+        return ApiResponse.success(res);
     }
 
     @PostMapping("import")
@@ -158,7 +199,7 @@ public class InstitutionController {
 
     @PostMapping("/addYbInstitutionInfoChange")
     @ApiOperation("插入机构信息变更记录")
-    public void addYbInstitutionInfoChange(@RequestBody YbInstitutionInfoChange  ybInstitutionInfoChange) {
+    public void addYbInstitutionInfoChange(@RequestBody YbInstitutionInfoChange ybInstitutionInfoChange) {
 
         institutionInfoService.addYbInstitutionInfoChange(ybInstitutionInfoChange);
     }
@@ -167,27 +208,33 @@ public class InstitutionController {
     @SneakyThrows
     @GetMapping("/exportExcel")
     @ApiOperation("导出机构信息变更记录表")
-    public void exportExcel( String number, String  institutionName, String minupdateTime,String maxupdateTime, HttpServletResponse response) {
+    public void exportExcel(String number, String institutionName, String minupdateTime, String maxupdateTime, HttpServletResponse response) {
         YbInstitutionInfoChangeReq ybInstitutionInfoChangeReq = new YbInstitutionInfoChangeReq();
         ybInstitutionInfoChangeReq.setNumber(number);
         ybInstitutionInfoChangeReq.setInstitutionName(institutionName);
-        SimpleDateFormat  sdf=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        if (!StringUtils.isEmpty(minupdateTime) &&!StringUtils.isEmpty(maxupdateTime) ){
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        if (!StringUtils.isEmpty(minupdateTime) && !StringUtils.isEmpty(maxupdateTime)) {
             ybInstitutionInfoChangeReq.setMaxupdateTime(sdf.parse(maxupdateTime));
             ybInstitutionInfoChangeReq.setMinupdateTime(sdf.parse(minupdateTime));
         }
-        institutionInfoService.exportExcel(ybInstitutionInfoChangeReq,response);
+        institutionInfoService.exportExcel(ybInstitutionInfoChangeReq, response);
     }
 
 
     @GetMapping("/exportExcel2")
     @ApiOperation("测试不用管")
-    public void exportExcel2( HttpServletResponse response) {
+    public void exportExcel2(HttpServletResponse response) {
 
         institutionInfoService.exportExcel2(response);
     }
 
 
+    @PostMapping("getInstitutionInfobxList")
+    @ResponseBody
+    @ApiOperation("筛选保险公司按钮")
+    public ApiResponse getInstitutionInfobxList(InstitutionInfoQueryReq institutionInfoQueryReq) {
+        return institutionInfoService.getInstitutionInfobxList(institutionInfoQueryReq);
+    }
 
 
 }

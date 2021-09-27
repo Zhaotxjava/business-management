@@ -221,6 +221,10 @@ public class InstitutionInfoServiceImpl implements InstitutionInfoService {
 
     @Override
     public ApiResponse updateInstitutionInfo(InstitutionInfoAddReq req) {
+        ApiResponse apiResponse = InstitutionInfoAddReq.checkInstitutionInfoAddReq(req);
+        if(!apiResponse.isSuccess()){
+            return apiResponse;
+        }
         List<InstitutionInfo> list = new ArrayList<>();
         String data = caffeineCache.asMap().get("data");
         if (null == data) {
