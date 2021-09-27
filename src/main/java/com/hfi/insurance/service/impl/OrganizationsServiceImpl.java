@@ -172,6 +172,7 @@ public class OrganizationsServiceImpl implements OrganizationsService {
         jsonObject.put("legalName", institutionInfo.getLegalName());
         jsonObject.put("licenseNumber", institutionInfo.getOrgInstitutionCode());
         jsonObject.put("licenseType", "SOCNO");
+//        jsonObject.put("licenseType", "OTHERNO");
 //        jsonObject.put("licenseType", "CRED_ORG_UNKNOWN");
         jsonObject.put("organizeName", institutionInfo.getInstitutionName());
         jsonObject.put("organizeId", institutionInfo.getOrganizeId());
