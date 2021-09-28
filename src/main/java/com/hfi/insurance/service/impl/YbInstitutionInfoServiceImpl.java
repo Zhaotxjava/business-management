@@ -145,8 +145,8 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
                 || StringUtils.isBlank(item.getLegalIdCard())
         );
         log.info("过滤后有{}个，{}",ybInstitutionInfos.size(),JSONObject.toJSONString(ybInstitutionInfos));
+        //todo 添加保险公司
 
-      /* //todo 添加保险公司
         int pageIndex = 1;
         int size = 1;
         List<InstitutionInfoRes> insuranceList = new ArrayList<>();
@@ -181,7 +181,9 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
                 insuranceList.add(res);
             }
         }
-        ybInstitutionInfos.addAll(insuranceList);*/
+        ybInstitutionInfos.addAll(insuranceList);
+
+
         int total = institutionInfoMapper.selectCountOrgForCreateFlow(req);
         Page<InstitutionInfoRes> page = new Page<>(req.getPageNum(), req.getPageSize());
         page.setRecords(ybInstitutionInfos);
