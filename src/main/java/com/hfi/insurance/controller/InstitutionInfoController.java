@@ -66,10 +66,10 @@ public class InstitutionInfoController {
         //默认外部机构
         int flag = 2;
         if (StringUtils.isNotBlank(loginaccount)) {
-            if (loginaccount.startsWith("bx")) {
-                flag = 3;
-            } else if (!loginaccount.startsWith("hz")) {
+            if (!loginaccount.startsWith("hz")) {
                 flag = 1;
+            }else if (hospitalid.startsWith("bx")) {
+                flag = 3;
             }
         }
         long timeStamp = System.currentTimeMillis();
@@ -107,10 +107,10 @@ public class InstitutionInfoController {
         //默认外部机构
         int flag = 2;
         if (StringUtils.isNotBlank(loginaccount)) {
-            if (loginaccount.startsWith("bx")) {
-                flag = 3;
-            } else if (!loginaccount.startsWith("hz")) {
+             if (!loginaccount.startsWith("hz")) {
                 flag = 1;
+            }else if (hospitalid.startsWith("bx")) {
+                flag = 3;
             }
         }
 
