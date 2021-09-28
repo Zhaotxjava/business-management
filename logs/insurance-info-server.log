@@ -546,3 +546,93 @@ Caused by: java.net.SocketTimeoutException: connect timed out
 [2021-09-27 09:40:11,415],[DEBUG],[insurance-info-server],[],[],[http-nio-8097-exec-7]:org.apache.ibatis.logging.jdbc.BaseJdbcLogger:143,==> Parameters: 0086664(String), 923564(String), 1001(String), 45894(String), 3234(String), 425449(String), 3487(String), 0150(String) 
 [2021-09-27 09:40:11,454],[DEBUG],[insurance-info-server],[],[],[http-nio-8097-exec-7]:org.apache.ibatis.logging.jdbc.BaseJdbcLogger:143,<==      Total: 1 
 [2021-09-27 09:40:11,487],[INFO],[insurance-info-server],[],[],[http-nio-8097-exec-7]:com.hfi.insurance.controller.InstitutionController:136,-----------------------------{"failSet":["0086664","923564","1001","45894","3234","425449","3487"],"successSet":["0150"]} 
+[2021-09-27 14:32:34,176],[INFO],[insurance-info-server],[],[],[main]:org.springframework.boot.StartupInfoLogger:55,Starting Application on DESKTOP-LHPM7FV with PID 13884 (E:\project\ream\insurance-info-server\target\classes started by jthealth-NZH in E:\project\ream\insurance-info-server) 
+[2021-09-27 14:32:34,179],[DEBUG],[insurance-info-server],[],[],[main]:org.springframework.boot.StartupInfoLogger:56,Running with Spring Boot v2.3.12.RELEASE, Spring v5.2.15.RELEASE 
+[2021-09-27 14:32:34,180],[INFO],[insurance-info-server],[],[],[main]:org.springframework.boot.SpringApplication:652,The following profiles are active: test 
+[2021-09-27 14:32:36,674],[INFO],[insurance-info-server],[],[],[main]:org.springframework.boot.web.embedded.tomcat.TomcatWebServer:108,Tomcat initialized with port(s): 8097 (http) 
+[2021-09-27 14:32:36,688],[INFO],[insurance-info-server],[],[],[main]:org.apache.juli.logging.DirectJDKLog:173,Initializing ProtocolHandler ["http-nio-8097"] 
+[2021-09-27 14:32:36,689],[INFO],[insurance-info-server],[],[],[main]:org.apache.juli.logging.DirectJDKLog:173,Starting service [Tomcat] 
+[2021-09-27 14:32:36,689],[INFO],[insurance-info-server],[],[],[main]:org.apache.juli.logging.DirectJDKLog:173,Starting Servlet engine: [Apache Tomcat/9.0.46] 
+[2021-09-27 14:32:36,844],[INFO],[insurance-info-server],[],[],[main]:org.apache.juli.logging.DirectJDKLog:173,Initializing Spring embedded WebApplicationContext 
+[2021-09-27 14:32:36,844],[INFO],[insurance-info-server],[],[],[main]:org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext:285,Root WebApplicationContext: initialization completed in 2601 ms 
+[2021-09-27 14:32:37,129],[INFO],[insurance-info-server],[],[],[main]:com.hfi.insurance.service.impl.InstitutionInfoServiceImpl:480,启动-开启写文件线程 
+[2021-09-27 14:32:38,936],[INFO],[insurance-info-server],[],[],[main]:org.springframework.scheduling.concurrent.ExecutorConfigurationSupport:181,Initializing ExecutorService 'applicationTaskExecutor' 
+[2021-09-27 14:32:39,131],[INFO],[insurance-info-server],[],[],[main]:org.springframework.scheduling.concurrent.ExecutorConfigurationSupport:181,Initializing ExecutorService 'taskScheduler' 
+[2021-09-27 14:32:39,177],[INFO],[insurance-info-server],[],[],[main]:org.apache.juli.logging.DirectJDKLog:173,Starting ProtocolHandler ["http-nio-8097"] 
+[2021-09-27 14:32:39,217],[INFO],[insurance-info-server],[],[],[main]:org.springframework.boot.web.embedded.tomcat.TomcatWebServer:220,Tomcat started on port(s): 8097 (http) with context path '/insurance_info' 
+[2021-09-27 14:32:39,599],[INFO],[insurance-info-server],[],[],[main]:org.springframework.boot.StartupInfoLogger:61,Started Application in 6.113 seconds (JVM running for 13.419) 
+[2021-09-27 14:32:39,601],[INFO],[insurance-info-server],[],[],[main]:com.hfi.insurance.config.ApplicationInit:37,================================================== 
+[2021-09-27 14:32:39,601],[INFO],[insurance-info-server],[],[],[main]:com.hfi.insurance.config.ApplicationInit:38,| 项目启动初始化 
+[2021-09-27 14:32:39,604],[INFO],[insurance-info-server],[],[],[main]:com.hfi.insurance.config.ApplicationInit:39,| 当前项目环境为：test 
+[2021-09-27 14:32:39,917],[INFO],[insurance-info-server],[],[],[main]:com.hfi.insurance.config.ApplicationInit:41,| Swagger API http://182.11.3.12:8097/insurance_info/swagger-ui.html#/ 
+[2021-09-27 14:32:40,228],[INFO],[insurance-info-server],[],[],[main]:com.hfi.insurance.config.ApplicationInit:47,| Doc API http://182.11.3.12:8097/insurance_info/doc.html 
+[2021-09-27 14:32:40,228],[INFO],[insurance-info-server],[],[],[main]:com.hfi.insurance.config.ApplicationInit:60,| 项目启动成功 
+[2021-09-27 14:32:40,229],[INFO],[insurance-info-server],[],[],[main]:com.hfi.insurance.config.ApplicationInit:61,================================================== 
+[2021-09-27 14:40:00,112],[WARN],[insurance-info-server],[],[],[scheduling-1]:com.zaxxer.hikari.HikariConfig:1047,HikariPool-1 - idleTimeout is close to or more than maxLifetime, disabling it. 
+[2021-09-27 14:40:00,113],[INFO],[insurance-info-server],[],[],[scheduling-1]:com.zaxxer.hikari.HikariDataSource:110,HikariPool-1 - Starting... 
+[2021-09-27 14:40:00,378],[INFO],[insurance-info-server],[],[],[scheduling-1]:com.zaxxer.hikari.HikariDataSource:123,HikariPool-1 - Start completed. 
+[2021-09-27 14:40:00,390],[DEBUG],[insurance-info-server],[],[],[scheduling-1]:org.apache.ibatis.logging.jdbc.BaseJdbcLogger:143,==>  Preparing: SELECT flow_id,sign_flow_id,subject,flow_status,number,unique_id,account_type,sign_status,initiator,initiator_time,handle_time,signers,copy_viewers,flow_type,file_key,create_time,update_time FROM yb_flow_info WHERE (update_time BETWEEN ? AND ?)  
+[2021-09-27 14:40:00,410],[DEBUG],[insurance-info-server],[],[],[scheduling-1]:org.apache.ibatis.logging.jdbc.BaseJdbcLogger:143,==> Parameters: 2021-09-26 14:40:00.029(Timestamp), 2021-09-27 14:40:00.031(Timestamp) 
+[2021-09-27 14:40:00,461],[DEBUG],[insurance-info-server],[],[],[scheduling-1]:org.apache.ibatis.logging.jdbc.BaseJdbcLogger:143,<==      Total: 3 
+[2021-09-27 14:40:00,466],[INFO],[insurance-info-server],[],[],[scheduling-1]:com.hfi.insurance.controller.TaskController:73,定时查询签署一共：3个 
+[2021-09-27 14:40:00,551],[INFO],[insurance-info-server],[],[],[scheduling-1]:com.hfi.insurance.utils.HttpUtil:250,请求参数：{signFlowId=246} 
+[2021-09-27 14:40:00,732],[INFO],[insurance-info-server],[],[],[scheduling-1]:com.hfi.insurance.utils.HttpUtil:250,请求参数：{signFlowId=247} 
+[2021-09-27 14:40:00,795],[INFO],[insurance-info-server],[],[],[scheduling-1]:com.hfi.insurance.utils.HttpUtil:250,请求参数：{signFlowId=248} 
+[2021-09-27 14:41:35,310],[INFO],[insurance-info-server],[],[],[http-nio-8097-exec-1]:org.apache.juli.logging.DirectJDKLog:173,Initializing Spring DispatcherServlet 'dispatcherServlet' 
+[2021-09-27 14:41:35,311],[INFO],[insurance-info-server],[],[],[http-nio-8097-exec-1]:org.springframework.web.servlet.FrameworkServlet:525,Initializing Servlet 'dispatcherServlet' 
+[2021-09-27 14:41:35,319],[INFO],[insurance-info-server],[],[],[http-nio-8097-exec-1]:org.springframework.web.servlet.FrameworkServlet:547,Completed initialization in 8 ms 
+[2021-09-27 14:41:35,457],[INFO],[insurance-info-server],[],[],[http-nio-8097-exec-1]:com.hfi.insurance.aspect.LogAspect:51,"className":"PicController" "methodName":"getPicByNumber"-入参:{"number":"0150"} 
+[2021-09-27 14:41:35,476],[DEBUG],[insurance-info-server],[],[],[http-nio-8097-exec-1]:org.apache.ibatis.logging.jdbc.BaseJdbcLogger:143,==>  Preparing: SELECT number,pic_type,pic_path,create_time,update_time FROM yb_institution_pic_path WHERE (number = ?)  
+[2021-09-27 14:41:35,478],[DEBUG],[insurance-info-server],[],[],[http-nio-8097-exec-1]:org.apache.ibatis.logging.jdbc.BaseJdbcLogger:143,==> Parameters: 0150(String) 
+[2021-09-27 14:41:35,484],[DEBUG],[insurance-info-server],[],[],[http-nio-8097-exec-1]:org.apache.ibatis.logging.jdbc.BaseJdbcLogger:143,<==      Total: 1 
+[2021-09-27 14:41:35,512],[INFO],[insurance-info-server],[],[],[http-nio-8097-exec-1]:com.hfi.insurance.controller.PicController:228,查询结果：{"createTime":1631721600000,"number":"0150","picPath":"{\"url\":\"https://jsbceshi.hfi-health.com:18188/appsImg/\",\"xkzList\":[\"0150_20210924_f488defe3852496.png\",\"0150_20210924_0208ed4354294a7.png\",\"0150_20210924_87474a8bd1e94e4.png\",\"0150_20210924_2c23cc96ca5d47f.png\",\"0150_20210924_288e106e0c9a442.png\"],\"yyzzList\":[\"0150_20210924_0eae6d62741d4b6.png\",\"0150_20210924_ac9a8a75dfda454.png\",\"0150_20210924_b1e010dd53494de.png\",\"0150_20210924_f80f33db40a54e1.png\",\"0150_20210924_a2392af60fee4ce.jpg\"]}","updateTime":1632412800000} 
+[2021-09-27 14:41:35,533],[INFO],[insurance-info-server],[],[],[http-nio-8097-exec-1]:com.hfi.insurance.aspect.LogAspect:62,"className":"PicController" "methodName":"getPicByNumber"-出参:{"code":"200","message":"success","data":{"number":"0150","picType":null,"picPath":"{\"url\":\"https://jsbceshi.hfi-health.com:18188/appsImg/\",\"xkzList\":[\"0150_20210924_f488defe3852496.png\",\"0150_20210924_0208ed4354294a7.png\",\"0150_20210924_87474a8bd1e94e4.png\",\"0150_20210924_2c23cc96ca5d47f.png\",\"0150_20210924_288e106e0c9a442.png\"],\"yyzzList\":[\"0150_20210924_0eae6d62741d4b6.png\",\"0150_20210924_ac9a8a75dfda454.png\",\"0150_20210924_b1e010dd53494de.png\",\"0150_20210924_f80f33db40a54e1.png\",\"0150_20210924_a2392af60fee4ce.jpg\"]}","createTime":1631721600000,"updateTime":1632412800000},"success":true} - cost time = 56 ms 
+[2021-09-27 14:50:00,017],[DEBUG],[insurance-info-server],[],[],[scheduling-1]:org.apache.ibatis.logging.jdbc.BaseJdbcLogger:143,==>  Preparing: SELECT flow_id,sign_flow_id,subject,flow_status,number,unique_id,account_type,sign_status,initiator,initiator_time,handle_time,signers,copy_viewers,flow_type,file_key,create_time,update_time FROM yb_flow_info WHERE (update_time BETWEEN ? AND ?)  
+[2021-09-27 14:50:00,018],[DEBUG],[insurance-info-server],[],[],[scheduling-1]:org.apache.ibatis.logging.jdbc.BaseJdbcLogger:143,==> Parameters: 2021-09-26 14:50:00.012(Timestamp), 2021-09-27 14:50:00.012(Timestamp) 
+[2021-09-27 14:50:00,045],[DEBUG],[insurance-info-server],[],[],[scheduling-1]:org.apache.ibatis.logging.jdbc.BaseJdbcLogger:143,<==      Total: 3 
+[2021-09-27 14:50:00,046],[INFO],[insurance-info-server],[],[],[scheduling-1]:com.hfi.insurance.controller.TaskController:73,定时查询签署一共：3个 
+[2021-09-27 14:50:00,046],[INFO],[insurance-info-server],[],[],[scheduling-1]:com.hfi.insurance.utils.HttpUtil:250,请求参数：{signFlowId=246} 
+[2021-09-27 14:50:00,097],[INFO],[insurance-info-server],[],[],[scheduling-1]:com.hfi.insurance.utils.HttpUtil:250,请求参数：{signFlowId=247} 
+[2021-09-27 14:50:00,146],[INFO],[insurance-info-server],[],[],[scheduling-1]:com.hfi.insurance.utils.HttpUtil:250,请求参数：{signFlowId=248} 
+[2021-09-27 15:00:00,018],[DEBUG],[insurance-info-server],[],[],[scheduling-1]:org.apache.ibatis.logging.jdbc.BaseJdbcLogger:143,==>  Preparing: SELECT flow_id,sign_flow_id,subject,flow_status,number,unique_id,account_type,sign_status,initiator,initiator_time,handle_time,signers,copy_viewers,flow_type,file_key,create_time,update_time FROM yb_flow_info WHERE (update_time BETWEEN ? AND ?)  
+[2021-09-27 15:00:00,019],[DEBUG],[insurance-info-server],[],[],[scheduling-1]:org.apache.ibatis.logging.jdbc.BaseJdbcLogger:143,==> Parameters: 2021-09-26 15:00:00.01(Timestamp), 2021-09-27 15:00:00.01(Timestamp) 
+[2021-09-27 15:00:00,048],[DEBUG],[insurance-info-server],[],[],[scheduling-1]:org.apache.ibatis.logging.jdbc.BaseJdbcLogger:143,<==      Total: 3 
+[2021-09-27 15:00:00,048],[INFO],[insurance-info-server],[],[],[scheduling-1]:com.hfi.insurance.controller.TaskController:73,定时查询签署一共：3个 
+[2021-09-27 15:00:00,048],[INFO],[insurance-info-server],[],[],[scheduling-1]:com.hfi.insurance.utils.HttpUtil:250,请求参数：{signFlowId=246} 
+[2021-09-27 15:00:00,104],[INFO],[insurance-info-server],[],[],[scheduling-1]:com.hfi.insurance.utils.HttpUtil:250,请求参数：{signFlowId=247} 
+[2021-09-27 15:00:00,152],[INFO],[insurance-info-server],[],[],[scheduling-1]:com.hfi.insurance.utils.HttpUtil:250,请求参数：{signFlowId=248} 
+[2021-09-27 15:10:00,022],[DEBUG],[insurance-info-server],[],[],[scheduling-1]:org.apache.ibatis.logging.jdbc.BaseJdbcLogger:143,==>  Preparing: SELECT flow_id,sign_flow_id,subject,flow_status,number,unique_id,account_type,sign_status,initiator,initiator_time,handle_time,signers,copy_viewers,flow_type,file_key,create_time,update_time FROM yb_flow_info WHERE (update_time BETWEEN ? AND ?)  
+[2021-09-27 15:10:00,023],[DEBUG],[insurance-info-server],[],[],[scheduling-1]:org.apache.ibatis.logging.jdbc.BaseJdbcLogger:143,==> Parameters: 2021-09-26 15:10:00.014(Timestamp), 2021-09-27 15:10:00.014(Timestamp) 
+[2021-09-27 15:10:00,050],[DEBUG],[insurance-info-server],[],[],[scheduling-1]:org.apache.ibatis.logging.jdbc.BaseJdbcLogger:143,<==      Total: 3 
+[2021-09-27 15:10:00,051],[INFO],[insurance-info-server],[],[],[scheduling-1]:com.hfi.insurance.controller.TaskController:73,定时查询签署一共：3个 
+[2021-09-27 15:10:00,051],[INFO],[insurance-info-server],[],[],[scheduling-1]:com.hfi.insurance.utils.HttpUtil:250,请求参数：{signFlowId=246} 
+[2021-09-27 15:10:00,108],[INFO],[insurance-info-server],[],[],[scheduling-1]:com.hfi.insurance.utils.HttpUtil:250,请求参数：{signFlowId=247} 
+[2021-09-27 15:10:00,158],[INFO],[insurance-info-server],[],[],[scheduling-1]:com.hfi.insurance.utils.HttpUtil:250,请求参数：{signFlowId=248} 
+[2021-09-27 15:20:00,019],[DEBUG],[insurance-info-server],[],[],[scheduling-1]:org.apache.ibatis.logging.jdbc.BaseJdbcLogger:143,==>  Preparing: SELECT flow_id,sign_flow_id,subject,flow_status,number,unique_id,account_type,sign_status,initiator,initiator_time,handle_time,signers,copy_viewers,flow_type,file_key,create_time,update_time FROM yb_flow_info WHERE (update_time BETWEEN ? AND ?)  
+[2021-09-27 15:20:00,020],[DEBUG],[insurance-info-server],[],[],[scheduling-1]:org.apache.ibatis.logging.jdbc.BaseJdbcLogger:143,==> Parameters: 2021-09-26 15:20:00.011(Timestamp), 2021-09-27 15:20:00.011(Timestamp) 
+[2021-09-27 15:20:00,047],[DEBUG],[insurance-info-server],[],[],[scheduling-1]:org.apache.ibatis.logging.jdbc.BaseJdbcLogger:143,<==      Total: 3 
+[2021-09-27 15:20:00,047],[INFO],[insurance-info-server],[],[],[scheduling-1]:com.hfi.insurance.controller.TaskController:73,定时查询签署一共：3个 
+[2021-09-27 15:20:00,048],[INFO],[insurance-info-server],[],[],[scheduling-1]:com.hfi.insurance.utils.HttpUtil:250,请求参数：{signFlowId=246} 
+[2021-09-27 15:20:00,104],[INFO],[insurance-info-server],[],[],[scheduling-1]:com.hfi.insurance.utils.HttpUtil:250,请求参数：{signFlowId=247} 
+[2021-09-27 15:20:00,155],[INFO],[insurance-info-server],[],[],[scheduling-1]:com.hfi.insurance.utils.HttpUtil:250,请求参数：{signFlowId=248} 
+[2021-09-27 15:30:00,009],[DEBUG],[insurance-info-server],[],[],[scheduling-1]:org.apache.ibatis.logging.jdbc.BaseJdbcLogger:143,==>  Preparing: SELECT flow_id,sign_flow_id,subject,flow_status,number,unique_id,account_type,sign_status,initiator,initiator_time,handle_time,signers,copy_viewers,flow_type,file_key,create_time,update_time FROM yb_flow_info WHERE (update_time BETWEEN ? AND ?)  
+[2021-09-27 15:30:00,010],[DEBUG],[insurance-info-server],[],[],[scheduling-1]:org.apache.ibatis.logging.jdbc.BaseJdbcLogger:143,==> Parameters: 2021-09-26 15:30:00.002(Timestamp), 2021-09-27 15:30:00.002(Timestamp) 
+[2021-09-27 15:30:00,040],[DEBUG],[insurance-info-server],[],[],[scheduling-1]:org.apache.ibatis.logging.jdbc.BaseJdbcLogger:143,<==      Total: 3 
+[2021-09-27 15:30:00,040],[INFO],[insurance-info-server],[],[],[scheduling-1]:com.hfi.insurance.controller.TaskController:73,定时查询签署一共：3个 
+[2021-09-27 15:30:00,041],[INFO],[insurance-info-server],[],[],[scheduling-1]:com.hfi.insurance.utils.HttpUtil:250,请求参数：{signFlowId=246} 
+[2021-09-27 15:30:00,098],[INFO],[insurance-info-server],[],[],[scheduling-1]:com.hfi.insurance.utils.HttpUtil:250,请求参数：{signFlowId=247} 
+[2021-09-27 15:30:00,151],[INFO],[insurance-info-server],[],[],[scheduling-1]:com.hfi.insurance.utils.HttpUtil:250,请求参数：{signFlowId=248} 
+[2021-09-27 15:40:00,010],[DEBUG],[insurance-info-server],[],[],[scheduling-1]:org.apache.ibatis.logging.jdbc.BaseJdbcLogger:143,==>  Preparing: SELECT flow_id,sign_flow_id,subject,flow_status,number,unique_id,account_type,sign_status,initiator,initiator_time,handle_time,signers,copy_viewers,flow_type,file_key,create_time,update_time FROM yb_flow_info WHERE (update_time BETWEEN ? AND ?)  
+[2021-09-27 15:40:00,011],[DEBUG],[insurance-info-server],[],[],[scheduling-1]:org.apache.ibatis.logging.jdbc.BaseJdbcLogger:143,==> Parameters: 2021-09-26 15:40:00.003(Timestamp), 2021-09-27 15:40:00.003(Timestamp) 
+[2021-09-27 15:40:00,036],[DEBUG],[insurance-info-server],[],[],[scheduling-1]:org.apache.ibatis.logging.jdbc.BaseJdbcLogger:143,<==      Total: 3 
+[2021-09-27 15:40:00,037],[INFO],[insurance-info-server],[],[],[scheduling-1]:com.hfi.insurance.controller.TaskController:73,定时查询签署一共：3个 
+[2021-09-27 15:40:00,037],[INFO],[insurance-info-server],[],[],[scheduling-1]:com.hfi.insurance.utils.HttpUtil:250,请求参数：{signFlowId=246} 
+[2021-09-27 15:40:00,098],[INFO],[insurance-info-server],[],[],[scheduling-1]:com.hfi.insurance.utils.HttpUtil:250,请求参数：{signFlowId=247} 
+[2021-09-27 15:40:00,148],[INFO],[insurance-info-server],[],[],[scheduling-1]:com.hfi.insurance.utils.HttpUtil:250,请求参数：{signFlowId=248} 
+[2021-09-27 15:50:00,023],[DEBUG],[insurance-info-server],[],[],[scheduling-1]:org.apache.ibatis.logging.jdbc.BaseJdbcLogger:143,==>  Preparing: SELECT flow_id,sign_flow_id,subject,flow_status,number,unique_id,account_type,sign_status,initiator,initiator_time,handle_time,signers,copy_viewers,flow_type,file_key,create_time,update_time FROM yb_flow_info WHERE (update_time BETWEEN ? AND ?)  
+[2021-09-27 15:50:00,024],[DEBUG],[insurance-info-server],[],[],[scheduling-1]:org.apache.ibatis.logging.jdbc.BaseJdbcLogger:143,==> Parameters: 2021-09-26 15:50:00.016(Timestamp), 2021-09-27 15:50:00.016(Timestamp) 
+[2021-09-27 15:50:00,051],[DEBUG],[insurance-info-server],[],[],[scheduling-1]:org.apache.ibatis.logging.jdbc.BaseJdbcLogger:143,<==      Total: 3 
+[2021-09-27 15:50:00,051],[INFO],[insurance-info-server],[],[],[scheduling-1]:com.hfi.insurance.controller.TaskController:73,定时查询签署一共：3个 
+[2021-09-27 15:50:00,051],[INFO],[insurance-info-server],[],[],[scheduling-1]:com.hfi.insurance.utils.HttpUtil:250,请求参数：{signFlowId=246} 
+[2021-09-27 15:50:00,108],[INFO],[insurance-info-server],[],[],[scheduling-1]:com.hfi.insurance.utils.HttpUtil:250,请求参数：{signFlowId=247} 
+[2021-09-27 15:50:00,175],[INFO],[insurance-info-server],[],[],[scheduling-1]:com.hfi.insurance.utils.HttpUtil:250,请求参数：{signFlowId=248} 

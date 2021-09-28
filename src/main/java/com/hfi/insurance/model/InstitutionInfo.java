@@ -1,5 +1,6 @@
 package com.hfi.insurance.model;
 
+import com.hfi.insurance.enums.LicenseType;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -29,8 +30,8 @@ public class InstitutionInfo {
     private String legalAccountId;
     private String organizeId;  //机构id
     private String updateTime;
-    @ApiModelProperty("证件类型")
-    private String licenseType;
+    @ApiModelProperty("证件类型 SOCNO=社会信用代码，OTHERNO=许可证")
+    private LicenseType licenseType;
 
 
 }

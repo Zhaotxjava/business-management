@@ -66,24 +66,27 @@ public class FTPUploadUtil {
      */
     @Value("${uploadFile.port}")
     private Integer uploadPort;
+    @Value("${spring.profiles.active}")
+    private String active;
 
 
-    public ApiResponse cacheFile(MultipartFile file, String operationId, PicType type,String bumber) throws IOException {
+    public ApiResponse cacheFile(MultipartFile file, String operationId, PicType type, String bumber) throws IOException {
         ApiResponse apiResponse = PicUploadUtil.checkOneFile(file);
-        if(!apiResponse.isSuccess()){
+        if (!apiResponse.isSuccess()) {
             return apiResponse;
         }
         PicCommitPath picCommit = PicUploadUtil.picCommitPath.get(operationId);
         if (Objects.isNull(picCommit)) {
             picCommit = new PicCommitPath();
-            log.info("+++++++++++++++++++++++++++++++{}"+JSONObject.toJSONString(picCommit));
+//            log.info("{}" + JSONObject.toJSONString(picCommit));
         }
-        String path = uploadFile(file,bumber);
-        if(StringUtils.isBlank(path)){
+        String path = uploadFile(file, bumber);
+        if (StringUtils.isBlank(path)) {
+            log.info("上传文件到服务器失败了，operationId={}",operationId);
             return ApiResponse.fail(ErrorCodeEnum.FILE_UPLOAD_ERROR);
         }
 //        String path = uploadOneFile();
-        switch (type){
+        switch (type) {
             case XKZ:
                 picCommit.getXkzList().add(path);
                 break;
@@ -91,9 +94,9 @@ public class FTPUploadUtil {
                 picCommit.getYyzzList().add(path);
                 break;
             default:
-                return ApiResponse.fail(ErrorCodeEnum.PARAM_ERROR,"图片类型非法");
+                return ApiResponse.fail(ErrorCodeEnum.PARAM_ERROR, "图片类型非法");
         }
-        PicUploadUtil.picCommitPath.put(operationId,picCommit);
+        PicUploadUtil.picCommitPath.put(operationId, picCommit);
         return ApiResponse.success(path);
     }
 
@@ -112,7 +115,16 @@ public class FTPUploadUtil {
         ftpClient.changeWorkingDirectory(uploadDir);
         ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
 //        ftpClient.enterRemotePassiveMode();
-        ftpClient.enterLocalActiveMode();
+
+        if ("test".equals(active) || "dev".equals(active)) {
+            //测试
+            ftpClient.enterLocalActiveMode();
+        } else if ("pro".equals(active) || "prod".equals(active)){
+            //生产
+            ftpClient.enterLocalPassiveMode();
+        }
+
+
 //        String fileName = multipartFile.getOriginalFilename();
 //        fileName = fileName.substring(fileName.lastIndexOf(".") + 1);
 //        fileName = number+"_"+System.currentTimeMillis() + "." + fileName;
@@ -122,14 +134,14 @@ public class FTPUploadUtil {
         String dateName = df.format(calendar.getTime());
         String fileName = number + "_" + dateName + "_"
                 + UUID.randomUUID().toString().replace("-", "").substring(0, 15) + fileSuffix;
-        log.info("文件上传 fileName={}",fileName);
+        log.info("文件上传 fileName={}", fileName);
         try (InputStream inputStream = new ByteArrayInputStream(multipartFile.getBytes())) {
             boolean b = ftpClient.storeFile(fileName, inputStream);
             ftpClient.logout();
-            if(b){
+            if (b) {
 //                return uploadPath + fileName;
                 return fileName;
-            }else {
+            } else {
                 return null;
             }
         }

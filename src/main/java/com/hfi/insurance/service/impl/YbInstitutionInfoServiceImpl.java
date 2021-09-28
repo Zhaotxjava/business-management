@@ -33,7 +33,6 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.xssf.usermodel.*;
-import org.aspectj.org.eclipse.jdt.internal.core.builder.WorkQueue;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -146,8 +145,8 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
                 || StringUtils.isBlank(item.getLegalIdCard())
         );
         log.info("过滤后有{}个，{}",ybInstitutionInfos.size(),JSONObject.toJSONString(ybInstitutionInfos));
+        //todo 添加保险公司
 
-       //todo 添加保险公司
         int pageIndex = 1;
         int size = 1;
         List<InstitutionInfoRes> insuranceList = new ArrayList<>();
@@ -183,6 +182,8 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
             }
         }
         ybInstitutionInfos.addAll(insuranceList);
+
+
         int total = institutionInfoMapper.selectCountOrgForCreateFlow(req);
         Page<InstitutionInfoRes> page = new Page<>(req.getPageNum(), req.getPageSize());
         page.setRecords(ybInstitutionInfos);
@@ -588,17 +589,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         institutionInfoQueryReq.setPageNum(institutionInfoQueryReq.getPageNum()-1);
         List<YbInstitutionInfo> ybInstitutionInfos = institutionInfoMapper.getInstitutionInfobxList(institutionInfoQueryReq);
         if (ybInstitutionInfos.size()>0){
-            Page<YbInstitutionInfo> page = new Page<>();
-            page.setRecords(ybInstitutionInfos);
-            page.setTotal(ybInstitutionInfos.size());
-            return new ApiResponse(page);
-        }
-        List<YbOrgTd> YbOrgTdList= orgTdMapper.getorgTdbxList(institutionInfoQueryReq);
-        if (YbOrgTdList.size()>0){
-            Page<YbOrgTd> page = new Page<>();
-            page.setRecords(YbOrgTdList);
-            page.setTotal(YbOrgTdList.size());
-            return  new ApiResponse(page);
+            return ApiResponse.success(ybInstitutionInfos);
         }
         return  new ApiResponse("200","无保险公司");
 
