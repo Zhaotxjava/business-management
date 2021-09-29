@@ -14,10 +14,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -68,7 +71,7 @@ public class InstitutionInfoController {
         if (StringUtils.isNotBlank(loginaccount)) {
             if (!loginaccount.startsWith("hz")) {
                 flag = 1;
-            }else if (hospitalid.startsWith("bx")) {
+            } else if (hospitalid.startsWith("bx")) {
                 flag = 3;
             }
         }
@@ -88,9 +91,9 @@ public class InstitutionInfoController {
 //        session.setAttribute("number",hospitalid);
         log.info("host={}", request.getHeader("host"));
         if (StringUtils.isNotEmpty(ntv)) {
-            return "redirect:" + redirectYbUrl + "?flag=" + flag + "&token=" + token;
+            return "redirect:" + redirectYbUrl + "?flag=" + flag + "&token=" + token + "&areaCode=" + platid;
         } else {
-            return "redirect:" + redirectUrl + "?flag=" + flag + "&token=" + token;
+            return "redirect:" + redirectUrl + "?flag=" + flag + "&token=" + token + "&areaCode=" + platid;
         }
     }
 
@@ -107,9 +110,9 @@ public class InstitutionInfoController {
         //默认外部机构
         int flag = 2;
         if (StringUtils.isNotBlank(loginaccount)) {
-             if (!loginaccount.startsWith("hz")) {
+            if (!loginaccount.startsWith("hz")) {
                 flag = 1;
-            }else if (hospitalid.startsWith("bx")) {
+            } else if (hospitalid.startsWith("bx")) {
                 flag = 3;
             }
         }
@@ -124,7 +127,8 @@ public class InstitutionInfoController {
         caffeineCache.put(token, jsonObject.toJSONString());
         log.info("生成token={}", token);
         log.info("host={}", request.getHeader("host"));
-        return "redirect:" + redirectYbUrl + "?flag=" + flag + "&token=" + token;
+        return "redirect:" + redirectYbUrl + "?flag=" + flag + "&token=" + token + "&areaCode=" + platid;
+
     }
 
 
