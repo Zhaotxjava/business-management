@@ -21,11 +21,13 @@
         <result column="file_key" property="fileKey" />
         <result column="create_time" property="createTime" />
         <result column="update_time" property="updateTime" />
+        <result column="batch_no" property="batchNo" />
+        <result column="flow_name" property="flowName" />
     </resultMap>
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        flow_id, sign_flow_id, subject, flow_status,number,unique_id,account_type,sign_status, initiator, initiator_time, handle_time, signers, copy_viewers, flow_type, file_key,create_time, update_time
+        flow_id, sign_flow_id, subject, flow_status, number, unique_id, account_type, sign_status, initiator, initiator_time, handle_time, signers, copy_viewers, flow_type, file_key, create_time, update_time, batch_no, flow_name
     </sql>
 
 </mapper>

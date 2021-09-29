@@ -8,8 +8,8 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * 签署流程记录 Mapper 接口
  * </p>
  *
- * @author ChenZX
- * @since 2021-07-19
+ * @author NZH
+ * @since 2021-09-29
  */
 public interface YbFlowInfoMapper extends BaseMapper<YbFlowInfo> {
 
