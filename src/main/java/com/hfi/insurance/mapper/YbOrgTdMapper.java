@@ -2,6 +2,7 @@ package com.hfi.insurance.mapper;
 
 import com.hfi.insurance.model.YbOrgTd;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.hfi.insurance.model.dto.InstitutionInfoQueryReq;
 
 import java.util.List;
 
@@ -14,4 +15,5 @@ import java.util.List;
  * @since 2021-07-05
  */
 public interface YbOrgTdMapper extends BaseMapper<YbOrgTd> {
+    List<YbOrgTd> getorgTdbxList(InstitutionInfoQueryReq institutionInfoQueryReq);
 }

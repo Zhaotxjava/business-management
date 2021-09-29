@@ -44,4 +44,14 @@
         AKB020, AKB021, AKB022, AAE053, AKA101, AKB023, BKB012, AAE045, BKB001, AAE100, BKB117, AAE013, BKB301, BKB302, BKA938, AAE004, AAE005, AAE006, BKA968, BKA975, BKA977, BKA978, BKA983, AAA027, BKA996, AKB141, BKA992, BKB500, BKB501, BKB502, BKB503, BKB504, BKB505
     </sql>
 
+
+
+    <select id="getorgTdbxList"  parameterType="com.hfi.insurance.model.dto.InstitutionInfoQueryReq" resultType="com.hfi.insurance.model.YbOrgTd">
+
+     SELECT  * from  yb_org_td
+     where
+     AKB020 like concat("%","bx","%")
+     limit #{pageNum},#{pageSize}
+    </select>
+
 </mapper>
