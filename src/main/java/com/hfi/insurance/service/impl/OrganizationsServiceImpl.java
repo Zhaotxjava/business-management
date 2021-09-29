@@ -154,8 +154,12 @@ public class OrganizationsServiceImpl implements OrganizationsService {
         Map<String, String> headMap = new HashMap<>();
         convertHead(headMap, "");
         Map<String, String> params = new HashMap<>();
-        params.put("organizeId", organizeId);
-        params.put("organizeNo", organizeNo);
+        if(StringUtils.isNotBlank(organizeId)){
+            params.put("organizeId", organizeId);
+        }
+        if(StringUtils.isNotBlank(organizeNo)){
+            params.put("organizeNo", organizeNo);
+        }
         String result = HttpUtil.doGet(url + "/V1/organizations/outerOrgans/query", headMap, params);
         log.info("查询外部机构【{}】接口响应{}", organizeId, result);
         return convertResult(result);

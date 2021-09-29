@@ -85,7 +85,7 @@ public class SignedBizServiceImpl implements SignedBizService {
     @Resource
     private Cache<String, String> caffeineCache;
 
-    private int MAX_SIGNERSLENGTH = 498;
+    private int MAX_SIGNERSLENGTH = 499;
 
     @Override
     @LogAnnotation
@@ -135,7 +135,7 @@ public class SignedBizServiceImpl implements SignedBizService {
             }
             //乙方（3）* （丙方+丁方）(1) =3 (个流程)
             for (int i = 0; i < maxSize; i++) {
-                StandardCreateFlowBO standardCreateFlow = new StandardCreateFlowBO();
+//                StandardCreateFlowBO standardCreateFlow = new StandardCreateFlowBO();
                 //1、文档信息
                 List<FlowDocBean> signDocs = new ArrayList<>();
                 //2、抄送人信息集合
@@ -149,7 +149,7 @@ public class SignedBizServiceImpl implements SignedBizService {
                 }
                 String fileKey = flowDocBean.getDocFilekey();
                 signDocs.add(flowDocBean);
-                standardCreateFlow.setSignDocs(signDocs);
+//                standardCreateFlow.setSignDocs(signDocs);
                 List<TemplateFlowBean> templateFlows = templateInfo.getTemplateFlows();
                 Map<String, PredefineBean> flowNamePredefineMap = new HashMap<>();
                 templateFlows.forEach(templateFlowBean -> {
@@ -160,7 +160,6 @@ public class SignedBizServiceImpl implements SignedBizService {
                 for (SingerInfo singerInfo : req.getSingerInfos()) {
                     List<InstitutionBaseInfo> institutionInfoList = singerInfo.getInstitutionInfoList();
                     //获取签署机构名称，并拼接，
-                    //todo 数据库中singers字段过长
                     String singerNames = institutionInfoList.stream().map(InstitutionBaseInfo::getInstitutionName)
                             .collect(Collectors.joining(","));
                     institutionNames.add(singerNames);
@@ -204,26 +203,27 @@ public class SignedBizServiceImpl implements SignedBizService {
                     return new ApiResponse(ErrorCodeEnum.RESPONES_ERROR.getCode(), e.getMessage());
                 }
                 singerList.add(partyA);
+                String subject = req.getTemplateId() + "-" + flowDocBean.getDocName() + "-" + DateUtil.getNowTimestampStr();
                 //singerList.add(legalPartyA);
                 //发起人姓名不能为空
-                String initiatorName = partyA.getAccountName();
-                standardCreateFlow.setInitiatorName(initiatorName);
-                standardCreateFlow.setCopyViewers(copyViewerInfoBeans);
-                //手机号或者邮箱
-                standardCreateFlow.setInitiatorMobile(partyA.getContactMobile());
-                standardCreateFlow.setInitiatorAccountId(partyA.getAccountId());
-                standardCreateFlow.setSigners(singerList);
-                //流程主题
-                Date now = new Date();
-                String subject = req.getTemplateId() + "-" + flowDocBean.getDocName() + "-" + DateUtil.getNowTimestampStr();
-                standardCreateFlow.setSubject(subject);
-                JSONObject signFlows = signedService.createSignFlows(standardCreateFlow);
-                log.info("创建流程出参：{}", JSON.toJSONString(signFlows));
-                if (signFlows.containsKey("errCode")) {
-                    return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), signFlows.getString("msg"));
-                }
-                handleCreateSignRet(signFlows, institutionInfos, partyA, institutionNames, initiatorName
-                        , subject, fileKey, null, organizeNo, templateType,institutionNumber);
+//                String initiatorName = partyA.getAccountName();
+//                standardCreateFlow.setInitiatorName(initiatorName);
+//                standardCreateFlow.setCopyViewers(copyViewerInfoBeans);
+//                //手机号或者邮箱
+//                standardCreateFlow.setInitiatorMobile(partyA.getContactMobile());
+//                standardCreateFlow.setInitiatorAccountId(partyA.getAccountId());
+//                standardCreateFlow.setSigners(singerList);
+//                //流程主题
+//                Date now = new Date();
+//                String subject = req.getTemplateId() + "-" + flowDocBean.getDocName() + "-" + DateUtil.getNowTimestampStr();
+//                standardCreateFlow.setSubject(subject);
+//                JSONObject signFlows = signedService.createSignFlows(standardCreateFlow);
+//                log.info("创建流程出参：{}", JSON.toJSONString(signFlows));
+//                if (signFlows.containsKey("errCode")) {
+//                    return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), signFlows.getString("msg"));
+//                }
+                handleCreateSign(institutionInfos, partyA, institutionNames, copyViewerInfoBeans
+                        , subject, fileKey, organizeNo, templateType,institutionNumber,singerList,null);
 //                String signFlowId = signFlows.getString("signFlowId");
 //                List<InstitutionBaseInfo> distinctInstitutions = institutionInfos.stream().distinct().collect(Collectors.toList());
 //                List<YbFlowInfo> flowInfoList = new ArrayList<>();
@@ -277,7 +277,7 @@ public class SignedBizServiceImpl implements SignedBizService {
             flowDocBean.setDocFilekey(fileKey);
             flowDocBean.setDocName(req.getFileName());
             signDocs.add(flowDocBean);
-            standardCreateFlow.setSignDocs(signDocs);
+//            standardCreateFlow.setSignDocs(signDocs);
             List<StandardSignerInfoBean> singerList = new ArrayList<>();
             //填充乙丙丁方签署信息
             for (SingerInfo singerInfo : req.getSingerInfos()) {
@@ -319,28 +319,28 @@ public class SignedBizServiceImpl implements SignedBizService {
                 return new ApiResponse(ErrorCodeEnum.SYSTEM_ERROR.getCode(), e.getMessage());
             }
             singerList.add(partyA);
-            standardCreateFlow.setCopyViewers(copyViewerInfoBeans);
-            //发起人姓名不能为空
-            String initiatorName = partyA.getAccountName();
-            standardCreateFlow.setInitiatorName(initiatorName);
-            //手机号或者邮箱
-            standardCreateFlow.setInitiatorMobile(partyA.getContactMobile());
-            standardCreateFlow.setInitiatorAccountId(partyA.getAccountId());
-            standardCreateFlow.setSigners(singerList);
+//            standardCreateFlow.setCopyViewers(copyViewerInfoBeans);
+//            //发起人姓名不能为空
+//            String initiatorName = partyA.getAccountName();
+//            standardCreateFlow.setInitiatorName(initiatorName);
+//            //手机号或者邮箱
+//            standardCreateFlow.setInitiatorMobile(partyA.getContactMobile());
+//            standardCreateFlow.setInitiatorAccountId(partyA.getAccountId());
+//            standardCreateFlow.setSigners(singerList);
             //流程主题
             String subject = req.getTemplateId() + "-" + req.getFileName() + "-" + DateUtil.getNowTimestampStr();
-            standardCreateFlow.setSubject(subject);
-            log.info("创建流程入参：{}", JSON.toJSONString(standardCreateFlow));
-            JSONObject signFlows = signedService.createSignFlows(standardCreateFlow);
-            //todo 记录签署流程成功或失败
-            log.info("创建流程出参：{}", JSON.toJSONString(signFlows));
+//            standardCreateFlow.setSubject(subject);
+//            log.info("创建流程入参：{}", JSON.toJSONString(standardCreateFlow));
+//            JSONObject signFlows = signedService.createSignFlows(standardCreateFlow);
+//
+//            log.info("创建流程出参：{}", JSON.toJSONString(signFlows));
+//
+//            if (signFlows.containsKey("errCode")) {
+//                return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), signFlows.getString("msg"));
+//            }
 
-            if (signFlows.containsKey("errCode")) {
-                return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), signFlows.getString("msg"));
-            }
-
-            handleCreateSignRet(signFlows, institutionInfos, partyA, institutionNames, initiatorName
-                    , subject, fileKey, null, organizeNo, templateType,institutionNumber);
+            handleCreateSign(institutionInfos, partyA, institutionNames, copyViewerInfoBeans
+                    , subject, fileKey, organizeNo, templateType,institutionNumber,singerList,signDocs);
 
 //            String signFlowId = signFlows.getString("signFlowId");
 //            List<InstitutionBaseInfo> distinctInstitutions = institutionInfos.stream().distinct().collect(Collectors.toList());
@@ -849,15 +849,38 @@ public class SignedBizServiceImpl implements SignedBizService {
     }
 
     //创建流程出参处理
-    public ApiResponse handleCreateSignRet(JSONObject signFlows, List<InstitutionBaseInfo> institutionInfos
-            , StandardSignerInfoBean partyA, List<String> institutionNames, String initiatorName, String subject
-            , String fileKey, Date now, String organizeNo, ETemplateType templateType, String institutionNumber) {
+    public ApiResponse handleCreateSign(List<InstitutionBaseInfo> institutionInfos
+            , StandardSignerInfoBean partyA, List<String> institutionNames,List<CopyViewerInfoBean> copyViewerInfoBeans
+            , String subject, String fileKey, String organizeNo, ETemplateType templateType
+            , String institutionNumber,List<StandardSignerInfoBean> singerList,List<FlowDocBean> signDocs) {
+
+        StandardCreateFlowBO standardCreateFlow = new StandardCreateFlowBO();
+        String initiatorName = partyA.getAccountName();
+        standardCreateFlow.setInitiatorName(initiatorName);
+        standardCreateFlow.setCopyViewers(copyViewerInfoBeans);
+        //手机号或者邮箱
+        standardCreateFlow.setInitiatorMobile(partyA.getContactMobile());
+        standardCreateFlow.setInitiatorAccountId(partyA.getAccountId());
+        standardCreateFlow.setSigners(singerList);
+        if(ETemplateType.FILE_UPLOAD == templateType) {
+            standardCreateFlow.setSignDocs(signDocs);
+        }
+        //流程主题
+        Date now = new Date();
+//        String subject = req.getTemplateId() + "-" + flowDocBean.getDocName() + "-" + DateUtil.getNowTimestampStr();
+        standardCreateFlow.setSubject(subject);
+        JSONObject signFlows = signedService.createSignFlows(standardCreateFlow);
+        log.info("创建流程出参：{}", JSON.toJSONString(signFlows));
+        if (signFlows.containsKey("errCode")) {
+            return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), signFlows.getString("msg"));
+        }
+
         String signFlowId = signFlows.getString("signFlowId");
         List<InstitutionBaseInfo> distinctInstitutions = institutionInfos.stream().distinct().collect(Collectors.toList());
         List<YbFlowInfo> flowInfoList = new ArrayList<>();
         String singerName = String.join(",", institutionNames);
-        if (StringUtils.isNotBlank(singerName)) {
-            singerName.substring(0, MAX_SIGNERSLENGTH);
+        if (StringUtils.isNotBlank(singerName) && singerName.length() > MAX_SIGNERSLENGTH) {
+            singerName.substring(0, MAX_SIGNERSLENGTH-1);
         }
         distinctInstitutions.forEach(institutionInfo -> {
             YbFlowInfo flowInfo = new YbFlowInfo();
