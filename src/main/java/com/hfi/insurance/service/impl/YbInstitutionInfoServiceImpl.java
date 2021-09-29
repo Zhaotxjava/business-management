@@ -100,7 +100,9 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
 //        if (StringUtils.isNotBlank(institutionName)){
 //            queryWrapper.eq("institution_name",institutionName);
 //        }
-        List<YbInstitutionInfo> ybInstitutionInfos = institutionInfoMapper.selectInstitutionInfoAndOrg(institutionNumber, number, institutionName, current - 1, limit);
+
+
+        List<YbInstitutionInfo> ybInstitutionInfos = institutionInfoMapper.selectInstitutionInfoAndOrg(institutionNumber, number, institutionName, (current - 1)*limit, limit);
         int total = institutionInfoMapper.selectCountInstitutionInfoAndOrg(institutionNumber, number, institutionName);
         Page<YbInstitutionInfoChange> page = new Page<>(current, limit);
 
@@ -434,7 +436,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         String institutionName = ybInstitutionInfoChangeReq.getInstitutionName();
         if (!StringUtils.isEmpty(number) || !StringUtils.isEmpty(institutionName)) {
             Integer pageNum = ybInstitutionInfoChangeReq.getPageNum();
-            ybInstitutionInfoChangeReq.setPageNum(pageNum-1);
+            ybInstitutionInfoChangeReq.setPageNum((pageNum-1)*ybInstitutionInfoChangeReq.getPageSize());
 
             List<YbInstitutionInfoChange> YbInstitutionInfoChangeList = ybInstitutionInfoChangeMapper.selectChangeList(ybInstitutionInfoChangeReq);
 
@@ -586,7 +588,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
     @Override
     public ApiResponse getInstitutionInfobxList(InstitutionInfoQueryReq institutionInfoQueryReq) {
 
-        institutionInfoQueryReq.setPageNum(institutionInfoQueryReq.getPageNum()-1);
+        institutionInfoQueryReq.setPageNum((institutionInfoQueryReq.getPageNum()-1)*institutionInfoQueryReq.getPageSize());
         List<YbInstitutionInfo> ybInstitutionInfos = institutionInfoMapper.getInstitutionInfobxList(institutionInfoQueryReq);
         if (ybInstitutionInfos.size()>0){
             Page<YbInstitutionInfo> page = new Page<>();
@@ -606,10 +608,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
             Page<YbInstitutionInfo> page = new Page<>();
             page.setRecords(YbInstitutionInfolist);
             page.setTotal(YbOrgTdList.size());
-
             return  new ApiResponse(page);
-
-
 
 
         }
