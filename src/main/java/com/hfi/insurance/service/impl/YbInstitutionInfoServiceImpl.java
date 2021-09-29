@@ -138,7 +138,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
     @LogAnnotation
     public Page<InstitutionInfoRes> getOrgTdListForCreateFlow(OrgTdQueryReq req) {
         Integer pageNum = req.getPageNum();
-        req.setPageNum(pageNum - 1);
+        req.setPageNum((pageNum - 1)*req.getPageSize());
         List<InstitutionInfoRes> ybInstitutionInfos = institutionInfoMapper.selectOrgForCreateFlow(req);
 
         log.info("过滤前有{}个，{}",ybInstitutionInfos.size(),JSONObject.toJSONString(ybInstitutionInfos));
