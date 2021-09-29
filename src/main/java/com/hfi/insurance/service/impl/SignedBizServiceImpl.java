@@ -88,6 +88,7 @@ public class SignedBizServiceImpl implements SignedBizService {
     @Override
     @LogAnnotation
     public ApiResponse createSignFlow(CreateSignFlowReq req, String token) {
+//        log.info("createSignFlow 批量签署入参：{}",JSONObject.toJSONString(req));
         String jsonStr = caffeineCache.asMap().get(token);
         if (StringUtils.isBlank(jsonStr)) {
             return new ApiResponse(ErrorCodeEnum.TOKEN_EXPIRED.getCode(), ErrorCodeEnum.TOKEN_EXPIRED.getMessage());
@@ -105,6 +106,7 @@ public class SignedBizServiceImpl implements SignedBizService {
             List<SingerInfo> singerInfos = req.getSingerInfos();
             Map<String, List<InstitutionBaseInfo>> flowNameInstitutionMap = new HashMap<>();
             Map<Integer, String> flowNameSizeMap = new LinkedHashMap<>(16);
+            //
             List<String> institutionNames = new ArrayList<>();
             List<InstitutionBaseInfo> institutionInfos = new ArrayList<>();
             singerInfos.forEach(singerInfo -> {
@@ -112,6 +114,7 @@ public class SignedBizServiceImpl implements SignedBizService {
                 flowNameSizeMap.put(size, singerInfo.getFlowName());
                 flowNameInstitutionMap.put(singerInfo.getFlowName(), singerInfo.getInstitutionInfoList());
             });
+            //找出批量的机构
             Integer maxSize = flowNameSizeMap.keySet().stream().max(Integer::compareTo).get();
             String maxSizeFlowName = flowNameSizeMap.get(maxSize);
             log.info("拥有{}个机构的签署方：{}", maxSize, maxSizeFlowName);
@@ -120,6 +123,7 @@ public class SignedBizServiceImpl implements SignedBizService {
             JSONObject templateInfoJson = signedService.getTemplateInfo(templateId);
             String templateStr = templateInfoJson.getString("template");
             log.info("模板信息：{}", templateStr);
+            //从E签宝获取模板信息
             TemplateInfoBean templateInfo = JSON.parseObject(templateStr, TemplateInfoBean.class);
             if (templateInfo == null) {
                 return new ApiResponse(ErrorCodeEnum.RESPONES_ERROR.getCode(), "模板信息为空！！");
@@ -133,6 +137,7 @@ public class SignedBizServiceImpl implements SignedBizService {
                 List<CopyViewerInfoBean> copyViewerInfoBeans = new ArrayList<>();
                 FlowDocBean flowDocBean = null;
                 try {
+                    //填充模板信息
                     flowDocBean = assembleSignDocs(req, templateInfo, flowNameInstitutionMap, maxSizeFlowName, i, organizeNo);
                 } catch (BizServiceException e) {
                     return new ApiResponse(ErrorCodeEnum.RESPONES_ERROR.getCode(), e.getMessage());
@@ -149,7 +154,8 @@ public class SignedBizServiceImpl implements SignedBizService {
                 List<StandardSignerInfoBean> singerList = new ArrayList<>();
                 for (SingerInfo singerInfo : req.getSingerInfos()) {
                     List<InstitutionBaseInfo> institutionInfoList = singerInfo.getInstitutionInfoList();
-                    //获取签署机构名称
+                    //获取签署机构名称，并拼接，
+                    //todo 数据库中singers字段过长
                     String singerNames = institutionInfoList.stream().map(InstitutionBaseInfo::getInstitutionName)
                             .collect(Collectors.joining(","));
                     institutionNames.add(singerNames);
@@ -166,6 +172,7 @@ public class SignedBizServiceImpl implements SignedBizService {
                         StandardSignerInfoBean signerInfoBean = null;
                         try {
                             CopyViewerInfoBean copyViewerInfoBean = new CopyViewerInfoBean();
+                            //通过id和mumber去E签宝查询机构列表
                             YbInstitutionInfo institutionInfo = getInstitutionInfo(institution);
                             log.info("签署机构信息：{}",JSON.toJSONString(institutionInfo));
                             if (!institutionInfo.getNumber().startsWith("bx")) {

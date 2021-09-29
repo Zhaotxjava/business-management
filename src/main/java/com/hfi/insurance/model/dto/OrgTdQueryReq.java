@@ -28,6 +28,10 @@ public class OrgTdQueryReq extends PageReq{
             notes = "主城区330100,萧山区330109,余杭区330110,富阳区330183,临安区330185,临平区330113,淳安县330127,建德市330182,桐庐县330122")
     private List<String> areas;
 
+    @ApiModelProperty(value = "所属区域 AAA027",
+            notes = "主城区330100,萧山区330109,余杭区330110,富阳区330183,临安区330185,临平区330113,淳安县330127,建德市330182,桐庐县330122")
+    private String areaCode;
+
     @ApiModelProperty(value = "营利类型  BKA938",notes = "非营利1,营利2,其他9")
     private List<String> profits;
 
