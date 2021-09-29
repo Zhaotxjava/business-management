@@ -5,7 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 /**
  * @Author ChenZX
  * @Date 2021/6/16 15:06
- * @Description:
+ * @Description: 机构天印系统羁绊人信息
  */
 
 public class InstitutionBaseInfo {

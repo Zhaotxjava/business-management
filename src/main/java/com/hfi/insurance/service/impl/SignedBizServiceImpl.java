@@ -85,6 +85,8 @@ public class SignedBizServiceImpl implements SignedBizService {
     @Resource
     private Cache<String, String> caffeineCache;
 
+    private int MAX_SIGNERSLENGTH = 498;
+
     @Override
     @LogAnnotation
     public ApiResponse createSignFlow(CreateSignFlowReq req, String token) {
@@ -103,10 +105,13 @@ public class SignedBizServiceImpl implements SignedBizService {
         ETemplateType templateType = EnumHelper.translate(ETemplateType.class, req.getTemplateType());
         //填充模板的形式发起签署
         if (ETemplateType.TEMPLATE_FILL == templateType) {
+            //所有签署人员信息，内容来源为前端传入
             List<SingerInfo> singerInfos = req.getSingerInfos();
+            //k=机构签署区域 甲方,丙方,乙方，外部传入，v=机构天印系统经办人信息
             Map<String, List<InstitutionBaseInfo>> flowNameInstitutionMap = new HashMap<>();
+            //签署人名字
             Map<Integer, String> flowNameSizeMap = new LinkedHashMap<>(16);
-            //
+            //获取所有签署机构名称，并使用','连接起来
             List<String> institutionNames = new ArrayList<>();
             List<InstitutionBaseInfo> institutionInfos = new ArrayList<>();
             singerInfos.forEach(singerInfo -> {
@@ -174,7 +179,7 @@ public class SignedBizServiceImpl implements SignedBizService {
                             CopyViewerInfoBean copyViewerInfoBean = new CopyViewerInfoBean();
                             //通过id和mumber去E签宝查询机构列表
                             YbInstitutionInfo institutionInfo = getInstitutionInfo(institution);
-                            log.info("签署机构信息：{}",JSON.toJSONString(institutionInfo));
+                            log.info("签署机构信息：{}", JSON.toJSONString(institutionInfo));
                             if (!institutionInfo.getNumber().startsWith("bx")) {
                                 copyViewerInfoBean.setAccountId(institutionInfo.getAccountId());
                                 copyViewerInfoBean.setAccountType(EAccountType.EXTERNAL.getCode());
@@ -217,42 +222,47 @@ public class SignedBizServiceImpl implements SignedBizService {
                 if (signFlows.containsKey("errCode")) {
                     return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), signFlows.getString("msg"));
                 }
-                String signFlowId = signFlows.getString("signFlowId");
-                List<InstitutionBaseInfo> distinctInstitutions = institutionInfos.stream().distinct().collect(Collectors.toList());
-                List<YbFlowInfo> flowInfoList = new ArrayList<>();
-                String singerName = String.join(",", institutionNames);
-                distinctInstitutions.forEach(institutionInfo -> {
-                    YbFlowInfo flowInfo = new YbFlowInfo();
-                    flowInfo.setInitiator(initiatorName)
-                            .setNumber(institutionInfo.getNumber())
-                            .setSigners(singerName)
-                            .setSubject(subject)
-                            .setCopyViewers(singerName)
-                            .setSignFlowId(signFlowId)
-                            .setFileKey(fileKey)
-                            .setInitiatorTime(now)
-                            .setAccountType(2)
-                            .setFlowStatus(0)
-                            .setSignStatus("0")
-                            .setFlowType("Common");
-                    flowInfoList.add(flowInfo);
-                });
-                YbFlowInfo flowAInfo = new YbFlowInfo();
-                flowAInfo.setInitiator(initiatorName)
-                        .setNumber(organizeNo)
-                        .setSigners(singerName)
-                        .setSubject(subject)
-                        .setCopyViewers(singerName)
-                        .setSignFlowId(signFlowId)
-                        .setFileKey(fileKey)
-                        .setInitiatorTime(now)
-                        .setUniqueId(partyA.getUniqueId())
-                        .setAccountType(1)
-                        .setFlowStatus(0)
-                        .setSignStatus("0")
-                        .setFlowType("Common");
-                flowInfoList.add(flowAInfo);
-                flowInfoService.saveBatch(flowInfoList);
+                handleCreateSignRet(signFlows, institutionInfos, partyA, institutionNames, initiatorName
+                        , subject, fileKey, null, organizeNo, templateType,institutionNumber);
+//                String signFlowId = signFlows.getString("signFlowId");
+//                List<InstitutionBaseInfo> distinctInstitutions = institutionInfos.stream().distinct().collect(Collectors.toList());
+//                List<YbFlowInfo> flowInfoList = new ArrayList<>();
+//                String singerName = String.join(",", institutionNames);
+//                if(StringUtils.isNotBlank(singerName)){
+//                    singerName.substring(0,MAX_SIGNERSLENGTH);
+//                }
+//                distinctInstitutions.forEach(institutionInfo -> {
+//                    YbFlowInfo flowInfo = new YbFlowInfo();
+//                    flowInfo.setInitiator(initiatorName)
+//                            .setNumber(institutionInfo.getNumber())
+//                            .setSigners(singerName)
+//                            .setSubject(subject)
+//                            .setCopyViewers(singerName)
+//                            .setSignFlowId(signFlowId)
+//                            .setFileKey(fileKey)
+//                            .setInitiatorTime(now)
+//                            .setAccountType(2)
+//                            .setFlowStatus(0)
+//                            .setSignStatus("0")
+//                            .setFlowType("Common");
+//                    flowInfoList.add(flowInfo);
+//                });
+//                YbFlowInfo flowAInfo = new YbFlowInfo();
+//                flowAInfo.setInitiator(initiatorName)
+//                        .setNumber(organizeNo)
+//                        .setSigners(singerName)
+//                        .setSubject(subject)
+//                        .setCopyViewers(singerName)
+//                        .setSignFlowId(signFlowId)
+//                        .setFileKey(fileKey)
+//                        .setInitiatorTime(now)
+//                        .setUniqueId(partyA.getUniqueId())
+//                        .setAccountType(1)
+//                        .setFlowStatus(0)
+//                        .setSignStatus("0")
+//                        .setFlowType("Common");
+//                flowInfoList.add(flowAInfo);
+//                flowInfoService.saveBatch(flowInfoList);
             }
         } else if (ETemplateType.FILE_UPLOAD == templateType) {
             List<String> institutionNames = new ArrayList<>();
@@ -286,7 +296,7 @@ public class SignedBizServiceImpl implements SignedBizService {
                     try {
                         CopyViewerInfoBean copyViewerInfoBean = new CopyViewerInfoBean();
                         YbInstitutionInfo institutionInfo = getInstitutionInfo(institution);
-                        log.info("签署机构信息：{}",JSON.toJSONString(institutionInfo));
+                        log.info("签署机构信息：{}", JSON.toJSONString(institutionInfo));
                         if (!institutionInfo.getNumber().startsWith("bx")) {
                             copyViewerInfoBean.setAccountId(institutionInfo.getAccountId());
                             copyViewerInfoBean.setAccountType(EAccountType.EXTERNAL.getCode());
@@ -322,46 +332,54 @@ public class SignedBizServiceImpl implements SignedBizService {
             standardCreateFlow.setSubject(subject);
             log.info("创建流程入参：{}", JSON.toJSONString(standardCreateFlow));
             JSONObject signFlows = signedService.createSignFlows(standardCreateFlow);
+            //todo 记录签署流程成功或失败
             log.info("创建流程出参：{}", JSON.toJSONString(signFlows));
             if (signFlows.containsKey("errCode")) {
                 return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), signFlows.getString("msg"));
             }
-            String signFlowId = signFlows.getString("signFlowId");
-            List<InstitutionBaseInfo> distinctInstitutions = institutionInfos.stream().distinct().collect(Collectors.toList());
-            List<YbFlowInfo> flowInfoList = new ArrayList<>();
-            String singerName = String.join(",", institutionNames);
-            distinctInstitutions.forEach(institutionInfo -> {
-                YbFlowInfo flowInfo = new YbFlowInfo();
-                flowInfo.setInitiator(initiatorName)
-                        .setNumber(institutionInfo.getNumber())
-                        .setSigners(singerName)
-                        .setSubject(subject)
-                        .setCopyViewers(singerName)
-                        .setSignFlowId(signFlowId)
-                        .setNumber(institutionNumber)
-                        .setAccountType(2)
-                        .setFlowStatus(0)
-                        .setSignStatus("0")
-                        .setFileKey(fileKey)
-                        .setFlowType("Common");
-                flowInfoList.add(flowInfo);
-            });
-            YbFlowInfo flowAInfo = new YbFlowInfo();
-            flowAInfo.setInitiator(initiatorName)
-                    .setNumber(organizeNo)
-                    .setSigners(singerName)
-                    .setSubject(subject)
-                    .setCopyViewers(singerName)
-                    .setSignFlowId(signFlowId)
-                    .setInitiatorTime(new Date())
-                    .setUniqueId(partyA.getUniqueId())
-                    .setAccountType(1)
-                    .setFlowStatus(0)
-                    .setSignStatus("0")
-                    .setFileKey(fileKey)
-                    .setFlowType("Common");
-            flowInfoList.add(flowAInfo);
-            flowInfoService.saveBatch(flowInfoList);
+
+            handleCreateSignRet(signFlows, institutionInfos, partyA, institutionNames, initiatorName
+                    , subject, fileKey, null, organizeNo, templateType,institutionNumber);
+
+//            String signFlowId = signFlows.getString("signFlowId");
+//            List<InstitutionBaseInfo> distinctInstitutions = institutionInfos.stream().distinct().collect(Collectors.toList());
+//            List<YbFlowInfo> flowInfoList = new ArrayList<>();
+//            String singerName = String.join(",", institutionNames);
+//            if(StringUtils.isNotBlank(singerName)){
+//                singerName.substring(0,MAX_SIGNERSLENGTH);
+//            }
+//            distinctInstitutions.forEach(institutionInfo -> {
+//                YbFlowInfo flowInfo = new YbFlowInfo();
+//                flowInfo.setInitiator(initiatorName)
+//                        .setNumber(institutionInfo.getNumber())
+//                        .setSigners(singerName)
+//                        .setSubject(subject)
+//                        .setCopyViewers(singerName)
+//                        .setSignFlowId(signFlowId)
+//                        .setNumber(institutionNumber)
+//                        .setAccountType(2)
+//                        .setFlowStatus(0)
+//                        .setSignStatus("0")
+//                        .setFileKey(fileKey)
+//                        .setFlowType("Common");
+//                flowInfoList.add(flowInfo);
+//            });
+//            YbFlowInfo flowAInfo = new YbFlowInfo();
+//            flowAInfo.setInitiator(initiatorName)
+//                    .setNumber(organizeNo)
+//                    .setSigners(singerName)
+//                    .setSubject(subject)
+//                    .setCopyViewers(singerName)
+//                    .setSignFlowId(signFlowId)
+//                    .setInitiatorTime(new Date())
+//                    .setUniqueId(partyA.getUniqueId())
+//                    .setAccountType(1)
+//                    .setFlowStatus(0)
+//                    .setSignStatus("0")
+//                    .setFileKey(fileKey)
+//                    .setFlowType("Common");
+//            flowInfoList.add(flowAInfo);
+//            flowInfoService.saveBatch(flowInfoList);
         } else {
             return new ApiResponse(ErrorCodeEnum.SYSTEM_ERROR.getCode(), "文档类型不能为空！");
         }
@@ -376,11 +394,11 @@ public class SignedBizServiceImpl implements SignedBizService {
      * @throws BizServiceException
      */
     private YbInstitutionInfo getInstitutionInfo(InstitutionBaseInfo institution) throws BizServiceException {
-        log.info("获取机构信息请求参数：【{}】",JSON.toJSONString(institution));
+        log.info("获取机构信息请求参数：【{}】", JSON.toJSONString(institution));
         YbInstitutionInfo institutionInfo = institutionInfoService.getInstitutionInfo(institution.getNumber());
         //获取保险公司机构信息
         if (null == institutionInfo) {
-            JSONObject jsonObject = organizationsService.queryOrgans(institution.getOrganizeId(),institution.getNumber());
+            JSONObject jsonObject = organizationsService.queryOrgans(institution.getOrganizeId(), institution.getNumber());
             // {"errCode":0,"msg":"success","errShow":true,"data":{"organizeId":"f9696842-2d5b-4518-ac40-41f15491dd01","organizeNo":"bx001",
             // "organizeName":"esigntest测试保险公司1","licenseType":12,"licenseNumber":"914403001000123161","legalName":"朱阳",
             // "legalLicenseType":1,"legalLicenseNumber":"330184199401223513","legalMobile":"15957114467","email":null,
@@ -827,6 +845,97 @@ public class SignedBizServiceImpl implements SignedBizService {
         } else {
             return new ApiResponse(ErrorCodeEnum.RESPONES_ERROR.getCode(), ErrorCodeEnum.RESPONES_ERROR.getMessage());
         }
+    }
+
+    //创建流程出参处理
+    public ApiResponse handleCreateSignRet(JSONObject signFlows, List<InstitutionBaseInfo> institutionInfos
+            , StandardSignerInfoBean partyA, List<String> institutionNames, String initiatorName, String subject
+            , String fileKey, Date now, String organizeNo, ETemplateType templateType, String institutionNumber) {
+        String signFlowId = signFlows.getString("signFlowId");
+        List<InstitutionBaseInfo> distinctInstitutions = institutionInfos.stream().distinct().collect(Collectors.toList());
+        List<YbFlowInfo> flowInfoList = new ArrayList<>();
+        String singerName = String.join(",", institutionNames);
+        if (StringUtils.isNotBlank(singerName)) {
+            singerName.substring(0, MAX_SIGNERSLENGTH);
+        }
+        distinctInstitutions.forEach(institutionInfo -> {
+            YbFlowInfo flowInfo = new YbFlowInfo();
+            flowInfo.setInitiator(initiatorName)
+                    .setNumber(institutionInfo.getNumber())
+                    .setSigners(singerName)
+                    .setSubject(subject)
+                    .setCopyViewers(singerName)
+                    .setSignFlowId(signFlowId)
+                    .setAccountType(2)
+                    .setFlowStatus(0)
+                    .setSignStatus("0")
+                    .setFlowType("Common");
+            if (ETemplateType.TEMPLATE_FILL == templateType) {
+                flowInfo.setInitiatorTime(now);
+            } else if (ETemplateType.FILE_UPLOAD == templateType) {
+                flowInfo.setNumber(institutionNumber)
+                        .setFileKey(fileKey);
+            }
+
+            flowInfoList.add(flowInfo);
+        });
+//        distinctInstitutions.forEach(institutionInfo -> {
+//            YbFlowInfo flowInfo = new YbFlowInfo();
+//            flowInfo.setInitiator(initiatorName)
+//                    .setNumber(institutionInfo.getNumber())
+//                    .setSigners(singerName)
+//                    .setSubject(subject)
+//                    .setCopyViewers(singerName)
+//                    .setSignFlowId(signFlowId)
+////                    .setNumber(institutionNumber)
+//                    .setAccountType(2)
+//                    .setFlowStatus(0)
+//                    .setSignStatus("0")
+//                    .setFlowType("Common")
+//
+//                    .setNumber(institutionNumber)
+//                    .setFileKey(fileKey);
+//            flowInfoList.add(flowInfo);
+//        });
+        YbFlowInfo flowAInfo = new YbFlowInfo();
+        flowAInfo.setInitiator(initiatorName)
+                .setNumber(organizeNo)
+                .setSigners(singerName)
+                .setSubject(subject)
+                .setCopyViewers(singerName)
+                .setSignFlowId(signFlowId)
+                .setFileKey(fileKey)
+//                .setInitiatorTime(now)
+                .setUniqueId(partyA.getUniqueId())
+                .setAccountType(1)
+                .setFlowStatus(0)
+                .setSignStatus("0")
+                .setFlowType("Common");
+        flowInfoList.add(flowAInfo);
+        flowInfoService.saveBatch(flowInfoList);
+        if (ETemplateType.TEMPLATE_FILL == templateType) {
+            flowAInfo.setInitiatorTime(now);
+        } else if (ETemplateType.FILE_UPLOAD == templateType) {
+            flowAInfo.setInitiatorTime(new Date());
+        }
+//        YbFlowInfo flowAInfo = new YbFlowInfo();
+//        flowAInfo.setInitiator(initiatorName)
+//                .setNumber(organizeNo)
+//                .setSigners(singerName)
+//                .setSubject(subject)
+//                .setCopyViewers(singerName)
+//                .setSignFlowId(signFlowId)
+//                .setInitiatorTime(new Date())
+//                .setUniqueId(partyA.getUniqueId())
+//                .setAccountType(1)
+//                .setFlowStatus(0)
+//                .setSignStatus("0")
+//                .setFileKey(fileKey)
+//                .setFlowType("Common");
+        flowInfoList.add(flowAInfo);
+        flowInfoService.saveBatch(flowInfoList);
+
+        return ApiResponse.success();
     }
 
 }
