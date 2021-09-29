@@ -113,6 +113,7 @@ public class YbInstitutionInfo implements Serializable {
     @JsonFormat(pattern ="yyyy-MM-dd HH:mm:ss", timezone = "GMT+08:00")
     private Date createTime;
 
+
     @TableField("update_time")
     @JsonFormat(pattern ="yyyy-MM-dd HH:mm:ss", timezone = "GMT+08:00")
     private Date updateTime;
