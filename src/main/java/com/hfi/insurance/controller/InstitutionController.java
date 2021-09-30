@@ -246,7 +246,7 @@ public class InstitutionController {
 
 
     @PostMapping("/getArecordList")
-    @ApiOperation("发起记录分页查询")
+    @ApiOperation("  ")
     public ApiResponse getArecordList(@RequestBody ArecordQueReq  arecordQueReq) {
 
         return institutionInfoService.getArecordList(arecordQueReq);
