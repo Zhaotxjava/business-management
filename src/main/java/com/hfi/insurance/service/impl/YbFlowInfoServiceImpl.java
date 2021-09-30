@@ -45,7 +45,7 @@ public class YbFlowInfoServiceImpl extends ServiceImpl<YbFlowInfoMapper, YbFlowI
             //<=
             queryWrapper.le("initiator_time", req.getEndInitiateTime());
         }
-        Page<YbFlowInfo> page = new Page<>(req.getPageNum(), req.getPageSize());
+        Page<YbFlowInfo> page = new Page<>((req.getPageNum()-1)*req.getPageSize(), req.getPageSize());
 
         return baseMapper.selectPage(page, queryWrapper);
     }
