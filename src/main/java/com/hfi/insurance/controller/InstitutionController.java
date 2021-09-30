@@ -7,6 +7,7 @@ import com.hfi.insurance.enums.ErrorCodeEnum;
 import com.hfi.insurance.model.ExcelSheetPO;
 import com.hfi.insurance.model.YbInstitutionInfo;
 import com.hfi.insurance.model.YbInstitutionInfoChange;
+import com.hfi.insurance.model.dto.ArecordQueReq;
 import com.hfi.insurance.model.dto.InstitutionInfoAddReq;
 import com.hfi.insurance.model.dto.InstitutionInfoQueryReq;
 import com.hfi.insurance.model.dto.YbInstitutionInfoChangeReq;
@@ -232,9 +233,23 @@ public class InstitutionController {
     @PostMapping("getInstitutionInfobxList")
     @ResponseBody
     @ApiOperation("筛选保险公司按钮")
-    public ApiResponse getInstitutionInfobxList(InstitutionInfoQueryReq institutionInfoQueryReq) {
-        return institutionInfoService.getInstitutionInfobxList(institutionInfoQueryReq);
+    public ApiResponse getInstitutionInfobxList(InstitutionInfoQueryReq institutionInfoQueryReq,HttpServletRequest httpRequest) {
+        String token = httpRequest.getHeader("token");
+        if (StringUtils.isBlank(token)) {
+            return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(), ErrorCodeEnum.PARAM_ERROR.getMessage());
+        }
+        return institutionInfoService.getInstitutionInfobxList(institutionInfoQueryReq,token);
     }
 
+
+
+
+
+    @PostMapping("/getArecordList")
+    @ApiOperation("发起记录分页查询")
+    public ApiResponse getArecordList(@RequestBody ArecordQueReq  arecordQueReq) {
+
+        return institutionInfoService.getArecordList(arecordQueReq);
+    }
 
 }

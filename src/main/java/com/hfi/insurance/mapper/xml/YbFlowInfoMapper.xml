@@ -30,4 +30,30 @@
         flow_id, sign_flow_id, subject, flow_status, number, unique_id, account_type, sign_status, initiator, initiator_time, handle_time, signers, copy_viewers, flow_type, file_key, create_time, update_time, batch_no, flow_name
     </sql>
 
+
+    <sql id="YbFlowInfoWhere">
+        <where>
+            <if test="subject!=null  and subject!=''">
+                subject = #{subject}
+            </if>
+
+            <if test="mindateTime!=null">
+                and update_time >= #{mindateTime}
+            </if>
+
+            <if test="maxdateTime!=null">
+                and update_time &lt; #{maxdateTime}
+            </if>
+        </where>
+    </sql>
+
+    <select id="selectYbFlowInfoList" parameterType="com.hfi.insurance.model.dto.ArecordQueReq" resultType="com.hfi.insurance.model.YbFlowInfo">
+        select  t.* from
+        (SELECT * FROM    yb_flow_info
+        <include refid="YbFlowInfoWhere"/>
+        order by update_time desc) t
+        limit #{pageNum},#{pageSize}
+
+    </select>
+
 </mapper>

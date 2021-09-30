@@ -2,6 +2,9 @@ package com.hfi.insurance.mapper;
 
 import com.hfi.insurance.model.YbFlowInfo;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.hfi.insurance.model.dto.ArecordQueReq;
+
+import java.util.List;
 
 /**
  * <p>
@@ -13,4 +16,5 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  */
 public interface YbFlowInfoMapper extends BaseMapper<YbFlowInfo> {
 
+    List<YbFlowInfo> selectYbFlowInfoList(ArecordQueReq arecordQueReq);
 }

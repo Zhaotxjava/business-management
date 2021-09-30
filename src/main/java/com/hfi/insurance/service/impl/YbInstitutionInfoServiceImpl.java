@@ -13,15 +13,9 @@ import com.hfi.insurance.common.ApiResponse;
 import com.hfi.insurance.common.ExcelUtil;
 import com.hfi.insurance.common.PageDto;
 import com.hfi.insurance.enums.ErrorCodeEnum;
-import com.hfi.insurance.mapper.YbInstitutionInfoChangeMapper;
-import com.hfi.insurance.mapper.YbInstitutionInfoMapper;
-import com.hfi.insurance.mapper.YbInstitutionPicPathMapper;
-import com.hfi.insurance.mapper.YbOrgTdMapper;
+import com.hfi.insurance.mapper.*;
 import com.hfi.insurance.model.*;
-import com.hfi.insurance.model.dto.InstitutionInfoAddReq;
-import com.hfi.insurance.model.dto.InstitutionInfoQueryReq;
-import com.hfi.insurance.model.dto.OrgTdQueryReq;
-import com.hfi.insurance.model.dto.YbInstitutionInfoChangeReq;
+import com.hfi.insurance.model.dto.*;
 import com.hfi.insurance.model.dto.res.InstitutionInfoRes;
 import com.hfi.insurance.model.sign.BindedAgentBean;
 import com.hfi.insurance.model.sign.QueryOuterOrgResult;
@@ -74,6 +68,9 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
     private YbInstitutionPicPathMapper ybInstitutionPicPathMapper;
     @Autowired
     private FTPUploadUtil ftpUploadUtil;
+
+    @Autowired
+    private  YbFlowInfoMapper  ybFlowInfoMapper;
 
 
     @Override
@@ -586,7 +583,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
     }
 
     @Override
-    public ApiResponse getInstitutionInfobxList(InstitutionInfoQueryReq institutionInfoQueryReq) {
+    public ApiResponse getInstitutionInfobxList(InstitutionInfoQueryReq institutionInfoQueryReq,String token) {
 
         institutionInfoQueryReq.setPageNum((institutionInfoQueryReq.getPageNum()-1)*institutionInfoQueryReq.getPageSize());
         List<YbInstitutionInfo> ybInstitutionInfos = institutionInfoMapper.getInstitutionInfobxList(institutionInfoQueryReq);
@@ -892,6 +889,21 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         queryWrapper.in("number",inputSet);
         List<YbInstitutionInfo> list = institutionInfoMapper.selectList(queryWrapper);
         return list;
+    }
+
+
+    @Override
+    public ApiResponse getArecordList(ArecordQueReq arecordQueReq) {
+
+        arecordQueReq.setPageNum((arecordQueReq.getPageNum()-1)*arecordQueReq.getPageSize());
+         List<YbFlowInfo>YbFlowInfoList= ybFlowInfoMapper.selectYbFlowInfoList(arecordQueReq);
+         if (YbFlowInfoList.size()>0){
+             Page<YbFlowInfo> page = new Page<>();
+             page.setRecords(YbFlowInfoList);
+             page.setTotal(YbFlowInfoList.size());
+             return  new ApiResponse(page);
+         }
+        return new ApiResponse("200","无符合条件");
     }
 
 }

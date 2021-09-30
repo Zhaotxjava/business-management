@@ -7,10 +7,7 @@ import com.hfi.insurance.model.YbInstitutionInfo;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.hfi.insurance.model.YbInstitutionInfoChange;
 import com.hfi.insurance.model.YbOrgTd;
-import com.hfi.insurance.model.dto.InstitutionInfoAddReq;
-import com.hfi.insurance.model.dto.InstitutionInfoQueryReq;
-import com.hfi.insurance.model.dto.OrgTdQueryReq;
-import com.hfi.insurance.model.dto.YbInstitutionInfoChangeReq;
+import com.hfi.insurance.model.dto.*;
 import com.hfi.insurance.model.dto.res.InstitutionInfoRes;
 
 import javax.servlet.http.HttpServletResponse;
@@ -53,7 +50,9 @@ public interface IYbInstitutionInfoService extends IService<YbInstitutionInfo> {
 
     void exportExcel2(HttpServletResponse response);
 
-    ApiResponse getInstitutionInfobxList(InstitutionInfoQueryReq institutionInfoQueryReq);
+    ApiResponse getInstitutionInfobxList(InstitutionInfoQueryReq institutionInfoQueryReq,String token);
 
     List<YbInstitutionInfo> findLegalInstitution(Set<String> inputSet);
+
+    ApiResponse getArecordList(ArecordQueReq arecordQueReq);
 }
