@@ -34,7 +34,7 @@
     <sql id="YbFlowInfoWhere">
         <where>
             <if test="subject!=null  and subject!=''">
-                subject = #{subject}
+                subject like concat ('%',#{subject},'%')
             </if>
 
             <if test="mindateTime!=null">
