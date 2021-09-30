@@ -2,6 +2,8 @@ package com.hfi.insurance.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.hfi.insurance.common.ApiResponse;
 import com.hfi.insurance.enums.ErrorCodeEnum;
 import com.hfi.insurance.model.ExcelSheetPO;
@@ -250,6 +252,20 @@ public class InstitutionController {
     public ApiResponse getArecordList(@RequestBody ArecordQueReq  arecordQueReq) {
 
         return institutionInfoService.getArecordList(arecordQueReq);
+    }
+
+
+    @SneakyThrows
+    @GetMapping("/exportExcel3")
+    @ApiOperation("批量发起的记录表格导出")
+    public void exportExcel3(String mindateTime, String maxdateTime,HttpServletResponse response) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        ArecordQueReq arecordQueReq = new ArecordQueReq();
+        if (!StringUtils.isEmpty(mindateTime) && !StringUtils.isEmpty(maxdateTime)) {
+            arecordQueReq.setMaxdateTime(sdf.parse(maxdateTime));
+            arecordQueReq.setMindateTime(sdf.parse(mindateTime));
+        }
+         institutionInfoService.exportExcel3(arecordQueReq,response);
     }
 
 }

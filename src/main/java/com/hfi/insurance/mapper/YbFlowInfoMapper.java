@@ -17,4 +17,7 @@ import java.util.List;
 public interface YbFlowInfoMapper extends BaseMapper<YbFlowInfo> {
 
     List<YbFlowInfo> selectYbFlowInfoList(ArecordQueReq arecordQueReq);
+
+
+    List<YbFlowInfo> selectExportYbFlowInfoList(ArecordQueReq arecordQueReq);
 }

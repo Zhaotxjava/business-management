@@ -55,4 +55,7 @@ public interface IYbInstitutionInfoService extends IService<YbInstitutionInfo> {
     List<YbInstitutionInfo> findLegalInstitution(Set<String> inputSet);
 
     ApiResponse getArecordList(ArecordQueReq arecordQueReq);
+
+
+    void exportExcel3(ArecordQueReq arecordQueReq,HttpServletResponse response);
 }

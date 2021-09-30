@@ -86,5 +86,38 @@ public class ExcelUtil {
 		}
 	}
 
+	public static void exportExcel2(List<?> data,XSSFWorkbook excel,String name) {
+		try {
+			XSSFSheet sheet = excel.createSheet(name);
+			XSSFRow title = sheet.createRow(0);
+			//要用反射,必须先拿到Class对象
+			Class<?> cls = data.get(0).getClass();
+			Field[] fields = cls.getDeclaredFields();
+			for (int i = 0; i < fields.length; i++) {//循环所有字段
+				ExportExcel annotation = fields[i].getAnnotation(ExportExcel.class);//获取字段上面的ExportExcel注解
+				if (annotation != null) {//获取我们自定义注解,如果不为空,则标识字段上有这个注解
+					title.createCell(i).setCellValue(annotation.name());
+					sheet.setColumnWidth(i, 30 * 256);
+				}
+			}
+			for (int i = 0; i < data.size(); i++) {//循环集合,创建row行
+				XSSFRow row = sheet.createRow(i + 1);//创建一行
+				Object obj = data.get(i);//获取对象
+				for (int j = 0; j < fields.length; j++) {//循环所有字段
+					ExportExcel annotation = fields[j].getAnnotation(ExportExcel.class);//获取字段上面的ExportExcel注解
+					if (annotation != null) {//如果不等于空,则通过反射,获取字段中的数据
+
+						fields[j].setAccessible(true);//让他有权限获取私有字段
+						if (fields[j].get(obj) != null) {
+							row.createCell(j).setCellValue(fields[j].get(obj).toString());
+						}
+					}
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
 
 }
