@@ -60,4 +60,9 @@
         <include refid="YbFlowInfoWhere"/>
     </select>
 
+    <select id="selecttYbFlowInfoCount" parameterType="com.hfi.insurance.model.dto.ArecordQueReq" resultType="int">
+        select COUNT(*) from yb_flow_info
+        <include refid="YbFlowInfoWhere"/>
+    </select>
+
 </mapper>

@@ -589,9 +589,10 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         institutionInfoQueryReq.setPageNum((institutionInfoQueryReq.getPageNum() - 1) * institutionInfoQueryReq.getPageSize());
         List<YbInstitutionInfo> ybInstitutionInfos = institutionInfoMapper.getInstitutionInfobxList(institutionInfoQueryReq);
         if (ybInstitutionInfos.size() > 0) {
+            Integer ybInstitutionInfosCount = institutionInfoMapper.selectInstitutionInfobxCount(institutionInfoQueryReq);
             Page<YbInstitutionInfo> page = new Page<>();
             page.setRecords(ybInstitutionInfos);
-            page.setTotal(ybInstitutionInfos.size());
+            page.setTotal(ybInstitutionInfosCount);
             return new ApiResponse(page);
         }
         List<YbOrgTd> YbOrgTdList = orgTdMapper.getorgTdbxList(institutionInfoQueryReq);
@@ -602,10 +603,14 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
                 ybInstitutionInfo.setNumber(x.getAkb020());
                 ybInstitutionInfo.setInstitutionName(x.getAkb021());
                 YbInstitutionInfolist.add(ybInstitutionInfo);
+
             });
+            QueryWrapper<YbOrgTd> objectQueryWrapper = new QueryWrapper<>();
+            objectQueryWrapper.like("AKB020","%bx%");
+            Integer YbInstitutionInfoCount = orgTdMapper.selectCount(objectQueryWrapper);
             Page<YbInstitutionInfo> page = new Page<>();
             page.setRecords(YbInstitutionInfolist);
-            page.setTotal(YbOrgTdList.size());
+            page.setTotal(YbInstitutionInfoCount);
             return new ApiResponse(page);
 
 
@@ -902,9 +907,11 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         arecordQueReq.setPageNum((arecordQueReq.getPageNum() - 1) * arecordQueReq.getPageSize());
         List<YbFlowInfo> YbFlowInfoList = ybFlowInfoMapper.selectYbFlowInfoList(arecordQueReq);
         if (YbFlowInfoList.size() > 0) {
+
+            Integer integer= ybFlowInfoMapper.selecttYbFlowInfoCount(arecordQueReq);
             Page<YbFlowInfo> page = new Page<>();
             page.setRecords(YbFlowInfoList);
-            page.setTotal(YbFlowInfoList.size());
+            page.setTotal(integer);
             return new ApiResponse(page);
         }
         return new ApiResponse("200", "无符合条件");
