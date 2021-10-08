@@ -951,7 +951,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
             YbInstitutionInfo ybInstitutionInfo = numberMap.get(y.getNumber());
             if (!Objects.isNull(ybInstitutionInfo)) {
                 BeanUtils.copyProperties(numberMap.get(y.getNumber()), ybFlowDownload);
-                ybFlowDownload.setInstitutionCardType(ybInstitutionInfo.getLegalCardType());
+                ybFlowDownload.setInstitutionCardType("营业执照");
                 ybFlowDownload.setInstitutionCardCode(ybInstitutionInfo.getOrgInstitutionCode());
                 ybFlowDownload.setLegalCardCode(ybInstitutionInfo.getLegalIdCard());
                 ybFlowDownload.setContactCardCode(ybInstitutionInfo.getContactIdCard());
