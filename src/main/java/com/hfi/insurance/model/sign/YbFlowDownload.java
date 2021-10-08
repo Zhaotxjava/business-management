@@ -136,7 +136,7 @@ public class YbFlowDownload implements Serializable {
      */
     @ApiModelProperty("是否发起成功")
     @ExportExcel(name="是否发起成功")
-    private String result;
+    private String signStatus;
 
 
     /**

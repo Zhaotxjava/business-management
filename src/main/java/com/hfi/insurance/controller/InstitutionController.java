@@ -269,6 +269,7 @@ public class InstitutionController {
             arecordQueReq.setMaxdateTime(sdf.parse(maxdateTime));
             arecordQueReq.setMindateTime(sdf.parse(mindateTime));
         }
+
          institutionInfoService.exportExcel3(arecordQueReq,response);
     }
 
