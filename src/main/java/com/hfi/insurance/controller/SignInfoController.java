@@ -69,13 +69,16 @@ public class SignInfoController {
 
     @GetMapping("getSignFlowDocUrls")
     @ApiOperation("查看")
-    public ApiResponse getSignFlowDocUrls(@RequestParam("flowId") String flowId){
-        return signedInfoBizService.getSignFlowDocUrls(flowId);
+    public ApiResponse getSignFlowDocUrls(@RequestParam("signFlowId") String signFlowId){
+        return signedInfoBizService.getSignFlowDocUrls(signFlowId);
     }
 
     @PostMapping("getSignUrl")
     @ApiOperation("获取二维码")
     public ApiResponse getSignUrl(@RequestBody GetSignUrlsReq req){
+        if(req.getAccountId().isEmpty()){
+            return ApiResponse.fail(ErrorCodeEnum.PARAM_ERROR,"未检测到商户信息注册信息");
+        }
         return signedInfoBizService.getSignUrls(req);
     }
 }

@@ -10,7 +10,9 @@ import lombok.Data;
  */
 @Data
 public class GetSignUrlsReq {
-    @ApiModelProperty("流程id")
+//    @ApiModelProperty("流程id")
+//    private String flowId;
+    @ApiModelProperty("天印系统流程id")
     private String signFlowId;
     @ApiModelProperty("用户类型;1内部，2外部")
     private String accountType;

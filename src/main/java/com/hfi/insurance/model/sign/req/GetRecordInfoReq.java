@@ -12,8 +12,8 @@ import lombok.Data;
 @Data
 public class GetRecordInfoReq extends PageReq {
 
-    @ApiModelProperty("流程id")
-    private Integer flowId;
+    @ApiModelProperty("天印流程id")
+    private Integer signFlowId;
 
     @ApiModelProperty("流程名称")
     private String subject;

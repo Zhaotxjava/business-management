@@ -97,7 +97,7 @@ public class SignedBizServiceImpl implements SignedBizService {
 //        String organizeNo = (String) session.getAttribute("areaCode");
 //        String institutionNumber = (String) session.getAttribute("number");
         ETemplateType templateType = EnumHelper.translate(ETemplateType.class, req.getTemplateType());
-        String batchNo = UUID.randomUUID().toString().replace("-", "");
+
         //用于记录填充number-甲乙丙丁方关系
         Map<String, String> flowNameMap = new HashMap<>();
         //填充模板的形式发起签署
@@ -225,7 +225,7 @@ public class SignedBizServiceImpl implements SignedBizService {
 //                if (signFlows.containsKey("errCode")) {
 //                    return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), signFlows.getString("msg"));
 //                }
-                handleCreateSign(batchNo, institutionInfos, partyA, institutionNames, copyViewerInfoBeans
+                handleCreateSign(institutionInfos, partyA, institutionNames, copyViewerInfoBeans
                         , subject, fileKey, organizeNo, templateType, institutionNumber, singerList, signDocs,flowNameMap);
 //                String signFlowId = signFlows.getString("signFlowId");
 //                List<InstitutionBaseInfo> distinctInstitutions = institutionInfos.stream().distinct().collect(Collectors.toList());
@@ -349,7 +349,7 @@ public class SignedBizServiceImpl implements SignedBizService {
 //                return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), signFlows.getString("msg"));
 //            }
 
-            handleCreateSign(batchNo, institutionInfos, partyA, institutionNames, copyViewerInfoBeans
+            handleCreateSign(institutionInfos, partyA, institutionNames, copyViewerInfoBeans
                     , subject, fileKey, organizeNo, templateType, institutionNumber, singerList, signDocs,flowNameMap);
 
 //            String signFlowId = signFlows.getString("signFlowId");
@@ -859,7 +859,7 @@ public class SignedBizServiceImpl implements SignedBizService {
     }
 
     //创建流程出参处理
-    public ApiResponse handleCreateSign(String batchNo, List<InstitutionBaseInfo> institutionInfos
+    public ApiResponse handleCreateSign(List<InstitutionBaseInfo> institutionInfos
             , StandardSignerInfoBean partyA, List<String> institutionNames, List<CopyViewerInfoBean> copyViewerInfoBeans
             , String subject, String fileKey, String organizeNo, ETemplateType templateType, String institutionNumber
             , List<StandardSignerInfoBean> singerList, List<FlowDocBean> signDocs,Map<String,String> flowNameMap) {
@@ -905,7 +905,7 @@ public class SignedBizServiceImpl implements SignedBizService {
                     .setSignStatus("0")
                     .setFlowType("Common")
                     .setFlowName(flowNameMap.get(institutionInfo.getNumber()))
-                    .setBatchNo(batchNo);
+//                    .setBatchNo(batchNo);
             ;
             if (ETemplateType.TEMPLATE_FILL == templateType) {
                 flowInfo.setInitiatorTime(now);
@@ -949,7 +949,8 @@ public class SignedBizServiceImpl implements SignedBizService {
                 .setSignStatus("0")
                 .setFlowType("Common")
                 .setFlowName(flowNameMap.get(organizeNo))
-                .setBatchNo(batchNo);
+//                .setBatchNo(batchNo)
+        ;
         if (ETemplateType.TEMPLATE_FILL == templateType) {
             flowAInfo.setInitiatorTime(now);
         } else if (ETemplateType.FILE_UPLOAD == templateType) {
