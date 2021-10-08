@@ -258,9 +258,13 @@ public class InstitutionController {
     @SneakyThrows
     @GetMapping("/exportExcel3")
     @ApiOperation("批量发起的记录表格导出")
-    public void exportExcel3(String mindateTime, String maxdateTime,HttpServletResponse response) {
+    public void exportExcel3(String subject,String mindateTime, String maxdateTime,HttpServletResponse response) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        if(StringUtils.isBlank(subject)){
+            return;
+        }
         ArecordQueReq arecordQueReq = new ArecordQueReq();
+        arecordQueReq.setSubject(subject);
         if (!StringUtils.isEmpty(mindateTime) && !StringUtils.isEmpty(maxdateTime)) {
             arecordQueReq.setMaxdateTime(sdf.parse(maxdateTime));
             arecordQueReq.setMindateTime(sdf.parse(mindateTime));

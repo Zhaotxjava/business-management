@@ -19,6 +19,7 @@ import com.hfi.insurance.model.dto.*;
 import com.hfi.insurance.model.dto.res.InstitutionInfoRes;
 import com.hfi.insurance.model.sign.BindedAgentBean;
 import com.hfi.insurance.model.sign.QueryOuterOrgResult;
+import com.hfi.insurance.model.sign.YbFlowDownload;
 import com.hfi.insurance.service.IYbInstitutionInfoService;
 import com.hfi.insurance.service.OrganizationsService;
 import com.hfi.insurance.utils.FTPUploadUtil;
@@ -72,6 +73,8 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
 
     @Autowired
     private YbFlowInfoMapper ybFlowInfoMapper;
+    @Autowired
+    private YbInstitutionInfoMapper ybInstitutionInfoMapper;
 
 
     @Override
@@ -914,33 +917,59 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
     public void exportExcel3(ArecordQueReq arecordQueReq, HttpServletResponse response) {
 
         List<YbFlowInfo> YbFlowInfoList = ybFlowInfoMapper.selectExportYbFlowInfoList(arecordQueReq);
-        List<YbFlowInfo> list1 = new ArrayList();
-        List<YbFlowInfo> list2 = new ArrayList();
-        List<YbFlowInfo> list3 = new ArrayList();
-        for (YbFlowInfo ybFlowInfo : YbFlowInfoList) {
-            if (ybFlowInfo.getFlowName() == null) {
+        Set<String> numberSet = new HashSet<>();
+        YbFlowInfoList.forEach(y -> {
+            numberSet.add(y.getNumber());
+        });
+        QueryWrapper<YbInstitutionInfo> queryWrapper = new QueryWrapper<>();
+        queryWrapper.in("number", numberSet);
+        List<YbInstitutionInfo> ybInstitutionInfoList = ybInstitutionInfoMapper.selectList(queryWrapper);
+        Map<String, YbInstitutionInfo> numberMap = new HashMap<>();
+        ybInstitutionInfoList.forEach(y -> {
+            numberMap.put(y.getNumber(), y);
+        });
+        log.info("numberMap = {}",JSONObject.toJSONString(numberMap));
+
+        List<YbFlowDownload> res = new LinkedList<>();
+        YbFlowInfoList.forEach(y -> {
+            YbFlowDownload ybFlowDownload = new YbFlowDownload();
+            ybFlowDownload.setNumber(y.getNumber());
+            ybFlowDownload.setSignerType(y.getFlowName());
+            YbInstitutionInfo ybInstitutionInfo = numberMap.get(y.getNumber());
+            if(!Objects.isNull(ybInstitutionInfo)){
+                BeanUtils.copyProperties(numberMap.get(y.getNumber()),ybFlowDownload);
+            }
+            res.add(ybFlowDownload);
+        });
+
+            log.info("List<YbFlowDownload> res = {}",JSONObject.toJSON(res));
+
+        List<YbFlowDownload> list1 = new ArrayList();
+        List<YbFlowDownload> list2 = new ArrayList();
+        List<YbFlowDownload> list3 = new ArrayList();
+        XSSFWorkbook excel = new XSSFWorkbook();
+        for (YbFlowDownload ybFlowDownload : res) {
+            if (ybFlowDownload.getSignerType() == null) {
                 continue;
             }
-            switch (ybFlowInfo.getFlowName()) {
+            switch (ybFlowDownload.getSignerType()) {
                 case "甲方":
-                    list1.add(ybFlowInfo);
+                    list1.add(ybFlowDownload);
                     break;
                 case "乙方":
-                    list2.add(ybFlowInfo);
+                    list2.add(ybFlowDownload);
                     break;
                 case "丙方":
-                    list3.add(ybFlowInfo);
+                    list3.add(ybFlowDownload);
                     break;
                 default:
                     break;
             }
-            XSSFWorkbook excel = new XSSFWorkbook();
-            ExcelUtil.exportExcel2(list1, excel, "甲方");
-            ExcelUtil.exportExcel2(list2, excel, "乙方");
-            ExcelUtil.exportExcel2(list3, excel, "丙方");
-            ExcelUtil.xlsDownloadFile(response, excel);
-
         }
+        ExcelUtil.exportExcel2(list1, excel, "甲方");
+        ExcelUtil.exportExcel2(list2, excel, "乙方");
+        ExcelUtil.exportExcel2(list3, excel, "丙方");
+        ExcelUtil.xlsDownloadFile(response, excel);
 
     }
 
