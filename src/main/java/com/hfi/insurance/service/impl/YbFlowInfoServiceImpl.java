@@ -32,8 +32,8 @@ public class YbFlowInfoServiceImpl extends ServiceImpl<YbFlowInfoMapper, YbFlowI
         if (StringUtils.isNotBlank(req.getSignStatus())) {
             queryWrapper.eq("sign_status", req.getSignStatus());
         }
-        if (null != req.getFlowId()) {
-            queryWrapper.eq("sign_flow_id", req.getFlowId());
+        if (null != req.getSignFlowId()) {
+            queryWrapper.eq("sign_flow_id", req.getSignFlowId());
         }
         if (null != req.getFlowStatus()) {
             queryWrapper.eq("flow_status", req.getFlowStatus());

@@ -118,12 +118,12 @@ public class YbFlowInfo implements Serializable {
 
     private Date updateTime;
 
-    /**
-     * 批次ID，用于区别每次请求
-     */
-    @ApiModelProperty("批次ID")
-    @ExportExcel(name="批次ID")
-    private String batchNo;
+//    /**
+//     * 批次ID，用于区别每次请求
+//     */
+//    @ApiModelProperty("批次ID")
+//    @ExportExcel(name="批次ID")
+//    private String batchNo;
 
     /**
      * 机构签署区域 甲方,丙方,乙方……

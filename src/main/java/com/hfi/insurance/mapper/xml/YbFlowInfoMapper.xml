@@ -21,7 +21,6 @@
         <result column="file_key" property="fileKey" />
         <result column="create_time" property="createTime" />
         <result column="update_time" property="updateTime" />
-        <result column="batch_no" property="batchNo" />
         <result column="flow_name" property="flowName" />
     </resultMap>
 
