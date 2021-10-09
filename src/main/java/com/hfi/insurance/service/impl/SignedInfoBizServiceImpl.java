@@ -66,7 +66,7 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
         JSONObject jsonObject = JSON.parseObject(jsonStr);
         String institutionNumber = jsonObject.getString("number");
         Page<YbFlowInfo> flowInfoPage = flowInfoService.getSignedRecord(institutionNumber,req);
-        Integer signedRecordCount = flowInfoService.getSignedRecordCount(institutionNumber, req);
+       // Integer signedRecordCount = flowInfoService.getSignedRecordCount(institutionNumber, req);
         Page<SignRecordsRes> signRecordsResPage = new Page<>();
         BeanUtils.copyProperties(flowInfoPage, signRecordsResPage);
         List<YbFlowInfo> flowInfos = flowInfoPage.getRecords();
@@ -107,7 +107,7 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
             recordResList.add(recordsRes);
         }
         signRecordsResPage.setRecords(recordResList);
-        signRecordsResPage.setTotal(signedRecordCount);
+        signRecordsResPage.setTotal(flowInfos.size());
         return new ApiResponse(signRecordsResPage);
     }
 

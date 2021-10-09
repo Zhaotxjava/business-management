@@ -907,6 +907,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
     public ApiResponse getArecordList(ArecordQueReq arecordQueReq) {
 
         arecordQueReq.setPageNum((arecordQueReq.getPageNum() - 1) * arecordQueReq.getPageSize());
+
         List<YbFlowInfo> YbFlowInfoList = ybFlowInfoMapper.selectYbFlowInfoList(arecordQueReq);
         if (YbFlowInfoList.size() > 0) {
 

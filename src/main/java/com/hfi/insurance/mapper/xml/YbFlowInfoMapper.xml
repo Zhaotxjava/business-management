@@ -37,6 +37,9 @@
             <if test="subject!=null  and subject!=''">
                 subject like concat ('%',#{subject},'%')
             </if>
+             <if test="batchno!=null  and batchno!=''">
+                 batch_no like concat ('%',#{batchno},'%')
+            </if>
 
             <if test="mindateTime!=null">
                 and update_time >= #{mindateTime}
@@ -45,6 +48,7 @@
             <if test="maxdateTime!=null">
                 and update_time &lt; #{maxdateTime}
             </if>
+
         </where>
     </sql>
 
