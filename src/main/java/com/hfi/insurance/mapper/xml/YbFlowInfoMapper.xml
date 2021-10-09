@@ -49,20 +49,32 @@
                 and update_time &lt; #{maxdateTime}
             </if>
 
+
         </where>
     </sql>
 
     <select id="selectYbFlowInfoList" parameterType="com.hfi.insurance.model.dto.ArecordQueReq" resultType="com.hfi.insurance.model.YbFlowInfo">
         select  t.* from
         (SELECT * FROM    yb_flow_info
-        <include refid="YbFlowInfoWhere"/>
+        WHERE   flow_id =
+        (select min(flow_id) from yb_flow_info
+        WHERE
+        <if test="batchno!=null  and batchno!=''">
+            batch_no like concat ('%',#{batchno},'%')
+        </if>
+        )
         order by update_time desc) t
         limit #{pageNum},#{pageSize}
+
+
+
+
 
     </select>
     <select id="selectExportYbFlowInfoList" parameterType="com.hfi.insurance.model.dto.ArecordQueReq" resultType="com.hfi.insurance.model.YbFlowInfo">
         select * from yb_flow_info
         <include refid="YbFlowInfoWhere"/>
+
     </select>
 
     <select id="selecttYbFlowInfoCount" parameterType="com.hfi.insurance.model.dto.ArecordQueReq" resultType="int">

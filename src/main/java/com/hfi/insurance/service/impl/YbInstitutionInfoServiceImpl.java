@@ -1,5 +1,6 @@
 package com.hfi.insurance.service.impl;
 
+import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -36,6 +37,7 @@ import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -909,11 +911,24 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         arecordQueReq.setPageNum((arecordQueReq.getPageNum() - 1) * arecordQueReq.getPageSize());
 
         List<YbFlowInfo> YbFlowInfoList = ybFlowInfoMapper.selectYbFlowInfoList(arecordQueReq);
-        if (YbFlowInfoList.size() > 0) {
 
+        if (YbFlowInfoList.size() > 0) {
+            List<GetArecordReq> getArecordReqList=new ArrayList<>();
+            for (YbFlowInfo x : YbFlowInfoList) {
+
+                    String batchNo = x.getBatchNo();
+                    String[] split = batchNo.split("-");
+                    GetArecordReq getArecordReq = new GetArecordReq();
+                    getArecordReq.setDocumentName(batchNo);
+                    getArecordReq.setRecordName(split[1]);
+                    getArecordReq.setCreationDate(DateUtil.dateNew(x.getInitiatorTime()));
+                    getArecordReqList.add(getArecordReq);
+
+
+            }
             Integer integer = ybFlowInfoMapper.selecttYbFlowInfoCount(arecordQueReq);
-            Page<YbFlowInfo> page = new Page<>();
-            page.setRecords(YbFlowInfoList);
+            Page<GetArecordReq> page = new Page<>();
+            page.setRecords(getArecordReqList);
             page.setTotal(integer);
             return new ApiResponse(page);
         }
