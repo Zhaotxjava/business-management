@@ -14,4 +14,6 @@ import com.hfi.insurance.model.sign.req.GetRecordInfoReq;
  */
 public interface IYbFlowInfoService extends IService<YbFlowInfo> {
     Page<YbFlowInfo> getSignedRecord(String institutionNumber,GetRecordInfoReq req);
+
+    Integer getSignedRecordCount(String institutionNumber, GetRecordInfoReq req);
 }
