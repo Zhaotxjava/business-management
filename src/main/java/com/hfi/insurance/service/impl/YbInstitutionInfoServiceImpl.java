@@ -607,7 +607,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
 
             });
             QueryWrapper<YbOrgTd> objectQueryWrapper = new QueryWrapper<>();
-            objectQueryWrapper.like("AKB020","%bx%");
+            objectQueryWrapper.like("AKB020", "%bx%");
             Integer YbInstitutionInfoCount = orgTdMapper.selectCount(objectQueryWrapper);
             Page<YbInstitutionInfo> page = new Page<>();
             page.setRecords(YbInstitutionInfolist);
@@ -909,7 +909,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         List<YbFlowInfo> YbFlowInfoList = ybFlowInfoMapper.selectYbFlowInfoList(arecordQueReq);
         if (YbFlowInfoList.size() > 0) {
 
-            Integer integer= ybFlowInfoMapper.selecttYbFlowInfoCount(arecordQueReq);
+            Integer integer = ybFlowInfoMapper.selecttYbFlowInfoCount(arecordQueReq);
             Page<YbFlowInfo> page = new Page<>();
             page.setRecords(YbFlowInfoList);
             page.setTotal(integer);
@@ -933,21 +933,33 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         ybInstitutionInfoList.forEach(y -> {
             numberMap.put(y.getNumber(), y);
         });
-        log.info("numberMap = {}",JSONObject.toJSONString(numberMap));
+        log.info("numberMap = {}", JSONObject.toJSONString(numberMap));
 
         List<YbFlowDownload> res = new LinkedList<>();
         YbFlowInfoList.forEach(y -> {
             YbFlowDownload ybFlowDownload = new YbFlowDownload();
             ybFlowDownload.setNumber(y.getNumber());
             ybFlowDownload.setSignerType(y.getFlowName());
+            if(StringUtils.isNotBlank(y.getSignStatus())){
+                if ("2".equals(y.getSignStatus())) {
+                    ybFlowDownload.setSignStatus("成功");
+                } else {
+                    ybFlowDownload.setSignStatus("失败");
+                }
+
+            }
             YbInstitutionInfo ybInstitutionInfo = numberMap.get(y.getNumber());
-            if(!Objects.isNull(ybInstitutionInfo)){
-                BeanUtils.copyProperties(numberMap.get(y.getNumber()),ybFlowDownload);
+            if (!Objects.isNull(ybInstitutionInfo)) {
+                BeanUtils.copyProperties(numberMap.get(y.getNumber()), ybFlowDownload);
+                ybFlowDownload.setInstitutionCardType("营业执照");
+                ybFlowDownload.setInstitutionCardCode(ybInstitutionInfo.getOrgInstitutionCode());
+                ybFlowDownload.setLegalCardCode(ybInstitutionInfo.getLegalIdCard());
+                ybFlowDownload.setContactCardCode(ybInstitutionInfo.getContactIdCard());
             }
             res.add(ybFlowDownload);
         });
 
-            log.info("List<YbFlowDownload> res = {}",JSONObject.toJSON(res));
+        log.info("List<YbFlowDownload> res = {}", JSONObject.toJSON(res));
 
         List<YbFlowDownload> list1 = new ArrayList();
         List<YbFlowDownload> list2 = new ArrayList();
@@ -974,7 +986,9 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         ExcelUtil.exportExcel2(list1, excel, "甲方");
         ExcelUtil.exportExcel2(list2, excel, "乙方");
         ExcelUtil.exportExcel2(list3, excel, "丙方");
-        ExcelUtil.xlsDownloadFile(response, excel);
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        String fileName = arecordQueReq.getSubject() +"-"+ sdf.format(System.currentTimeMillis());
+        ExcelUtil.xlsDownloadFile2(response, excel,fileName);
 
     }
 

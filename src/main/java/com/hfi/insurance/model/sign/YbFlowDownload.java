@@ -25,24 +25,9 @@ public class YbFlowDownload implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-
-
-    @ApiModelProperty("id")
-    @TableId(type = IdType.INPUT)
-    @ExportExcel(name="id")
-    private Long id;
-
-    /**
-     * 批次ID，用于区别每次请求
-     */
-    @ApiModelProperty("批次ID")
-    @ExportExcel(name="批次ID")
-    private String batchId;
-
     @ApiModelProperty("机构编号")
     @ExportExcel(name="机构编号")
     private String number;
-
 
     /**
      * 机构名称
@@ -136,7 +121,7 @@ public class YbFlowDownload implements Serializable {
      */
     @ApiModelProperty("是否发起成功")
     @ExportExcel(name="是否发起成功")
-    private String result;
+    private String signStatus;
 
 
     /**
@@ -145,24 +130,6 @@ public class YbFlowDownload implements Serializable {
 //    @ApiModelProperty("机构签署区域")
 //    @ExportExcel(name="机构签署区域")
     private String signerType;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

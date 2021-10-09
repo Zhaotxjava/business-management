@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.hfi.insurance.config.ExportExcel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 
 import java.io.Serializable;
 
@@ -13,6 +14,7 @@ import java.io.Serializable;
  * @description: TODO
  * @date 2021/9/30 15:21
  */
+@Data
 public class YbInstitutionInfoDownload implements Serializable {
 
 
@@ -122,5 +124,5 @@ public class YbInstitutionInfoDownload implements Serializable {
      */
     @ApiModelProperty("是否发起成功")
     @ExportExcel(name = "是否发起成功")
-    private String launchReslut;
+    private String signStatus;
 }
