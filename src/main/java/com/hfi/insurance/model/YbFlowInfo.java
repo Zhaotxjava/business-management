@@ -42,7 +42,7 @@ public class YbFlowInfo implements Serializable {
      * 流程名称
      */
     @ApiModelProperty("流程名称")
-    @ExportExcel(name="流程名称")
+        @ExportExcel(name="流程名称")
     private String subject;
 
     /**

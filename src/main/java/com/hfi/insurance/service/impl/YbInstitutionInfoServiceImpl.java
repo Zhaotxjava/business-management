@@ -585,7 +585,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
     }
 
     @Override
-    public ApiResponse getInstitutionInfobxList(InstitutionInfoQueryReq institutionInfoQueryReq, String token) {
+    public ApiResponse getInstitutionInfobxList(InstitutionInfoQueryReq institutionInfoQueryReq) {
 
         institutionInfoQueryReq.setPageNum((institutionInfoQueryReq.getPageNum() - 1) * institutionInfoQueryReq.getPageSize());
         List<YbInstitutionInfo> ybInstitutionInfos = institutionInfoMapper.getInstitutionInfobxList(institutionInfoQueryReq);

@@ -235,12 +235,9 @@ public class InstitutionController {
     @PostMapping("getInstitutionInfobxList")
     @ResponseBody
     @ApiOperation("筛选保险公司按钮")
-    public ApiResponse getInstitutionInfobxList(InstitutionInfoQueryReq institutionInfoQueryReq,HttpServletRequest httpRequest) {
-        String token = httpRequest.getHeader("token");
-        if (StringUtils.isBlank(token)) {
-            return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(), ErrorCodeEnum.PARAM_ERROR.getMessage());
-        }
-        return institutionInfoService.getInstitutionInfobxList(institutionInfoQueryReq,token);
+    public ApiResponse getInstitutionInfobxList(InstitutionInfoQueryReq institutionInfoQueryReq) {
+
+        return institutionInfoService.getInstitutionInfobxList(institutionInfoQueryReq);
     }
 
 

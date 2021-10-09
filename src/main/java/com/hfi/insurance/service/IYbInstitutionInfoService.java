@@ -50,7 +50,7 @@ public interface IYbInstitutionInfoService extends IService<YbInstitutionInfo> {
 
     void exportExcel2(HttpServletResponse response);
 
-    ApiResponse getInstitutionInfobxList(InstitutionInfoQueryReq institutionInfoQueryReq,String token);
+    ApiResponse getInstitutionInfobxList(InstitutionInfoQueryReq institutionInfoQueryReq);
 
     List<YbInstitutionInfo> findLegalInstitution(Set<String> inputSet);
 
@@ -58,4 +58,6 @@ public interface IYbInstitutionInfoService extends IService<YbInstitutionInfo> {
 
 
     void exportExcel3(ArecordQueReq arecordQueReq,HttpServletResponse response);
+
+
 }
