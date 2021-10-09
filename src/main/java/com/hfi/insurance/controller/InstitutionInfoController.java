@@ -90,11 +90,23 @@ public class InstitutionInfoController {
 //        session.setAttribute("areaCode",platid);
 //        session.setAttribute("number",hospitalid);
         log.info("host={}", request.getHeader("host"));
+        StringBuilder sb = new StringBuilder();
+        sb.append("redirect:");
         if (StringUtils.isNotEmpty(ntv)) {
-            return "redirect:" + redirectYbUrl + "?flag=" + flag + "&token=" + token + "&areaCode=" + platid;
+            sb.append(redirectYbUrl);
+//            return "redirect:" + redirectYbUrl + "?flag=" + flag + "&token=" + token + "&areaCode=" + platid +"&number="+hospitalid;
         } else {
-            return "redirect:" + redirectUrl + "?flag=" + flag + "&token=" + token + "&areaCode=" + platid;
+            sb.append(redirectUrl);
+//            return "redirect:" + redirectUrl + "?flag=" + flag + "&token=" + token + "&areaCode=" + platid+"&number="+hospitalid;
         }
+        sb.append("?flag=").append(flag).append("&token=").append(token)
+                .append("&areaCode=").append(platid);
+        if (hospitalid.startsWith("bx")) {
+            sb.append("&hospitalid=").append(hospitalid);
+        }
+
+        return sb.toString();
+
     }
 
 
@@ -126,7 +138,18 @@ public class InstitutionInfoController {
         jsonObject.put("loginAccount", loginaccount);
         caffeineCache.put(token, jsonObject.toJSONString());
         log.info("生成token={}，host={}，platid={}", token,request.getHeader("host"),platid);
-        return "redirect:" + redirectYbUrl + "?flag=" + flag + "&token=" + token + "&areaCode=" + platid;
+
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("redirect:").append(redirectUrl)
+                .append("?flag=").append(flag)
+                .append("&token=").append(token)
+                .append("&areaCode=").append(platid);
+        if (hospitalid.startsWith("bx")) {
+            sb.append("&hospitalid=").append(hospitalid);
+        }
+        return sb.toString();
+//        return "redirect:" + redirectYbUrl + "?flag=" + flag + "&token=" + token + "&areaCode=" + platid+"&number="+hospitalid;
 
     }
 
