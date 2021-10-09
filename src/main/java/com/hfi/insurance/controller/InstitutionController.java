@@ -115,7 +115,7 @@ public class InstitutionController {
         }
 
         CheckImportInstitutionRes res = new CheckImportInstitutionRes();
-        if(!excelSheetList.isEmpty()){
+        if (!excelSheetList.isEmpty()) {
             ExcelSheetPO excelSheetPO = excelSheetList.get(0);
 //            List<Object> numberRow = excelSheetPO.getDataList().get(0);
             Set<String> allNumber = new HashSet<>();
@@ -128,17 +128,17 @@ public class InstitutionController {
             //todo 判断是否符合正确的机构
             List<YbInstitutionInfo> list = institutionInfoService.findLegalInstitution(allNumber);
 
-            list.forEach(y->{
+            list.forEach(y -> {
                 res.getSuccessSet().add(y.getNumber());
             });
-            allNumber.forEach(number ->{
-                if(!res.getSuccessSet().contains(number)){
+            allNumber.forEach(number -> {
+                if (!res.getSuccessSet().contains(number)) {
                     res.getFailSet().add(number);
                 }
             });
 //            log.info("-----------------------------{}",JSONObject.toJSONString(res));
-        }else {
-            return ApiResponse.fail(ErrorCodeEnum.PARAM_ERROR," 请检查入参文件是否正确");
+        } else {
+            return ApiResponse.fail(ErrorCodeEnum.PARAM_ERROR, " 请检查入参文件是否正确");
         }
         return ApiResponse.success(res);
     }
@@ -241,12 +241,9 @@ public class InstitutionController {
     }
 
 
-
-
-
     @PostMapping("/getArecordList")
     @ApiOperation("发起记录分页查询")
-    public ApiResponse getArecordList(@RequestBody ArecordQueReq  arecordQueReq) {
+    public ApiResponse getArecordList(@RequestBody ArecordQueReq arecordQueReq) {
         return institutionInfoService.getArecordList(arecordQueReq);
     }
 
@@ -254,15 +251,15 @@ public class InstitutionController {
     @SneakyThrows
     @GetMapping("/exportExcel3")
     @ApiOperation("批量发起的记录表格导出")
-        public void exportExcel3(String subject,HttpServletResponse response) {
+    public void exportExcel3(String subject, HttpServletResponse response) {
 
-        if(StringUtils.isBlank(subject)){
+        if (StringUtils.isBlank(subject)) {
             return;
         }
         ArecordQueReq arecordQueReq = new ArecordQueReq();
         arecordQueReq.setSubject(subject);
 
-         institutionInfoService.exportExcel3(arecordQueReq,response);
+        institutionInfoService.exportExcel3(arecordQueReq, response);
     }
 
 }

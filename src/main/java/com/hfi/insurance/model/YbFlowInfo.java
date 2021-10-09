@@ -137,4 +137,9 @@ public class YbFlowInfo implements Serializable {
      */
     private String batchStatus;
 
+    /**
+     * 批量发起编号
+     */
+    private String batchNo;
+
 }

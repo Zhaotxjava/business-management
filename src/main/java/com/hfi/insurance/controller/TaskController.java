@@ -67,10 +67,10 @@ public class TaskController {
     public void signedStatusUpdate() {
         //流程状态（0草稿，1 签署中，2完成，3 撤销，4终止，5过 期，6删除，7拒 签，8作废，9已归 档，10预盖章）
         QueryWrapper<YbFlowInfo> objectQueryWrapper = new QueryWrapper<>();
-        objectQueryWrapper.between("update_time",DateUtil.yesterday(),new Date());
+        objectQueryWrapper.between("update_time", DateUtil.yesterday(), new Date());
 
         List<YbFlowInfo> list = ybFlowInfoMapper.selectList(objectQueryWrapper);
-        log.info("定时查询签署一共：{}个",list.size());
+        log.info("定时查询签署一共：{}个", list.size());
         for (YbFlowInfo ybFlowInfo : list
         ) {
             JSONObject signDetail = signedService.getSignDetail(ybFlowInfo.getFlowId());
@@ -116,7 +116,7 @@ public class TaskController {
                     //所有人都完成签署
                     if (count2 == singerInfos.size()) {
                         ybFlowInfo.setSignStatus("2");
-                    }else {
+                    } else {
                         ybFlowInfo.setSignStatus(status);
                     }
 //                    switch (singer.getSignStatus()) {
@@ -150,9 +150,9 @@ public class TaskController {
     @RequestMapping(value = "/pic/cleanPicCommitMap", method = RequestMethod.POST)
     @ApiOperation("cleanPicCommitMap")
     @Scheduled(cron = "0 0 */2 * * ?")
-    public void cleanPicCommitMap(){
-        PicUploadUtil.picCommitPath.forEach( (k,v) -> {
-            if(System.currentTimeMillis() - v.getCreateTime() > MAX_TIMEOUT){
+    public void cleanPicCommitMap() {
+        PicUploadUtil.picCommitPath.forEach((k, v) -> {
+            if (System.currentTimeMillis() - v.getCreateTime() > MAX_TIMEOUT) {
                 PicUploadUtil.picCommitPath.remove(k);
             }
         });
