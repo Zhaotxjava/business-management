@@ -132,5 +132,9 @@ public class YbFlowInfo implements Serializable {
     @ExportExcel(name="机构签署区域")
     private String flowName;
 
+    /**
+     * 批量发起状态，1为失败，2为成功
+     */
+    private String batchStatus;
 
 }

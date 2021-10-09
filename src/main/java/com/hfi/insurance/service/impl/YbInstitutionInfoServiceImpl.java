@@ -10,6 +10,7 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.hfi.insurance.aspect.anno.LogAnnotation;
 import com.hfi.insurance.common.ApiResponse;
 import com.hfi.insurance.common.ExcelUtil;
+import com.hfi.insurance.enums.Cons;
 import com.hfi.insurance.enums.ErrorCodeEnum;
 import com.hfi.insurance.mapper.*;
 import com.hfi.insurance.model.*;
@@ -940,8 +941,9 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
             YbFlowDownload ybFlowDownload = new YbFlowDownload();
             ybFlowDownload.setNumber(y.getNumber());
             ybFlowDownload.setSignerType(y.getFlowName());
-            if(StringUtils.isNotBlank(y.getSignStatus())){
-                if ("2".equals(y.getSignStatus())) {
+
+            if(StringUtils.isNotBlank(y.getBatchStatus())){
+                if (Cons.BatchStr.BATCH_STATUS_SUCCESS.equals(y.getBatchStatus())) {
                     ybFlowDownload.setSignStatus("成功");
                 } else {
                     ybFlowDownload.setSignStatus("失败");

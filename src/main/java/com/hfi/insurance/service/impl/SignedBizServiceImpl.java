@@ -8,10 +8,7 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.hfi.insurance.aspect.anno.LogAnnotation;
 import com.hfi.insurance.common.ApiResponse;
 import com.hfi.insurance.common.BizServiceException;
-import com.hfi.insurance.enums.EAccountType;
-import com.hfi.insurance.enums.ESignType;
-import com.hfi.insurance.enums.ETemplateType;
-import com.hfi.insurance.enums.ErrorCodeEnum;
+import com.hfi.insurance.enums.*;
 import com.hfi.insurance.model.YbFlowInfo;
 import com.hfi.insurance.model.YbInstitutionInfo;
 import com.hfi.insurance.model.sign.BindedAgentBean;
@@ -97,7 +94,7 @@ public class SignedBizServiceImpl implements SignedBizService {
 //        String organizeNo = (String) session.getAttribute("areaCode");
 //        String institutionNumber = (String) session.getAttribute("number");
         ETemplateType templateType = EnumHelper.translate(ETemplateType.class, req.getTemplateType());
-
+        StringBuilder errMsg = new StringBuilder();
         //用于记录填充number-甲乙丙丁方关系
         Map<String, String> flowNameMap = new HashMap<>();
         //填充模板的形式发起签署
@@ -225,7 +222,7 @@ public class SignedBizServiceImpl implements SignedBizService {
 //                if (signFlows.containsKey("errCode")) {
 //                    return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), signFlows.getString("msg"));
 //                }
-                handleCreateSign(institutionInfos, partyA, institutionNames, copyViewerInfoBeans
+                handleCreateSign(errMsg,institutionInfos, partyA, institutionNames, copyViewerInfoBeans
                         , subject, fileKey, organizeNo, templateType, institutionNumber, singerList, signDocs,flowNameMap);
 //                String signFlowId = signFlows.getString("signFlowId");
 //                List<InstitutionBaseInfo> distinctInstitutions = institutionInfos.stream().distinct().collect(Collectors.toList());
@@ -349,7 +346,7 @@ public class SignedBizServiceImpl implements SignedBizService {
 //                return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), signFlows.getString("msg"));
 //            }
 
-            handleCreateSign(institutionInfos, partyA, institutionNames, copyViewerInfoBeans
+            handleCreateSign(errMsg,institutionInfos, partyA, institutionNames, copyViewerInfoBeans
                     , subject, fileKey, organizeNo, templateType, institutionNumber, singerList, signDocs,flowNameMap);
 
 //            String signFlowId = signFlows.getString("signFlowId");
@@ -394,7 +391,8 @@ public class SignedBizServiceImpl implements SignedBizService {
         } else {
             return new ApiResponse(ErrorCodeEnum.SYSTEM_ERROR.getCode(), "文档类型不能为空！");
         }
-        return new ApiResponse(ErrorCodeEnum.SUCCESS.getCode(), ErrorCodeEnum.SUCCESS.getMessage());
+
+        return new ApiResponse(ErrorCodeEnum.SUCCESS.getCode(), errMsg.toString());
     }
 
     /**
@@ -859,7 +857,7 @@ public class SignedBizServiceImpl implements SignedBizService {
     }
 
     //创建流程出参处理
-    public ApiResponse handleCreateSign(List<InstitutionBaseInfo> institutionInfos
+    public ApiResponse handleCreateSign(StringBuilder errMsg ,List<InstitutionBaseInfo> institutionInfos
             , StandardSignerInfoBean partyA, List<String> institutionNames, List<CopyViewerInfoBean> copyViewerInfoBeans
             , String subject, String fileKey, String organizeNo, ETemplateType templateType, String institutionNumber
             , List<StandardSignerInfoBean> singerList, List<FlowDocBean> signDocs,Map<String,String> flowNameMap) {
@@ -876,12 +874,14 @@ public class SignedBizServiceImpl implements SignedBizService {
 
         //流程主题
         Date now = new Date();
-//        String subject = req.getTemplateId() + "-" + flowDocBean.getDocName() + "-" + DateUtil.getNowTimestampStr();
         standardCreateFlow.setSubject(subject);
         JSONObject signFlows = signedService.createSignFlows(standardCreateFlow);
         log.info("7.创建流程出参：{}", JSON.toJSONString(signFlows));
+        String BatchStatus = Cons.BatchStr.BATCH_STATUS_SUCCESS ;
         if (signFlows.containsKey("errCode")) {
-            return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), signFlows.getString("msg"));
+            BatchStatus = Cons.BatchStr.BATCH_STATUS_FAIL;
+            errMsg.append(" 创建签署流程失败，主题为:").append(subject).append("，E签宝失败原因:").append(signFlows.getString("msg"));
+//            return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), signFlows.getString("msg"));
         }
 
         String signFlowId = signFlows.getString("signFlowId");
@@ -891,6 +891,7 @@ public class SignedBizServiceImpl implements SignedBizService {
         if (StringUtils.isNotBlank(singerName) && singerName.length() > MAX_SIGNERSLENGTH) {
             singerName.substring(0, MAX_SIGNERSLENGTH - 1);
         }
+        final String BatchStatus2 = BatchStatus;
         distinctInstitutions.forEach(institutionInfo -> {
             YbFlowInfo flowInfo = new YbFlowInfo();
             flowInfo.setInitiator(initiatorName)
@@ -905,6 +906,7 @@ public class SignedBizServiceImpl implements SignedBizService {
                     .setSignStatus("0")
                     .setFlowType("Common")
                     .setFlowName(flowNameMap.get(institutionInfo.getNumber()))
+                    .setBatchStatus(BatchStatus2)
 //                    .setBatchNo(batchNo);
             ;
             if (ETemplateType.TEMPLATE_FILL == templateType) {
@@ -949,6 +951,7 @@ public class SignedBizServiceImpl implements SignedBizService {
                 .setSignStatus("0")
                 .setFlowType("Common")
                 .setFlowName(flowNameMap.get(organizeNo))
+                .setBatchStatus(BatchStatus2)
 //                .setBatchNo(batchNo)
         ;
         if (ETemplateType.TEMPLATE_FILL == templateType) {
@@ -973,7 +976,13 @@ public class SignedBizServiceImpl implements SignedBizService {
         flowInfoList.add(flowAInfo);
         flowInfoService.saveBatch(flowInfoList);
 
-        return ApiResponse.success();
+        if(Cons.BatchStr.BATCH_STATUS_SUCCESS.equals(BatchStatus2)){
+            return ApiResponse.success();
+        }else {
+            return ApiResponse.fail(signFlows.getString("errCode"),errMsg.toString());
+        }
+
+
     }
 
 }
