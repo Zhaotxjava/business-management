@@ -67,7 +67,6 @@ public class PicController {
     private FTPUploadUtil ftpUploadUtil;
 
 
-
     @RequestMapping(value = "/upload/one", method = RequestMethod.POST)
     @ResponseBody
     @ApiOperation("上传单个图片")
@@ -98,7 +97,7 @@ public class PicController {
             log.error("/upload/one 上传单个图片异常", e);
             return ApiResponse.fail(ErrorCodeEnum.FILE_UPLOAD_ERROR);
         }
-        log.info("/upload/one 上传单个图片出参",JSONObject.toJSONString(apiResponse));
+        log.info("/upload/one 上传单个图片出参", JSONObject.toJSONString(apiResponse));
         return apiResponse;
     }
 
@@ -127,12 +126,12 @@ public class PicController {
                 , operationId, file.isEmpty(), number);
         ApiResponse apiResponse = null;
         try {
-            apiResponse = ftpUploadUtil.cacheFile(file,operationId,p,number);
+            apiResponse = ftpUploadUtil.cacheFile(file, operationId, p, number);
         } catch (IOException e) {
             log.error("/upload/one/ftp FTP上传单个图片异常", e);
             return ApiResponse.fail(ErrorCodeEnum.FILE_UPLOAD_ERROR);
         }
-        log.info("/upload/one/ftp FTP上传单个图片出参:{}",JSONObject.toJSONString(apiResponse));
+        log.info("/upload/one/ftp FTP上传单个图片出参:{}", JSONObject.toJSONString(apiResponse));
         return apiResponse;
     }
 
@@ -146,7 +145,7 @@ public class PicController {
     })
     //file要与表单上传的名字相同
     @LogAnnotation
-    public ApiResponse<PicPathRes> commit(HttpServletRequest request,@RequestBody(required = false)  PicCommitPath inputPicPath) {
+    public ApiResponse<PicPathRes> commit(HttpServletRequest request, @RequestBody(required = false) PicCommitPath inputPicPath) {
         String number = request.getHeader("number");
         String institutionName = request.getHeader("institutionName");
         String orgInstitutionCode = request.getHeader("orgInstitutionCode");
@@ -159,7 +158,7 @@ public class PicController {
         try {
             //查出原来所有的图片
 //            YbInstitutionPicPath picPath = iYbInstitutionPicPathService.getById(number);
-            res = PicUploadUtil.fileCommit(operationId,inputPicPath);
+            res = PicUploadUtil.fileCommit(operationId, inputPicPath);
             if (res.isSuccess()) {
                 PicPathRes data = res.getData();
                 data.setUrl(ftpUploadUtil.uploadPath);
@@ -171,12 +170,12 @@ public class PicController {
                     YbInstitutionInfoChange change = new YbInstitutionInfoChange();
                     YbInstitutionInfo ybInstitutionInfo = iYbInstitutionInfoService.getInstitutionInfo(number);
 
-                    if (Objects.nonNull(ybInstitutionInfo) || (Objects.nonNull(ybInstitutionInfo)&& StringUtils.isNotBlank(ybInstitutionInfo.getInstitutionName()))) {
+                    if (Objects.nonNull(ybInstitutionInfo) || (Objects.nonNull(ybInstitutionInfo) && StringUtils.isNotBlank(ybInstitutionInfo.getInstitutionName()))) {
                         BeanUtils.copyProperties(ybInstitutionInfo, change);
                     } else {
                         YbOrgTd orgTd = iYbOrgTdService.getYbOrgTdByNumber(number);
                         log.info("ybInstitutionInfo 查询结果：{} orgTd = {}"
-                                ,JSONObject.toJSONString(ybInstitutionInfo),JSONObject.toJSONString(orgTd));
+                                , JSONObject.toJSONString(ybInstitutionInfo), JSONObject.toJSONString(orgTd));
                         change.setNumber(picPath.getNumber());
                         change.setInstitutionName(orgTd.getAkb021());
                         change.setInstitutionName(institutionName);
@@ -188,7 +187,7 @@ public class PicController {
                     return res;
                 } else {
                     log.info("/upload/commit 提交图片失败operationId={} number={}"
-                            , operationId, number );
+                            , operationId, number);
                     return ApiResponse.fail(ErrorCodeEnum.RESPONES_ERROR.getCode(), "图片保存失败");
                 }
             }
@@ -243,7 +242,7 @@ public class PicController {
         } else {
             response = ApiResponse.success(PicUploadUtil.getBase64(filePath));
         }
-        log.info("获取机构图片BASE64结果={}",response.getCode());
+        log.info("获取机构图片BASE64结果={}", response.getCode());
         return response;
 
     }

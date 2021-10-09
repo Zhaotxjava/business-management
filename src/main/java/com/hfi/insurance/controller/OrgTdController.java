@@ -38,7 +38,7 @@ public class OrgTdController {
 
     @PostMapping("/getOrgTdInfo")
     @ApiOperation("查询签署机构信息")
-    public ApiResponse getOrgTdInfo(@RequestBody OrgTdQueryReq req){
+    public ApiResponse getOrgTdInfo(@RequestBody OrgTdQueryReq req) {
 //        if (CollectionUtils.isEmpty(req.getInstitutionTypes())){
 //            return new ApiResponse("机构类型不能为空！");
 //        }

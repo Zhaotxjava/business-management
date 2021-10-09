@@ -76,7 +76,7 @@ public class SignedBizServiceImpl implements SignedBizService {
     @Resource
     private Cache<String, String> caffeineCache;
 
-    private int MAX_SIGNERSLENGTH = 499;
+    private int MAX_SIGNERSLENGTH = 490;
 
     @Override
     @LogAnnotation
@@ -88,6 +88,7 @@ public class SignedBizServiceImpl implements SignedBizService {
         }
         JSONObject jsonObject = JSON.parseObject(jsonStr);
         String institutionNumber = jsonObject.getString("number");
+
         log.info("1.从token中获取机构编号：{}", institutionNumber);
         String organizeNo = jsonObject.getString("areaCode");
         log.info("2.从token中获取区域号：{}", organizeNo);
@@ -97,6 +98,7 @@ public class SignedBizServiceImpl implements SignedBizService {
         StringBuilder errMsg = new StringBuilder();
         //用于记录填充number-甲乙丙丁方关系
         Map<String, String> flowNameMap = new HashMap<>();
+        String subjectSuffix = "-" + DateUtil.getNowTimestampStr();
         //填充模板的形式发起签署
         if (ETemplateType.TEMPLATE_FILL == templateType) {
             //所有签署人员信息，内容来源为前端传入
@@ -203,7 +205,7 @@ public class SignedBizServiceImpl implements SignedBizService {
                     return new ApiResponse(ErrorCodeEnum.RESPONES_ERROR.getCode(), e.getMessage());
                 }
                 singerList.add(partyA);
-                String subject = req.getTemplateId() + "-" + flowDocBean.getDocName() + "-" + DateUtil.getNowTimestampStr();
+                String subjectPrefix = req.getTemplateId() + "-" + flowDocBean.getDocName();
                 //singerList.add(legalPartyA);
                 //发起人姓名不能为空
 //                String initiatorName = partyA.getAccountName();
@@ -222,8 +224,8 @@ public class SignedBizServiceImpl implements SignedBizService {
 //                if (signFlows.containsKey("errCode")) {
 //                    return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), signFlows.getString("msg"));
 //                }
-                handleCreateSign(errMsg,institutionInfos, partyA, institutionNames, copyViewerInfoBeans
-                        , subject, fileKey, organizeNo, templateType, institutionNumber, singerList, signDocs,flowNameMap);
+                handleCreateSign(errMsg, institutionInfos, partyA, institutionNames, copyViewerInfoBeans
+                        , subjectPrefix, subjectSuffix, fileKey, organizeNo, templateType, institutionNumber, singerList, signDocs, flowNameMap);
 //                String signFlowId = signFlows.getString("signFlowId");
 //                List<InstitutionBaseInfo> distinctInstitutions = institutionInfos.stream().distinct().collect(Collectors.toList());
 //                List<YbFlowInfo> flowInfoList = new ArrayList<>();
@@ -325,7 +327,7 @@ public class SignedBizServiceImpl implements SignedBizService {
                 return new ApiResponse(ErrorCodeEnum.SYSTEM_ERROR.getCode(), e.getMessage());
             }
             singerList.add(partyA);
-            String subject = req.getTemplateId() + "-" + req.getFileName() + "-" + DateUtil.getNowTimestampStr();
+            String subjectPrefix = req.getTemplateId() + "-" + req.getFileName();
 
 //            standardCreateFlow.setCopyViewers(copyViewerInfoBeans);
 //            //发起人姓名不能为空
@@ -346,8 +348,8 @@ public class SignedBizServiceImpl implements SignedBizService {
 //                return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), signFlows.getString("msg"));
 //            }
 
-            handleCreateSign(errMsg,institutionInfos, partyA, institutionNames, copyViewerInfoBeans
-                    , subject, fileKey, organizeNo, templateType, institutionNumber, singerList, signDocs,flowNameMap);
+            handleCreateSign(errMsg, institutionInfos, partyA, institutionNames, copyViewerInfoBeans
+                    , subjectPrefix, subjectSuffix, fileKey, organizeNo, templateType, institutionNumber, singerList, signDocs, flowNameMap);
 
 //            String signFlowId = signFlows.getString("signFlowId");
 //            List<InstitutionBaseInfo> distinctInstitutions = institutionInfos.stream().distinct().collect(Collectors.toList());
@@ -857,10 +859,11 @@ public class SignedBizServiceImpl implements SignedBizService {
     }
 
     //创建流程出参处理
-    public ApiResponse handleCreateSign(StringBuilder errMsg ,List<InstitutionBaseInfo> institutionInfos
+    public ApiResponse handleCreateSign(StringBuilder errMsg, List<InstitutionBaseInfo> institutionInfos
             , StandardSignerInfoBean partyA, List<String> institutionNames, List<CopyViewerInfoBean> copyViewerInfoBeans
-            , String subject, String fileKey, String organizeNo, ETemplateType templateType, String institutionNumber
-            , List<StandardSignerInfoBean> singerList, List<FlowDocBean> signDocs,Map<String,String> flowNameMap) {
+            , String subjectPrefix, String subjectSuffix, String fileKey, String organizeNo, ETemplateType templateType
+            , String institutionNumber, List<StandardSignerInfoBean> singerList
+            , List<FlowDocBean> signDocs, Map<String, String> flowNameMap) {
 
         StandardCreateFlowBO standardCreateFlow = new StandardCreateFlowBO();
         String initiatorName = partyA.getAccountName();
@@ -871,34 +874,46 @@ public class SignedBizServiceImpl implements SignedBizService {
         standardCreateFlow.setInitiatorAccountId(partyA.getAccountId());
         standardCreateFlow.setSigners(singerList);
         standardCreateFlow.setSignDocs(signDocs);
-
+        String subject = subjectPrefix + "-" + DateUtil.getNowTimestampStr();
         //流程主题
         Date now = new Date();
         standardCreateFlow.setSubject(subject);
         JSONObject signFlows = signedService.createSignFlows(standardCreateFlow);
         log.info("7.创建流程出参：{}", JSON.toJSONString(signFlows));
-        String BatchStatus = Cons.BatchStr.BATCH_STATUS_SUCCESS ;
+        String BatchStatus = Cons.BatchStr.BATCH_STATUS_SUCCESS;
         if (signFlows.containsKey("errCode")) {
             BatchStatus = Cons.BatchStr.BATCH_STATUS_FAIL;
-            errMsg.append(" 创建签署流程失败，主题为:").append(subject).append("，E签宝失败原因:").append(signFlows.getString("msg"));
+//            StringBuilder sb = new StringBuilder();
+//            singerList.forEach(s ->{
+//                sb.append(s.getAuthorizationOrganizeId()).append(",");
+//            });
+//            sb.deleteCharAt(sb.length() - 1);
+            errMsg.append(" 创建签署流程失败，签署文档名:").append(subject).append("，E签宝失败原因:").append(signFlows.getString("msg"));
 //            return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), signFlows.getString("msg"));
         }
 
-        String signFlowId = signFlows.getString("signFlowId");
+        String signFlowIdTemp = signFlows.getString("signFlowId");
+        if (StringUtils.isBlank(signFlowIdTemp) && Cons.BatchStr.BATCH_STATUS_FAIL.equals(BatchStatus)) {
+            signFlowIdTemp = "无效流程";
+        }
+        String signFlowId = signFlowIdTemp;
         List<InstitutionBaseInfo> distinctInstitutions = institutionInfos.stream().distinct().collect(Collectors.toList());
         List<YbFlowInfo> flowInfoList = new ArrayList<>();
         String singerName = String.join(",", institutionNames);
         if (StringUtils.isNotBlank(singerName) && singerName.length() > MAX_SIGNERSLENGTH) {
-            singerName.substring(0, MAX_SIGNERSLENGTH - 1);
+            singerName = singerName.substring(0, MAX_SIGNERSLENGTH);
         }
+        final String sn = singerName + "……";
+        log.info("sn.L={},sn={}", sn.length(), sn);
         final String BatchStatus2 = BatchStatus;
+        String batchNo = subjectPrefix + subjectSuffix;
         distinctInstitutions.forEach(institutionInfo -> {
             YbFlowInfo flowInfo = new YbFlowInfo();
             flowInfo.setInitiator(initiatorName)
                     .setNumber(institutionInfo.getNumber())
-                    .setSigners(singerName)
+                    .setSigners(sn)
                     .setSubject(subject)
-                    .setCopyViewers(singerName)
+                    .setCopyViewers(sn)
                     .setSignFlowId(signFlowId)
                     .setAccountType(2)
                     .setFlowStatus(0)
@@ -907,7 +922,7 @@ public class SignedBizServiceImpl implements SignedBizService {
                     .setFlowType("Common")
                     .setFlowName(flowNameMap.get(institutionInfo.getNumber()))
                     .setBatchStatus(BatchStatus2)
-//                    .setBatchNo(batchNo);
+                    .setBatchNo(batchNo);
             ;
             if (ETemplateType.TEMPLATE_FILL == templateType) {
                 flowInfo.setInitiatorTime(now);
@@ -939,9 +954,9 @@ public class SignedBizServiceImpl implements SignedBizService {
         YbFlowInfo flowAInfo = new YbFlowInfo();
         flowAInfo.setInitiator(initiatorName)
                 .setNumber(organizeNo)
-                .setSigners(singerName)
+                .setSigners(sn)
                 .setSubject(subject)
-                .setCopyViewers(singerName)
+                .setCopyViewers(sn)
                 .setSignFlowId(signFlowId)
                 .setFileKey(fileKey)
                 .setInitiatorTime(now)
@@ -952,7 +967,7 @@ public class SignedBizServiceImpl implements SignedBizService {
                 .setFlowType("Common")
                 .setFlowName(flowNameMap.get(organizeNo))
                 .setBatchStatus(BatchStatus2)
-//                .setBatchNo(batchNo)
+                .setBatchNo(batchNo)
         ;
         if (ETemplateType.TEMPLATE_FILL == templateType) {
             flowAInfo.setInitiatorTime(now);
@@ -976,10 +991,10 @@ public class SignedBizServiceImpl implements SignedBizService {
         flowInfoList.add(flowAInfo);
         flowInfoService.saveBatch(flowInfoList);
 
-        if(Cons.BatchStr.BATCH_STATUS_SUCCESS.equals(BatchStatus2)){
+        if (Cons.BatchStr.BATCH_STATUS_SUCCESS.equals(BatchStatus2)) {
             return ApiResponse.success();
-        }else {
-            return ApiResponse.fail(signFlows.getString("errCode"),errMsg.toString());
+        } else {
+            return ApiResponse.fail(signFlows.getString("errCode"), errMsg.toString());
         }
 
 
