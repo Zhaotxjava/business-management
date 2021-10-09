@@ -989,7 +989,8 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         ExcelUtil.exportExcel2(list2, excel, "乙方");
         ExcelUtil.exportExcel2(list3, excel, "丙方");
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        String fileName = arecordQueReq.getSubject() +"-"+ sdf.format(System.currentTimeMillis());
+        String fileName = arecordQueReq.getSubject();
+
         ExcelUtil.xlsDownloadFile2(response, excel,fileName);
 
     }
