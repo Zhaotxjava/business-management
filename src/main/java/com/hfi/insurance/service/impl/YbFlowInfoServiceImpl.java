@@ -49,4 +49,32 @@ public class YbFlowInfoServiceImpl extends ServiceImpl<YbFlowInfoMapper, YbFlowI
 
         return baseMapper.selectPage(page, queryWrapper);
     }
+
+    public Integer getSignedRecordCount(String institutionNumber,GetRecordInfoReq req) {
+        QueryWrapper<YbFlowInfo> queryWrapper = new QueryWrapper<>();
+        //SqlUtils---concatLike
+        queryWrapper.likeRight("number",institutionNumber);
+        if (StringUtils.isNotBlank(req.getSubject())) {
+            queryWrapper.like("subject", req.getSubject());
+        }
+        if (StringUtils.isNotBlank(req.getSignStatus())) {
+            queryWrapper.eq("sign_status", req.getSignStatus());
+        }
+        if (null != req.getSignFlowId()) {
+            queryWrapper.eq("sign_flow_id", req.getSignFlowId());
+        }
+        if (null != req.getFlowStatus()) {
+            queryWrapper.eq("flow_status", req.getFlowStatus());
+        }
+        if (StringUtils.isNotEmpty(req.getBeginInitiateTime())) {
+            queryWrapper.ge("initiator_time", req.getBeginInitiateTime());
+        }
+        if (StringUtils.isNotEmpty(req.getEndInitiateTime())) {
+            //<=
+            queryWrapper.le("initiator_time", req.getEndInitiateTime());
+        }
+
+
+        return baseMapper.selectCount(queryWrapper);
+    }
 }
