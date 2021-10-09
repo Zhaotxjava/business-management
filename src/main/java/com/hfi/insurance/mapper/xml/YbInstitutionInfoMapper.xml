@@ -170,6 +170,13 @@
      number like concat("%","bx","%")
      limit #{pageNum},#{pageSize}
     </select>
+    <select id="selectInstitutionInfobxCount"  parameterType="com.hfi.insurance.model.dto.InstitutionInfoQueryReq" resultType="int">
+     SELECT  count(*) from  yb_institution_info
+     where
+     number like concat("%","bx","%")
+    </select>
+
+
 
 
 </mapper>
