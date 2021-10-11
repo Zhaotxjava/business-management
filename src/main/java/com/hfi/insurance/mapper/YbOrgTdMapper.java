@@ -16,4 +16,6 @@ import java.util.List;
  */
 public interface YbOrgTdMapper extends BaseMapper<YbOrgTd> {
     List<YbOrgTd> getorgTdbxList(InstitutionInfoQueryReq institutionInfoQueryReq);
+
+    Integer selectorgTdbxCount(InstitutionInfoQueryReq institutionInfoQueryReq);
 }

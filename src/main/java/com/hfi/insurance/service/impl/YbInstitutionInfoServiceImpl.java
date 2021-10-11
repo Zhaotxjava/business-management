@@ -617,9 +617,8 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
                 YbInstitutionInfolist.add(ybInstitutionInfo);
 
             });
-            QueryWrapper<YbOrgTd> objectQueryWrapper = new QueryWrapper<>();
-            objectQueryWrapper.like("AKB020", "%bx%");
-            Integer YbInstitutionInfoCount = orgTdMapper.selectCount(objectQueryWrapper);
+
+            Integer YbInstitutionInfoCount = orgTdMapper.selectorgTdbxCount(institutionInfoQueryReq);
             Page<YbInstitutionInfo> page = new Page<>();
             page.setRecords(YbInstitutionInfolist);
             page.setTotal(YbInstitutionInfoCount);
