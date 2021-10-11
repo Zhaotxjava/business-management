@@ -232,10 +232,9 @@ public class InstitutionController {
     }
 
 
-    @PostMapping("getInstitutionInfobxList")
-    @ResponseBody
+    @PostMapping("/getInstitutionInfobxList")
     @ApiOperation("筛选保险公司按钮")
-    public ApiResponse getInstitutionInfobxList(InstitutionInfoQueryReq institutionInfoQueryReq) {
+    public ApiResponse getInstitutionInfobxList(@RequestBody InstitutionInfoQueryReq institutionInfoQueryReq) {
 
         return institutionInfoService.getInstitutionInfobxList(institutionInfoQueryReq);
     }

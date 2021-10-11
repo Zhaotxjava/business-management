@@ -159,21 +159,32 @@
         </where>
     </select>
 
-
+    <sql id="InstitutionInfobxListWhere">
+        <where>
+            <if test="hospitalid!=null and hospitalid!=''">
+                number = #{hospitalid}
+            </if>
+            <if test="number!=null  and number!=''">
+                and  number like concat("%",#{number},"%")
+            </if>
+            <if test="institutionName!=null and institutionName!=''">
+                and institution_name  like concat("%",#{institutionName},"%")
+            </if>
+        </where>
+    </sql>
 
 
 
     <select id="getInstitutionInfobxList"  parameterType="com.hfi.insurance.model.dto.InstitutionInfoQueryReq" resultType="com.hfi.insurance.model.YbInstitutionInfo">
 
      SELECT  * from  yb_institution_info
-     where
-     number like concat("%","bx","%")
+        <include refid="InstitutionInfobxListWhere"/>
+
      limit #{pageNum},#{pageSize}
     </select>
     <select id="selectInstitutionInfobxCount"  parameterType="com.hfi.insurance.model.dto.InstitutionInfoQueryReq" resultType="int">
      SELECT  count(*) from  yb_institution_info
-     where
-     number like concat("%","bx","%")
+        <include refid="InstitutionInfobxListWhere"/>
     </select>
 
 
