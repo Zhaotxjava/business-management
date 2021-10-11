@@ -101,15 +101,9 @@ public class InstitutionController {
         }
 
 
-
         if(req.getLegalPhone().equals(req.getContactPhone())&&req.getLegalIdCard().equals(req.getContactIdCard())
                 &&!req.getContactName().equals(req.getContactName())){
             return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(), "相同，不可提交");
-
-        }
-
-        if (!req.getLegalPhone().equals(req.getContactPhone())&&!req.getLegalIdCard().equals(req.getContactIdCard())){
-            return new ApiResponse(ErrorCodeEnum.SUCCESS.getCode(), "提交成功");
         }
 
         if (req.getLegalIdCard().equals(req.getContactIdCard())&&!req.getLegalPhone().equals(req.getContactPhone())){
@@ -118,23 +112,14 @@ public class InstitutionController {
         }
         if (!req.getLegalIdCard().equals(req.getContactIdCard())&&req.getLegalPhone().equals(req.getContactPhone())){
             return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(), "相同，不可提交");
-
         }
-
-        if(req.getLegalPhone().equals(req.getContactPhone())&&req.getLegalIdCard().equals(req.getContactIdCard())
-                &&req.getContactName().equals(req.getContactName())){
-            return new ApiResponse(ErrorCodeEnum.SUCCESS.getCode(), "提交成功");
-
-        }
-
 
         return institutionInfoService.newUpdateInstitutionInfo(req);
     }
 
-
-    @PostMapping("checkImportInstitution")
+    @PostMapping(value = "checkImportInstitution",produces = "text/html;charset=UTF-8")
     @ApiOperation("批量导入机构，并检查合法性")
-    public ApiResponse checkImportInstitution(@RequestParam("file") MultipartFile multipartFile) {
+    public String checkImportInstitution(@RequestParam("file") MultipartFile multipartFile) {
         log.info("checkImportInstitution 开始：");
         List<ExcelSheetPO> excelSheetList = new ArrayList<>();
         try {
@@ -168,9 +153,12 @@ public class InstitutionController {
             });
 //            log.info("-----------------------------{}",JSONObject.toJSONString(res));
         } else {
-            return ApiResponse.fail(ErrorCodeEnum.PARAM_ERROR, " 请检查入参文件是否正确");
+            log.error("checkImportInstitution 检查入参文件以及其格式是否正确!");
+            return JSONObject.toJSONString(ApiResponse.fail(ErrorCodeEnum.PARAM_ERROR, " 请检查入参文件是否正确"));
         }
-        return ApiResponse.success(res);
+        String resStr = JSONObject.toJSONString(ApiResponse.success(res));
+        log.info("checkImportInstitution 成功，出参为：{}",resStr);
+        return resStr;
     }
 
     @PostMapping("import")
