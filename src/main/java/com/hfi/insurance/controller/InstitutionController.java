@@ -100,12 +100,9 @@ public class InstitutionController {
             return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(), "联系人手机号不能为空");
         }
 
-
-
         if(req.getLegalPhone().equals(req.getContactPhone())&&req.getLegalIdCard().equals(req.getContactIdCard())
                 &&!req.getContactName().equals(req.getContactName())){
             return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(), "相同，不可提交");
-
         }
 
         if (!req.getLegalPhone().equals(req.getContactPhone())&&!req.getLegalIdCard().equals(req.getContactIdCard())){

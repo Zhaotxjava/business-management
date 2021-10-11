@@ -190,7 +190,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         int total = institutionInfoMapper.selectCountOrgForCreateFlow(req);
         Page<InstitutionInfoRes> page = new Page<>(req.getPageNum(), req.getPageSize());
         page.setRecords(ybInstitutionInfos);
-        page.setTotal(ybInstitutionInfos.size());
+        page.setTotal(total);
         return page;
     }
 
