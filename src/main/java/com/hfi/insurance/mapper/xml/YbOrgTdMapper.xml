@@ -67,7 +67,7 @@
     </select>
 
     <select id="selectorgTdbxCount"  parameterType="com.hfi.insurance.model.dto.InstitutionInfoQueryReq" resultType="int">
-     SELECT  count (*) from  yb_org_td
+     SELECT  count(*) from  yb_org_td
      <include refid="torgTdbxListWhere"/>
     </select>
 
