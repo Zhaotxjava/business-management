@@ -914,7 +914,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
 
     @Override
     public ApiResponse getArecordList(ArecordQueReq arecordQueReq) {
-        String batchno = arecordQueReq.getBatchNo();
+        String batchno = arecordQueReq.getBatchno();
         if (StringUtils.isEmpty(batchno) ){
             return  new ApiResponse("502", "batchNo不可为空");
         }
@@ -1014,7 +1014,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         ExcelUtil.exportExcel2(list1, excel, "甲方");
         ExcelUtil.exportExcel2(list2, excel, "乙方");
         ExcelUtil.exportExcel2(list3, excel, "丙方");
-        String fileName = arecordQueReq.getBatchNo();
+        String fileName = arecordQueReq.getBatchno();
 
         ExcelUtil.xlsDownloadFile2(response, excel,fileName);
 

@@ -34,8 +34,8 @@
 
     <sql id="YbFlowInfoWhere">
         <where>
-            <if test="batchNo!=null  and batchNo!=''">
-                batch_no like concat ('%',#{batchNo},'%')
+            <if test="batchno!=null  and batchno!=''">
+                batch_no like concat ('%',#{batchno},'%')
             </if>
             <if test="subject!=null  and subject!=''">
                and subject like concat ('%',#{subject},'%')
