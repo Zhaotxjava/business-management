@@ -63,7 +63,7 @@ public class TaskController {
 
     @RequestMapping(value = "/sign/signedStatusUpdate", method = RequestMethod.POST)
     @ApiOperation("signedStatusUpdate")
-    @Scheduled(cron = "0 0/10 * * * * ")
+//    @Scheduled(cron = "0 0/10 * * * * ")
     public void signedStatusUpdate() {
         //流程状态（0草稿，1 签署中，2完成，3 撤销，4终止，5过 期，6删除，7拒 签，8作废，9已归 档，10预盖章）
         QueryWrapper<YbFlowInfo> objectQueryWrapper = new QueryWrapper<>();
