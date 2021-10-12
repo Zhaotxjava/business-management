@@ -54,17 +54,14 @@
     </sql>
 
     <select id="selectYbFlowInfoList" parameterType="com.hfi.insurance.model.dto.ArecordQueReq" resultType="com.hfi.insurance.model.YbFlowInfo">
-        select  t.* from
-        (SELECT * FROM  yb_flow_info b
-        WHERE  b.flow_id =
-        (select min(x.flow_id) from yb_flow_info x
+
+        select  t.batch_no,t.initiator_time from (
+        select  * from   yb_flow_info
         <include refid="YbFlowInfoWhere"/>
-        order by update_time desc)) t
+        group by batch_no
+        )t
+        order by update_time desc
         limit #{pageNum},#{pageSize}
-
-
-
-
 
     </select>
     <select id="selectExportYbFlowInfoList" parameterType="com.hfi.insurance.model.dto.ArecordQueReq" resultType="com.hfi.insurance.model.YbFlowInfo">
@@ -73,9 +70,10 @@
 
     </select>
 
-    <select id="selecttYbFlowInfoCount" parameterType="com.hfi.insurance.model.dto.ArecordQueReq" resultType="int">
-        select COUNT(*) from yb_flow_info
+    <select id="selecttYbFlowInfoCount" parameterType="com.hfi.insurance.model.dto.ArecordQueReq" resultType="com.hfi.insurance.model.YbFlowInfo">
+        select  batch_no from   yb_flow_info
         <include refid="YbFlowInfoWhere"/>
+        group by batch_no
     </select>
 
 </mapper>

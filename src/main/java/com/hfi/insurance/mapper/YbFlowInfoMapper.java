@@ -21,5 +21,5 @@ public interface YbFlowInfoMapper extends BaseMapper<YbFlowInfo> {
 
     List<YbFlowInfo> selectExportYbFlowInfoList(ArecordQueReq arecordQueReq);
 
-    Integer selecttYbFlowInfoCount(ArecordQueReq arecordQueReq);
+    List<YbFlowInfo> selecttYbFlowInfoCount(ArecordQueReq arecordQueReq);
 }

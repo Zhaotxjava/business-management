@@ -234,6 +234,13 @@ public class InstitutionController {
         institutionInfoService.addYbInstitutionInfoChange(ybInstitutionInfoChange);
     }
 
+    @PostMapping("/addYbInstitutionInfo")
+    @ApiOperation("插入机构信息变更记录")
+    public ApiResponse addYbInstitutionInfo(@RequestBody YbInstitutionInfoChange ybInstitutionInfoChange) {
+
+       return institutionInfoService.addYbInstitutionInfo(ybInstitutionInfoChange);
+    }
+
 
     @SneakyThrows
     @GetMapping("/exportExcel")

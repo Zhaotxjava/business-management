@@ -936,10 +936,10 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
 
 
             }
-            Integer integer = ybFlowInfoMapper.selecttYbFlowInfoCount(arecordQueReq);
+            List<YbFlowInfo> YbFlowInfoListCount= ybFlowInfoMapper.selecttYbFlowInfoCount(arecordQueReq);
             Page<GetArecordReq> page = new Page<>();
             page.setRecords(getArecordReqList);
-            page.setTotal(integer);
+            page.setTotal(YbFlowInfoListCount.size());
             return new ApiResponse(page);
         }
         return new ApiResponse("200", "无符合条件");
@@ -1018,6 +1018,14 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
 
         ExcelUtil.xlsDownloadFile2(response, excel,fileName);
 
+    }
+
+    @Override
+    public ApiResponse addYbInstitutionInfo(YbInstitutionInfoChange ybInstitutionInfoChange) {
+        String number = ybInstitutionInfoChange.getNumber();
+
+
+        return null;
     }
 
 }
