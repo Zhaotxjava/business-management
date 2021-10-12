@@ -914,7 +914,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
 
 
     @Override
-    public ApiResponse getArecordList2(ArecordQueReq arecordQueReq) {
+    public ApiResponse getArecordList(ArecordQueReq arecordQueReq) {
         String batchno = arecordQueReq.getBatchNo();
         if (StringUtils.isEmpty(batchno)) {
             return new ApiResponse("502", "模板名称不能为空");
@@ -926,7 +926,6 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         if (YbFlowInfoList.size() > 0) {
             List<GetArecordReq> getArecordReqList = new ArrayList<>();
             for (YbFlowInfo x : YbFlowInfoList) {
-
                 String batchNo = x.getBatchNo();
                 String[] split = batchNo.split("-");
                 GetArecordReq getArecordReq = new GetArecordReq();
@@ -934,8 +933,6 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
                 getArecordReq.setRecordName(split[1]);
                 getArecordReq.setCreationDate(DateUtil.dateNew(x.getInitiatorTime()));
                 getArecordReqList.add(getArecordReq);
-
-
             }
             List<YbFlowInfo> YbFlowInfoListCount = ybFlowInfoMapper.selecttYbFlowInfoCount(arecordQueReq);
             Page<GetArecordReq> page = new Page<>();
@@ -946,8 +943,8 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         return new ApiResponse("200", "无符合条件");
     }
 
-    @Override
-    public ApiResponse getArecordList(ArecordQueReq arecordQueReq) {
+
+    public ApiResponse getArecordList2(ArecordQueReq arecordQueReq) {
         QueryWrapper<YbFlowInfo> queryWrapper = new QueryWrapper<>();
 
         if (!arecordQueReq.getBatchNo().isEmpty()) {
@@ -964,7 +961,11 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
 
         if (YbFlowInfoList.size() > 0) {
             List<GetArecordReq> getArecordReqList = new ArrayList<>();
+            log.info("YbFlowInfoList = {}", JSONObject.toJSONString(YbFlowInfoList.size()));
+            log.info("YbFlowInfoList = {}", JSONObject.toJSONString(YbFlowInfoList));
+
             for (YbFlowInfo x : YbFlowInfoList) {
+
                 String batchNo = x.getBatchNo();
                 String[] split = batchNo.split("-");
                 GetArecordReq getArecordReq = new GetArecordReq();

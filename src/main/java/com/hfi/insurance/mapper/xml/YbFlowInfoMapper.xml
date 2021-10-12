@@ -34,8 +34,8 @@
 
     <sql id="YbFlowInfoWhere">
         <where>
-            <if test="batchno!=null  and batchno!=''">
-                batch_no like concat ('%',#{batchno},'%')
+            <if test="batchNo!=null  and batchNo!=''">
+                batch_no like concat ('%',#{batchNo},'%')
             </if>
             <if test="subject!=null  and subject!=''">
                and subject like concat ('%',#{subject},'%')
@@ -55,8 +55,8 @@
 
     <select id="selectYbFlowInfoList" parameterType="com.hfi.insurance.model.dto.ArecordQueReq" resultType="com.hfi.insurance.model.YbFlowInfo">
 
-        select  t.batch_no,t.initiator_time from (
-        select  * from   yb_flow_info
+        select  t.* from (
+        select * from   yb_flow_info
         <include refid="YbFlowInfoWhere"/>
         group by batch_no
         )t
