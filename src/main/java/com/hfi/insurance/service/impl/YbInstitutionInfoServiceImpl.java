@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.benmanes.caffeine.cache.Cache;
@@ -591,10 +592,10 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
     public ApiResponse getInstitutionInfobxList(InstitutionInfoQueryReq institutionInfoQueryReq) {
         String hospitalid = institutionInfoQueryReq.getHospitalid();
 
-        if (StringUtils.isEmpty(hospitalid)){
+        if (StringUtils.isEmpty(hospitalid)) {
             return new ApiResponse("502", "hospitalid不能为空");
         }
-        if (hospitalid.indexOf("bx")==-1){
+        if (hospitalid.indexOf("bx") == -1) {
             institutionInfoQueryReq.setHospitalid("");
             institutionInfoQueryReq.setNumber("bx");
         }
@@ -913,33 +914,70 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
 
 
     @Override
-    public ApiResponse getArecordList(ArecordQueReq arecordQueReq) {
+    public ApiResponse getArecordList2(ArecordQueReq arecordQueReq) {
         String batchno = arecordQueReq.getBatchNo();
-        if (StringUtils.isEmpty(batchno) ){
-            return  new ApiResponse("502", "模板名称不能为空");
+        if (StringUtils.isEmpty(batchno)) {
+            return new ApiResponse("502", "模板名称不能为空");
         }
         arecordQueReq.setPageNum((arecordQueReq.getPageNum() - 1) * arecordQueReq.getPageSize());
 
         List<YbFlowInfo> YbFlowInfoList = ybFlowInfoMapper.selectYbFlowInfoList(arecordQueReq);
 
         if (YbFlowInfoList.size() > 0) {
-            List<GetArecordReq> getArecordReqList=new ArrayList<>();
+            List<GetArecordReq> getArecordReqList = new ArrayList<>();
             for (YbFlowInfo x : YbFlowInfoList) {
 
-                    String batchNo = x.getBatchNo();
-                    String[] split = batchNo.split("-");
-                    GetArecordReq getArecordReq = new GetArecordReq();
-                    getArecordReq.setDocumentName(batchNo);
-                    getArecordReq.setRecordName(split[1]);
-                    getArecordReq.setCreationDate(DateUtil.dateNew(x.getInitiatorTime()));
-                    getArecordReqList.add(getArecordReq);
+                String batchNo = x.getBatchNo();
+                String[] split = batchNo.split("-");
+                GetArecordReq getArecordReq = new GetArecordReq();
+                getArecordReq.setDocumentName(batchNo);
+                getArecordReq.setRecordName(split[1]);
+                getArecordReq.setCreationDate(DateUtil.dateNew(x.getInitiatorTime()));
+                getArecordReqList.add(getArecordReq);
 
 
             }
-            List<YbFlowInfo> YbFlowInfoListCount= ybFlowInfoMapper.selecttYbFlowInfoCount(arecordQueReq);
+            List<YbFlowInfo> YbFlowInfoListCount = ybFlowInfoMapper.selecttYbFlowInfoCount(arecordQueReq);
             Page<GetArecordReq> page = new Page<>();
             page.setRecords(getArecordReqList);
             page.setTotal(YbFlowInfoListCount.size());
+            return new ApiResponse(page);
+        }
+        return new ApiResponse("200", "无符合条件");
+    }
+
+    @Override
+    public ApiResponse getArecordList(ArecordQueReq arecordQueReq) {
+        QueryWrapper<YbFlowInfo> queryWrapper = new QueryWrapper<>();
+
+        if (!arecordQueReq.getBatchNo().isEmpty()) {
+            queryWrapper.like("batch_no", arecordQueReq.getBatchNo());
+        }
+        if (!Objects.isNull(arecordQueReq.getMaxdateTime())
+                && !Objects.isNull(arecordQueReq.getMindateTime())
+                && arecordQueReq.getMindateTime().compareTo(arecordQueReq.getMindateTime()) < 0) {
+            queryWrapper.between("create_time", arecordQueReq.getMindateTime(), arecordQueReq.getMaxdateTime());
+        }
+        queryWrapper.select("DISTINCT batch_no").orderByDesc("create_time");
+        IPage<YbFlowInfo> YbFlowInfoListPage = ybFlowInfoMapper.selectPage(new Page<>(arecordQueReq.getPageNum(), arecordQueReq.getPageSize()), queryWrapper);
+        List<YbFlowInfo> YbFlowInfoList = YbFlowInfoListPage.getRecords();
+
+        if (YbFlowInfoList.size() > 0) {
+            List<GetArecordReq> getArecordReqList = new ArrayList<>();
+            for (YbFlowInfo x : YbFlowInfoList) {
+                String batchNo = x.getBatchNo();
+                String[] split = batchNo.split("-");
+                GetArecordReq getArecordReq = new GetArecordReq();
+                getArecordReq.setDocumentName(batchNo);
+                getArecordReq.setRecordName(split[1]);
+                getArecordReq.setCreationDate(DateUtil.dateNew(x.getInitiatorTime()));
+                getArecordReqList.add(getArecordReq);
+            }
+            Page<GetArecordReq> page = new Page<>();
+
+            BeanUtils.copyProperties(YbFlowInfoListPage, page);
+            page.setRecords(getArecordReqList);
+
             return new ApiResponse(page);
         }
         return new ApiResponse("200", "无符合条件");
@@ -968,7 +1006,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
             ybFlowDownload.setNumber(y.getNumber());
             ybFlowDownload.setSignerType(y.getFlowName());
 
-            if(StringUtils.isNotBlank(y.getBatchStatus())){
+            if (StringUtils.isNotBlank(y.getBatchStatus())) {
                 if (Cons.BatchStr.BATCH_STATUS_SUCCESS.equals(y.getBatchStatus())) {
                     ybFlowDownload.setSignStatus("成功");
                 } else {
@@ -1016,7 +1054,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         ExcelUtil.exportExcel2(list3, excel, "丙方");
         String fileName = arecordQueReq.getBatchNo();
 
-        ExcelUtil.xlsDownloadFile2(response, excel,fileName);
+        ExcelUtil.xlsDownloadFile2(response, excel, fileName);
 
     }
 
