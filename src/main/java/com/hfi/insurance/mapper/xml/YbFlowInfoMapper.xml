@@ -34,11 +34,11 @@
 
     <sql id="YbFlowInfoWhere">
         <where>
-            <if test="subject!=null  and subject!=''">
-                subject like concat ('%',#{subject},'%')
+            <if test="batchno!=null  and batchno!=''">
+                batch_no like concat ('%',#{batchno},'%')
             </if>
-             <if test="batchno!=null  and batchno!=''">
-                 batch_no like concat ('%',#{batchno},'%')
+            <if test="subject!=null  and subject!=''">
+               and subject like concat ('%',#{subject},'%')
             </if>
 
             <if test="mindateTime!=null">
@@ -55,11 +55,11 @@
 
     <select id="selectYbFlowInfoList" parameterType="com.hfi.insurance.model.dto.ArecordQueReq" resultType="com.hfi.insurance.model.YbFlowInfo">
         select  t.* from
-        (SELECT * FROM    yb_flow_info
-        WHERE  flow_id =
+        (SELECT * FROM  yb_flow_info b
+        WHERE  b.flow_id =
         (select min(x.flow_id) from yb_flow_info x
-        <include refid="YbFlowInfoWhere"/>)
-        order by update_time desc) t
+        <include refid="YbFlowInfoWhere"/>
+        order by update_time desc)) t
         limit #{pageNum},#{pageSize}
 
 

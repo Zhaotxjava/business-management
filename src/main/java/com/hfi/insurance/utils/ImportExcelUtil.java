@@ -21,12 +21,7 @@ import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -94,9 +89,12 @@ public class ImportExcelUtil {
             ExcelSheetPO sheetPO = new ExcelSheetPO();
             sheetPO.setSheetName(sheet.getSheetName());
             sheetPO.setDataList(dataList);
-            int readRowCount = sheet.getPhysicalNumberOfRows();
+//            int readRowCount = sheet.getPhysicalNumberOfRows();
+            int readRowCount = sheet.getLastRowNum();
+
+
             // 解析sheet 的行
-            for (int j = sheet.getFirstRowNum(); j < readRowCount; j++) {
+            for (int j = sheet.getFirstRowNum(); j <=readRowCount; j++) {
                 Row row = sheet.getRow(j);
                 if (row == null) {
                     continue;
