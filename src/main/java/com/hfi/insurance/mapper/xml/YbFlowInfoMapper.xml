@@ -56,13 +56,9 @@
     <select id="selectYbFlowInfoList" parameterType="com.hfi.insurance.model.dto.ArecordQueReq" resultType="com.hfi.insurance.model.YbFlowInfo">
         select  t.* from
         (SELECT * FROM    yb_flow_info
-        WHERE   flow_id =
-        (select min(flow_id) from yb_flow_info
-        WHERE
-        <if test="batchno!=null  and batchno!=''">
-            batch_no like concat ('%',#{batchno},'%')
-        </if>
-        )
+        WHERE  flow_id =
+        (select min(x.flow_id) from yb_flow_info x
+        <include refid="YbFlowInfoWhere"/>)
         order by update_time desc) t
         limit #{pageNum},#{pageSize}
 

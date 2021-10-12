@@ -273,7 +273,7 @@ public class InstitutionController {
     }
 
 
-    @SneakyThrows
+
     @GetMapping("/exportExcel3")
     @ApiOperation("批量发起的记录表格导出")
     public void exportExcel3(String batchNo, HttpServletResponse response) {
