@@ -917,13 +917,17 @@ public class SignedBizServiceImpl implements SignedBizService {
                     .setSignFlowId(signFlowId)
                     .setAccountType(2)
                     .setFlowStatus(0)
-                    .setFileKey(fileKey)
+//                    .setFileKey(fileKey)
                     .setSignStatus("0")
                     .setFlowType("Common")
                     .setFlowName(flowNameMap.get(institutionInfo.getNumber()))
                     .setBatchStatus(BatchStatus2)
                     .setBatchNo(batchNo);
-            ;
+            if(StringUtils.isBlank(fileKey)){
+                flowInfo.setFileKey("文档为空");
+            }else {
+                flowInfo.setFileKey(fileKey);
+            }
             if (ETemplateType.TEMPLATE_FILL == templateType) {
                 flowInfo.setInitiatorTime(now);
             } else if (ETemplateType.FILE_UPLOAD == templateType) {
@@ -958,7 +962,6 @@ public class SignedBizServiceImpl implements SignedBizService {
                 .setSubject(subject)
                 .setCopyViewers(sn)
                 .setSignFlowId(signFlowId)
-                .setFileKey(fileKey)
                 .setInitiatorTime(now)
                 .setUniqueId(partyA.getUniqueId())
                 .setAccountType(1)
@@ -969,6 +972,11 @@ public class SignedBizServiceImpl implements SignedBizService {
                 .setBatchStatus(BatchStatus2)
                 .setBatchNo(batchNo)
         ;
+        if(StringUtils.isBlank(fileKey)){
+            flowAInfo.setFileKey("文档为空");
+        }else {
+            flowAInfo.setFileKey(fileKey);
+        }
         if (ETemplateType.TEMPLATE_FILL == templateType) {
             flowAInfo.setInitiatorTime(now);
         } else if (ETemplateType.FILE_UPLOAD == templateType) {
