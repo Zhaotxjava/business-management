@@ -68,6 +68,8 @@ public class TaskController {
         //流程状态（0草稿，1 签署中，2完成，3 撤销，4终止，5过 期，6删除，7拒 签，8作废，9已归 档，10预盖章）
         QueryWrapper<YbFlowInfo> objectQueryWrapper = new QueryWrapper<>();
         objectQueryWrapper.between("update_time", DateUtil.yesterday(), new Date());
+        objectQueryWrapper.eq("flow_status","0").or().eq("flow_status","1")
+                .or().eq("flow_status","10");
 
         List<YbFlowInfo> list = ybFlowInfoMapper.selectList(objectQueryWrapper);
         log.info("定时查询签署一共：{}个", list.size());

@@ -277,13 +277,13 @@ public class InstitutionController {
 
     @GetMapping("/exportExcel3")
     @ApiOperation("批量发起的记录表格导出")
-    public void exportExcel3(String subject, HttpServletResponse response) {
+    public void exportExcel3(String batchNo, HttpServletResponse response) {
 
-        if (StringUtils.isBlank(subject)) {
+        if (StringUtils.isBlank(batchNo)) {
             return;
         }
         ArecordQueReq arecordQueReq = new ArecordQueReq();
-        arecordQueReq.setSubject(subject);
+        arecordQueReq.setBatchno(batchNo);
 
         institutionInfoService.exportExcel3(arecordQueReq, response);
     }

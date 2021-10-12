@@ -83,7 +83,7 @@ public class InstitutionInfoController {
         jsonObject.put("areaCode", platid);
         jsonObject.put("loginAccount", loginaccount);
         caffeineCache.put(token, jsonObject.toJSONString());
-        log.info("生成token={}，host={}，platid={}", token,request.getHeader("host"),platid);
+        log.info("生成token={}，host={}，platid={}", token, request.getHeader("host"), platid);
 //        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
 //        HttpServletRequest request = requestAttributes.getRequest();
 //        HttpSession session =  request.getSession();
@@ -100,10 +100,11 @@ public class InstitutionInfoController {
 //            return "redirect:" + redirectUrl + "?flag=" + flag + "&token=" + token + "&areaCode=" + platid+"&number="+hospitalid;
         }
         sb.append("?flag=").append(flag).append("&token=").append(token)
-                .append("&areaCode=").append(platid);
-        if (hospitalid.startsWith("bx")) {
-            sb.append("&hospitalid=").append(hospitalid);
-        }
+                .append("&areaCode=").append(platid).append("&hospitalid=").append(hospitalid);
+//        if (hospitalid.startsWith("bx")) {
+//            sb.append("&hospitalid=").append(hospitalid);
+//        }
+//        sb.append("&hospitalid=").append(hospitalid);
 
         return sb.toString();
 
@@ -137,17 +138,17 @@ public class InstitutionInfoController {
         jsonObject.put("areaCode", platid);
         jsonObject.put("loginAccount", loginaccount);
         caffeineCache.put(token, jsonObject.toJSONString());
-        log.info("生成token={}，host={}，platid={}", token,request.getHeader("host"),platid);
+        log.info("生成token={}，host={}，platid={}", token, request.getHeader("host"), platid);
 
 
         StringBuilder sb = new StringBuilder();
         sb.append("redirect:").append(redirectUrl)
                 .append("?flag=").append(flag)
                 .append("&token=").append(token)
-                .append("&areaCode=").append(platid);
-        if (hospitalid.startsWith("bx")) {
-            sb.append("&hospitalid=").append(hospitalid);
-        }
+                .append("&areaCode=").append(platid)
+                .append("&hospitalid=").append(hospitalid);
+
+
         return sb.toString();
 //        return "redirect:" + redirectYbUrl + "?flag=" + flag + "&token=" + token + "&areaCode=" + platid+"&number="+hospitalid;
 
