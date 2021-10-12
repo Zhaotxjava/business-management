@@ -289,7 +289,7 @@ public class InstitutionController {
             return;
         }
         ArecordQueReq arecordQueReq = new ArecordQueReq();
-        arecordQueReq.setBatchno(batchNo);
+        arecordQueReq.setBatchNo(batchNo);
 
         institutionInfoService.exportExcel3(arecordQueReq, response);
     }
