@@ -914,7 +914,10 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
 
     @Override
     public ApiResponse getArecordList(ArecordQueReq arecordQueReq) {
-
+        String batchno = arecordQueReq.getBatchno();
+        if (StringUtils.isEmpty(batchno) ){
+            return  new ApiResponse("502", "batchno不可为空");
+        }
         arecordQueReq.setPageNum((arecordQueReq.getPageNum() - 1) * arecordQueReq.getPageSize());
 
         List<YbFlowInfo> YbFlowInfoList = ybFlowInfoMapper.selectYbFlowInfoList(arecordQueReq);
