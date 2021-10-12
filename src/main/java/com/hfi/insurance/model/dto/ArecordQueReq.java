@@ -10,8 +10,8 @@ import java.util.Date;
 public class ArecordQueReq extends PageReq{
     @JsonProperty("subject")
     private String subject;
-    @JsonProperty("batchno")
-    private String batchno;
+    @JsonProperty("batchNo")
+    private String batchNo;
     @JsonFormat(pattern ="yyyy-MM-dd HH:mm:ss", timezone = "GMT+08:00")
     private Date mindateTime;
     @JsonFormat(pattern ="yyyy-MM-dd HH:mm:ss", timezone = "GMT+08:00")

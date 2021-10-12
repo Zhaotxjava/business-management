@@ -1,9 +1,6 @@
 package com.hfi.insurance.controller;
 
 import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.hfi.insurance.common.ApiResponse;
 import com.hfi.insurance.enums.ErrorCodeEnum;
 import com.hfi.insurance.model.ExcelSheetPO;
@@ -21,7 +18,6 @@ import io.swagger.annotations.ApiOperation;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.checkerframework.checker.units.qual.C;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -30,7 +26,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @Author ChenZX
@@ -100,26 +99,26 @@ public class InstitutionController {
             return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(), "联系人手机号不能为空");
         }
 
-        if(req.getLegalPhone().equals(req.getContactPhone())&&req.getLegalIdCard().equals(req.getContactIdCard())
-                &&!req.getContactName().equals(req.getContactName())){
+        if (req.getLegalPhone().equals(req.getContactPhone()) && req.getLegalIdCard().equals(req.getContactIdCard())
+                && !req.getContactName().equals(req.getContactName())) {
             return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(), "相同，不可提交");
         }
 
-        if (!req.getLegalPhone().equals(req.getContactPhone())&&!req.getLegalIdCard().equals(req.getContactIdCard())){
+        if (!req.getLegalPhone().equals(req.getContactPhone()) && !req.getLegalIdCard().equals(req.getContactIdCard())) {
             return new ApiResponse(ErrorCodeEnum.SUCCESS.getCode(), "提交成功");
         }
 
-        if (req.getLegalIdCard().equals(req.getContactIdCard())&&!req.getLegalPhone().equals(req.getContactPhone())){
+        if (req.getLegalIdCard().equals(req.getContactIdCard()) && !req.getLegalPhone().equals(req.getContactPhone())) {
             return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(), "相同，不可提交");
 
         }
-        if (!req.getLegalIdCard().equals(req.getContactIdCard())&&req.getLegalPhone().equals(req.getContactPhone())){
+        if (!req.getLegalIdCard().equals(req.getContactIdCard()) && req.getLegalPhone().equals(req.getContactPhone())) {
             return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(), "相同，不可提交");
 
         }
 
-        if(req.getLegalPhone().equals(req.getContactPhone())&&req.getLegalIdCard().equals(req.getContactIdCard())
-                &&req.getContactName().equals(req.getContactName())){
+        if (req.getLegalPhone().equals(req.getContactPhone()) && req.getLegalIdCard().equals(req.getContactIdCard())
+                && req.getContactName().equals(req.getContactName())) {
             return new ApiResponse(ErrorCodeEnum.SUCCESS.getCode(), "提交成功");
 
         }
@@ -129,9 +128,9 @@ public class InstitutionController {
     }
 
 
-    @PostMapping("checkImportInstitution")
+    @PostMapping(value = "checkImportInstitution", produces = "text/html;charset=UTF-8")
     @ApiOperation("批量导入机构，并检查合法性")
-    public ApiResponse checkImportInstitution(@RequestParam("file") MultipartFile multipartFile) {
+    public String checkImportInstitution(@RequestParam("file") MultipartFile multipartFile) {
         log.info("checkImportInstitution 开始：");
         List<ExcelSheetPO> excelSheetList = new ArrayList<>();
         try {
@@ -165,9 +164,9 @@ public class InstitutionController {
             });
 //            log.info("-----------------------------{}",JSONObject.toJSONString(res));
         } else {
-            return ApiResponse.fail(ErrorCodeEnum.PARAM_ERROR, " 请检查入参文件是否正确");
+            return JSONObject.toJSONString(ApiResponse.fail(ErrorCodeEnum.PARAM_ERROR, " 请检查入参文件是否正确"));
         }
-        return ApiResponse.success(res);
+        return JSONObject.toJSONString(ApiResponse.success(res));
     }
 
     @PostMapping("import")
@@ -290,7 +289,7 @@ public class InstitutionController {
             return;
         }
         ArecordQueReq arecordQueReq = new ArecordQueReq();
-        arecordQueReq.setBatchno(batchNo);
+        arecordQueReq.setBatchNo(batchNo);
 
         institutionInfoService.exportExcel3(arecordQueReq, response);
     }
