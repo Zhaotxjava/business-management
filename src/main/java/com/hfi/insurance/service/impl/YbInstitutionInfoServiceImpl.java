@@ -916,7 +916,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
     public ApiResponse getArecordList(ArecordQueReq arecordQueReq) {
         String batchno = arecordQueReq.getBatchno();
         if (StringUtils.isEmpty(batchno) ){
-            return  new ApiResponse("502", "batchNo不可为空");
+            return  new ApiResponse("502", "模板名称不能为空");
         }
         arecordQueReq.setPageNum((arecordQueReq.getPageNum() - 1) * arecordQueReq.getPageSize());
 
