@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.hfi.insurance.aspect.anno.LogAnnotation;
 import com.hfi.insurance.common.ApiResponse;
+import com.hfi.insurance.enums.Cons;
 import com.hfi.insurance.enums.ErrorCodeEnum;
 import com.hfi.insurance.mapper.YbFlowInfoMapper;
 import com.hfi.insurance.model.*;
@@ -63,10 +64,11 @@ public class TaskController {
 
     @RequestMapping(value = "/sign/signedStatusUpdate", method = RequestMethod.POST)
     @ApiOperation("signedStatusUpdate")
-//    @Scheduled(cron = "0 0/10 * * * * ")
+    @Scheduled(cron = "0 0/10 * * * * ")
     public void signedStatusUpdate() {
         //流程状态（0草稿，1 签署中，2完成，3 撤销，4终止，5过 期，6删除，7拒 签，8作废，9已归 档，10预盖章）
         QueryWrapper<YbFlowInfo> objectQueryWrapper = new QueryWrapper<>();
+        objectQueryWrapper.and(i -> i.isNull("batch_status").or().eq("batch_status", Cons.BatchStr.BATCH_STATUS_SUCCESS));
         objectQueryWrapper.between("update_time", DateUtil.yesterday(), new Date());
         objectQueryWrapper.eq("flow_status","0").or().eq("flow_status","1")
                 .or().eq("flow_status","10");
