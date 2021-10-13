@@ -67,8 +67,8 @@
     <select id="selectExportYbFlowInfoList" parameterType="com.hfi.insurance.model.dto.ArecordQueReq" resultType="com.hfi.insurance.model.YbFlowInfo">
         select * from yb_flow_info
       where
-      <if test="signFlowId!=null and signFlowId!=''">
-          sign_flow_id = #{signFlowId}
+      <if test="batchNo!=null and batchNo!=''">
+          batch_no = #{batchNo}
       </if>
 
     </select>

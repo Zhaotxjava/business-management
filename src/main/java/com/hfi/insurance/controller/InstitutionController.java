@@ -289,7 +289,7 @@ public class InstitutionController {
             return;
         }
         ArecordQueReq arecordQueReq = new ArecordQueReq();
-        arecordQueReq.setSignFlowId(signFlowId);
+        arecordQueReq.setFlowId(Integer.parseInt(signFlowId));
 
         institutionInfoService.exportExcel3(arecordQueReq, response);
     }

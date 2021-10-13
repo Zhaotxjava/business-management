@@ -8,6 +8,8 @@ import java.util.Date;
 
 @Data
 public class ArecordQueReq extends PageReq{
+    @JsonProperty("flowId")
+    private  Integer flowId;
     @JsonProperty("subject")
     private String subject;
     @JsonProperty("batchNo")
