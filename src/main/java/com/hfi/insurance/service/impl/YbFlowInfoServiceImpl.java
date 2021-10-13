@@ -23,40 +23,23 @@ import org.springframework.stereotype.Service;
 public class YbFlowInfoServiceImpl extends ServiceImpl<YbFlowInfoMapper, YbFlowInfo> implements IYbFlowInfoService {
 
     @Override
-    public Page<YbFlowInfo> getSignedRecord(String institutionNumber,GetRecordInfoReq req) {
-        QueryWrapper<YbFlowInfo> queryWrapper = new QueryWrapper<>();
-        //SqlUtils---concatLike
-        queryWrapper.likeRight("number",institutionNumber);
-        if (StringUtils.isNotBlank(req.getSubject())) {
-            queryWrapper.like("subject", req.getSubject());
-        }
-        if (StringUtils.isNotBlank(req.getSignStatus())) {
-            queryWrapper.eq("sign_status", req.getSignStatus());
-        }
-        if (null != req.getSignFlowId()) {
-            queryWrapper.eq("sign_flow_id", req.getSignFlowId());
-        }
-        if (null != req.getFlowStatus()) {
-            queryWrapper.eq("flow_status", req.getFlowStatus());
-        }
-        if (StringUtils.isNotEmpty(req.getBeginInitiateTime())) {
-            queryWrapper.ge("initiator_time", req.getBeginInitiateTime());
-        }
-        if (StringUtils.isNotEmpty(req.getEndInitiateTime())) {
-            //<=
-            queryWrapper.le("initiator_time", req.getEndInitiateTime());
-        }
-
-        queryWrapper.isNull("batch_status").or().eq("batch_status", Cons.BatchStr.BATCH_STATUS_SUCCESS);
-        Page<YbFlowInfo> page = new Page<>((req.getPageNum()-1)*req.getPageSize(), req.getPageSize());
+    public Page<YbFlowInfo> getSignedRecord(String institutionNumber, GetRecordInfoReq req) {
+        QueryWrapper<YbFlowInfo> queryWrapper = pkQueryWrapper(institutionNumber, req);
+        Page<YbFlowInfo> page = new Page<>((req.getPageNum() - 1) * req.getPageSize(), req.getPageSize());
 
         return baseMapper.selectPage(page, queryWrapper);
     }
 
-    public Integer getSignedRecordCount(String institutionNumber,GetRecordInfoReq req) {
+    @Override
+    public Integer getSignedRecordCount(String institutionNumber, GetRecordInfoReq req) {
+        QueryWrapper<YbFlowInfo> queryWrapper = pkQueryWrapper(institutionNumber, req);
+        return baseMapper.selectCount(queryWrapper);
+    }
+
+    public QueryWrapper<YbFlowInfo> pkQueryWrapper(String institutionNumber, GetRecordInfoReq req) {
         QueryWrapper<YbFlowInfo> queryWrapper = new QueryWrapper<>();
         //SqlUtils---concatLike
-        queryWrapper.likeRight("number",institutionNumber);
+        queryWrapper.likeRight("number", institutionNumber);
         if (StringUtils.isNotBlank(req.getSubject())) {
             queryWrapper.like("subject", req.getSubject());
         }
@@ -76,8 +59,8 @@ public class YbFlowInfoServiceImpl extends ServiceImpl<YbFlowInfoMapper, YbFlowI
             //<=
             queryWrapper.le("initiator_time", req.getEndInitiateTime());
         }
-
-
-        return baseMapper.selectCount(queryWrapper);
+        queryWrapper.and(i -> i.isNull("batch_status").or().eq("batch_status", Cons.BatchStr.BATCH_STATUS_SUCCESS));
+//        queryWrapper.ne("batch_status", Cons.BatchStr.BATCH_STATUS_FAIL);
+        return queryWrapper;
     }
 }
