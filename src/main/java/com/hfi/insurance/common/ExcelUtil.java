@@ -92,7 +92,7 @@ public class ExcelUtil {
             response.reset(); // 重点突出
             response.setCharacterEncoding("ISO-8859-1"); // 重点突出
             response.setContentType("application/x-msdownload");// 不同类型的文件对应不同的MIME类型 // 重点突出
-            response.setHeader("Content-Disposition", "attachment;filename=" + java.net.URLEncoder.encode(fileName,"UTF-8")+ ".xlsx");// 重点突出
+            response.setHeader("Content-Disposition", "attachment;filename=" + UUID.randomUUID().toString()+ ".xlsx");// 重点突出
             wb.write(os);
         } catch (Exception ex) {
             throw new RuntimeException(ex.getMessage());
