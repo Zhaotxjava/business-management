@@ -171,7 +171,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
                 break;
             }
         }
-        log.info("外部机构数量：【{}】", queryOuterOrgResultList.size());
+     /*   log.info("外部机构数量：【{}】", queryOuterOrgResultList.size());
         for (QueryOuterOrgResult result : queryOuterOrgResultList) {
             BindedAgentBean bindedAgentBean = CollectionUtils.firstElement(result.getAgentAccounts());
             String organizeNo = result.getOrganizeNo();
@@ -185,7 +185,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
                 insuranceList.add(res);
             }
         }
-        ybInstitutionInfos.addAll(insuranceList);
+        ybInstitutionInfos.addAll(insuranceList);*/
 
 
         int total = institutionInfoMapper.selectCountOrgForCreateFlow(req);
