@@ -60,7 +60,12 @@ public class YbFlowInfoServiceImpl extends ServiceImpl<YbFlowInfoMapper, YbFlowI
             queryWrapper.le("initiator_time", req.getEndInitiateTime());
         }
         queryWrapper.and(i -> i.isNull("batch_status").or().eq("batch_status", Cons.BatchStr.BATCH_STATUS_SUCCESS));
-//        queryWrapper.ne("batch_status", Cons.BatchStr.BATCH_STATUS_FAIL);
+        queryWrapper.orderByDesc("initiator_time");
+
+
+
+
+        //queryWrapper.ne("batch_status", Cons.BatchStr.BATCH_STATUS_FAIL);
         return queryWrapper;
     }
 }
