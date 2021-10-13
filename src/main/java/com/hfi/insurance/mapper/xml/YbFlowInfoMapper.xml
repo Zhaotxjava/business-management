@@ -66,7 +66,10 @@
     </select>
     <select id="selectExportYbFlowInfoList" parameterType="com.hfi.insurance.model.dto.ArecordQueReq" resultType="com.hfi.insurance.model.YbFlowInfo">
         select * from yb_flow_info
-        <include refid="YbFlowInfoWhere"/>
+      where
+      <if test="signFlowId!=null and signFlowId!=''">
+          sign_flow_id = #{signFlowId}
+      </if>
 
     </select>
 

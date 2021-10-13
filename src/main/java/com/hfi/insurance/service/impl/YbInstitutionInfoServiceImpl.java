@@ -932,6 +932,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
                 getArecordReq.setDocumentName(batchNo);
                 getArecordReq.setRecordName(split[1]);
                 getArecordReq.setCreationDate(DateUtil.dateNew(x.getInitiatorTime()));
+                getArecordReq.setSignFlowId(x.getSignFlowId());
                 getArecordReqList.add(getArecordReq);
             }
             List<YbFlowInfo> YbFlowInfoListCount = ybFlowInfoMapper.selecttYbFlowInfoCount(arecordQueReq);
