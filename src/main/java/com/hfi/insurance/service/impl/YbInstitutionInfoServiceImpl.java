@@ -1026,6 +1026,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
                 BeanUtils.copyProperties(numberMap.get(y.getNumber()), ybFlowDownload);
                 ybFlowDownload.setInstitutionCardType("营业执照");
                 ybFlowDownload.setInstitutionCardCode(ybInstitutionInfo.getOrgInstitutionCode());
+                ybFlowDownload.setLegalCardType("身份证");
                 ybFlowDownload.setLegalCardCode(ybInstitutionInfo.getLegalIdCard());
                 ybFlowDownload.setContactCardCode(ybInstitutionInfo.getContactIdCard());
             }
