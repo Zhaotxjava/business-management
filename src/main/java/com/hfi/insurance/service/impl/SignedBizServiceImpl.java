@@ -1102,7 +1102,7 @@ public class SignedBizServiceImpl implements SignedBizService {
 
         String signFlowIdTemp = signFlows.getString("signFlowId");
         if (StringUtils.isBlank(signFlowIdTemp) && Cons.BatchStr.BATCH_STATUS_FAIL.equals(BatchStatus)) {
-            signFlowIdTemp = "无效流程";
+            signFlowIdTemp = "5x00";
         }
         String signFlowId = signFlowIdTemp;
         List<InstitutionBaseInfo> distinctInstitutions = institutionInfos.stream().distinct().collect(Collectors.toList());
