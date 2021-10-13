@@ -24,9 +24,8 @@ public class YbFlowInfoServiceImpl extends ServiceImpl<YbFlowInfoMapper, YbFlowI
 
     @Override
     public Page<YbFlowInfo> getSignedRecord(String institutionNumber, GetRecordInfoReq req) {
+        Page<YbFlowInfo> page = new Page<>(req.getPageNum(), req.getPageSize());
         QueryWrapper<YbFlowInfo> queryWrapper = pkQueryWrapper(institutionNumber, req);
-        Page<YbFlowInfo> page = new Page<>((req.getPageNum() - 1) * req.getPageSize(), req.getPageSize());
-
         return baseMapper.selectPage(page, queryWrapper);
     }
 
