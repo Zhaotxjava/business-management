@@ -932,7 +932,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
                 getArecordReq.setDocumentName(batchNo);
                 getArecordReq.setRecordName(split[1]);
                 getArecordReq.setCreationDate(DateUtil.dateNew(x.getInitiatorTime()));
-                getArecordReq.setSignFlowId(x.getSignFlowId());
+                getArecordReq.setSignFlowId(x.getFlowId().toString());
                 getArecordReqList.add(getArecordReq);
             }
             List<YbFlowInfo> YbFlowInfoListCount = ybFlowInfoMapper.selecttYbFlowInfoCount(arecordQueReq);
@@ -987,7 +987,12 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
 
     @Override
     public void exportExcel3(ArecordQueReq arecordQueReq, HttpServletResponse response) {
-
+        QueryWrapper<YbFlowInfo> objectQueryWrapper = new QueryWrapper<>();
+        objectQueryWrapper.eq("flow_id",arecordQueReq.getFlowId());
+        YbFlowInfo ybFlowInfo = ybFlowInfoMapper.selectOne(objectQueryWrapper);
+        String batchNo = ybFlowInfo.getBatchNo();
+        log.info("batchNo", JSONObject.toJSONString(batchNo));
+        arecordQueReq.setBatchNo(ybFlowInfo.getBatchNo());
         List<YbFlowInfo> YbFlowInfoList = ybFlowInfoMapper.selectExportYbFlowInfoList(arecordQueReq);
         Set<String> numberSet = new HashSet<>();
         YbFlowInfoList.forEach(y -> {
