@@ -76,7 +76,7 @@ public class SignInfoController {
     @PostMapping("getSignUrl")
     @ApiOperation("获取二维码")
     public ApiResponse getSignUrl(@RequestBody GetSignUrlsReq req) {
-        if (req.getAccountId().isEmpty()) {
+        if (StringUtils.isBlank(req.getAccountId())) {
             return ApiResponse.fail(ErrorCodeEnum.PARAM_ERROR, "未检测到商户信息注册信息");
         }
         return signedInfoBizService.getSignUrls(req);
