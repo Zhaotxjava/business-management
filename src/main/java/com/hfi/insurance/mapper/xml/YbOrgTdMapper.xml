@@ -44,4 +44,31 @@
         AKB020, AKB021, AKB022, AAE053, AKA101, AKB023, BKB012, AAE045, BKB001, AAE100, BKB117, AAE013, BKB301, BKB302, BKA938, AAE004, AAE005, AAE006, BKA968, BKA975, BKA977, BKA978, BKA983, AAA027, BKA996, AKB141, BKA992, BKB500, BKB501, BKB502, BKB503, BKB504, BKB505
     </sql>
 
+    <sql id="torgTdbxListWhere">
+        <where>
+            <if test="hospitalid!=null and hospitalid!=''">
+                AKB020 = #{hospitalid}
+            </if>
+            <if test="number!=null  and number!=''">
+                and  AKB020 like concat("%",#{number},"%")
+            </if>
+            <if test="institutionName!=null and institutionName!=''">
+                and AKB021  like concat("%",#{institutionName},"%")
+            </if>
+
+        </where>
+    </sql>
+
+    <select id="getorgTdbxList"  parameterType="com.hfi.insurance.model.dto.InstitutionInfoQueryReq" resultType="com.hfi.insurance.model.YbOrgTd">
+
+     SELECT  * from  yb_org_td
+     <include refid="torgTdbxListWhere"/>
+     limit #{pageNum},#{pageSize}
+    </select>
+
+    <select id="selectorgTdbxCount"  parameterType="com.hfi.insurance.model.dto.InstitutionInfoQueryReq" resultType="int">
+     SELECT  count(*) from  yb_org_td
+     <include refid="torgTdbxListWhere"/>
+    </select>
+
 </mapper>

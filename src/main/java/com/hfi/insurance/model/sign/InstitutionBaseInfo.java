@@ -1,13 +1,14 @@
 package com.hfi.insurance.model.sign;
 
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 
 /**
  * @Author ChenZX
  * @Date 2021/6/16 15:06
- * @Description:
+ * @Description: 机构天印系统羁绊人信息
  */
-
+@Data
 public class InstitutionBaseInfo {
 
     @ApiModelProperty("机构编号")
@@ -26,37 +27,37 @@ public class InstitutionBaseInfo {
     @ApiModelProperty("天印系统机构标记")
     private String organizeId;
 
-    public String getAccountId() {
-        return accountId;
-    }
-
-    public void setAccountId(String accountId) {
-        this.accountId = accountId;
-    }
-
-    public String getOrganizeId() {
-        return organizeId;
-    }
-
-    public void setOrganizeId(String organizeId) {
-        this.organizeId = organizeId;
-    }
-
-    public String getNumber() {
-        return number;
-    }
-
-    public void setNumber(String number) {
-        this.number = number;
-    }
-
-    public String getInstitutionName() {
-        return institutionName;
-    }
-
-    public void setInstitutionName(String institutionName) {
-        this.institutionName = institutionName;
-    }
+//    public String getAccountId() {
+//        return accountId;
+//    }
+//
+//    public void setAccountId(String accountId) {
+//        this.accountId = accountId;
+//    }
+//
+//    public String getOrganizeId() {
+//        return organizeId;
+//    }
+//
+//    public void setOrganizeId(String organizeId) {
+//        this.organizeId = organizeId;
+//    }
+//
+//    public String getNumber() {
+//        return number;
+//    }
+//
+//    public void setNumber(String number) {
+//        this.number = number;
+//    }
+//
+//    public String getInstitutionName() {
+//        return institutionName;
+//    }
+//
+//    public void setInstitutionName(String institutionName) {
+//        this.institutionName = institutionName;
+//    }
     //    @ApiModelProperty("统一社会信用代码")
 //    private String orgInstitutionCode;  //统一社会信用代码
 //    private String legalName;

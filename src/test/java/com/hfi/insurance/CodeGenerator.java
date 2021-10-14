@@ -8,6 +8,8 @@ import com.baomidou.mybatisplus.generator.config.PackageConfig;
 import com.baomidou.mybatisplus.generator.config.StrategyConfig;
 import com.baomidou.mybatisplus.generator.config.rules.NamingStrategy;
 
+import java.util.UUID;
+
 
 public class CodeGenerator {
 
@@ -41,9 +43,9 @@ public class CodeGenerator {
 //            config.setServiceName("%sService");
 //            config.setServiceImplName("%sServiceImpl");
 //        }
-        String dbUrl = "jdbc:mysql://192.30.255.22:3306/db_insurance_info?useUnicode\\=true&characterEncoding\\=utf-8&allowMultiQueries\\=true";
-        String username = "test";
-        String password = "test@22";
+        String dbUrl = "jdbc:mysql://192.20.97.37:3306/db_insurance_info?useUnicode\\=true&characterEncoding\\=utf-8&allowMultiQueries\\=true";
+        String username = "user_insurance_info";
+        String password = "test_insurance";
         String driverName = "com.mysql.jdbc.Driver";
 
         // 2.设置数据库连接池DataSource
@@ -61,7 +63,7 @@ public class CodeGenerator {
         strategyConfig.setNaming(NamingStrategy.underline_to_camel);
         strategyConfig.setColumnNaming(NamingStrategy.underline_to_camel);//数据库表字段映射到实体的命名策略
         // .setSuperMapperClass(“cn.saytime.mapper.BaseMapper”)
-        strategyConfig.setInclude("yb_institution_pic_path");//修改替换成你需要的表名，多个表名传数组
+        strategyConfig.setInclude("yb_flow_info");//修改替换成你需要的表名，多个表名传数组
         // 4.设置包配置package
         PackageConfig packageConfig = new PackageConfig();
         //pc.setModuleName(scanner(“模块名”));

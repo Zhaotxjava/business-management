@@ -14,10 +14,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -66,10 +69,10 @@ public class InstitutionInfoController {
         //默认外部机构
         int flag = 2;
         if (StringUtils.isNotBlank(loginaccount)) {
-            if (loginaccount.startsWith("bx")) {
-                flag = 3;
-            } else if (!loginaccount.startsWith("hz")) {
+            if (!loginaccount.startsWith("hz")) {
                 flag = 1;
+            } else if (hospitalid.startsWith("bx")) {
+                flag = 3;
             }
         }
         long timeStamp = System.currentTimeMillis();
@@ -80,18 +83,31 @@ public class InstitutionInfoController {
         jsonObject.put("areaCode", platid);
         jsonObject.put("loginAccount", loginaccount);
         caffeineCache.put(token, jsonObject.toJSONString());
-        log.info("生成token={}", token);
+        log.info("生成token={}，host={}，platid={}", token, request.getHeader("host"), platid);
 //        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
 //        HttpServletRequest request = requestAttributes.getRequest();
 //        HttpSession session =  request.getSession();
 //        session.setAttribute("areaCode",platid);
 //        session.setAttribute("number",hospitalid);
         log.info("host={}", request.getHeader("host"));
+        StringBuilder sb = new StringBuilder();
+        sb.append("redirect:");
         if (StringUtils.isNotEmpty(ntv)) {
-            return "redirect:" + redirectYbUrl + "?flag=" + flag + "&token=" + token;
+            sb.append(redirectYbUrl);
+//            return "redirect:" + redirectYbUrl + "?flag=" + flag + "&token=" + token + "&areaCode=" + platid +"&number="+hospitalid;
         } else {
-            return "redirect:" + redirectUrl + "?flag=" + flag + "&token=" + token;
+            sb.append(redirectUrl);
+//            return "redirect:" + redirectUrl + "?flag=" + flag + "&token=" + token + "&areaCode=" + platid+"&number="+hospitalid;
         }
+        sb.append("?flag=").append(flag).append("&token=").append(token)
+                .append("&areaCode=").append(platid).append("&hospitalid=").append(hospitalid);
+//        if (hospitalid.startsWith("bx")) {
+//            sb.append("&hospitalid=").append(hospitalid);
+//        }
+//        sb.append("&hospitalid=").append(hospitalid);
+
+        return sb.toString();
+
     }
 
 
@@ -107,10 +123,10 @@ public class InstitutionInfoController {
         //默认外部机构
         int flag = 2;
         if (StringUtils.isNotBlank(loginaccount)) {
-            if (loginaccount.startsWith("bx")) {
-                flag = 3;
-            } else if (!loginaccount.startsWith("hz")) {
+            if (!loginaccount.startsWith("hz")) {
                 flag = 1;
+            } else if (hospitalid.startsWith("bx")) {
+                flag = 3;
             }
         }
 
@@ -122,9 +138,20 @@ public class InstitutionInfoController {
         jsonObject.put("areaCode", platid);
         jsonObject.put("loginAccount", loginaccount);
         caffeineCache.put(token, jsonObject.toJSONString());
-        log.info("生成token={}", token);
-        log.info("host={}", request.getHeader("host"));
-        return "redirect:" + redirectYbUrl + "?flag=" + flag + "&token=" + token;
+        log.info("生成token={}，host={}，platid={}", token, request.getHeader("host"), platid);
+
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("redirect:").append(redirectUrl)
+                .append("?flag=").append(flag)
+                .append("&token=").append(token)
+                .append("&areaCode=").append(platid)
+                .append("&hospitalid=").append(hospitalid);
+
+
+        return sb.toString();
+//        return "redirect:" + redirectYbUrl + "?flag=" + flag + "&token=" + token + "&areaCode=" + platid+"&number="+hospitalid;
+
     }
 
 

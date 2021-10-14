@@ -45,17 +45,17 @@ public class SignInfoController {
 
     @ApiOperation("获取签署流程记录")
     @PostMapping("/getSignInfoRecord")
-    public ApiResponse getSignInfoRecord(@RequestBody GetRecordInfoReq req, HttpServletRequest request){
+    public ApiResponse getSignInfoRecord(@RequestBody GetRecordInfoReq req, HttpServletRequest request) {
         String token = request.getHeader("token");
         if (StringUtils.isBlank(token)) {
             return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(), ErrorCodeEnum.PARAM_ERROR.getMessage());
         }
-        return signedInfoBizService.getSignedRecord(token,req);
+        return signedInfoBizService.getSignedRecord(token, req);
     }
 
     @GetMapping("getSignDetail/{signFlowId}")
     @ApiOperation("获取签署流程进度详情-不用联调")
-    public ApiResponse getSignDetail(@PathVariable Integer signFlowId){
+    public ApiResponse getSignDetail(@PathVariable Integer signFlowId) {
         JSONObject signDetail = signedService.getSignDetail(signFlowId);
         return new ApiResponse(signDetail);
     }
@@ -63,19 +63,22 @@ public class SignInfoController {
 
     @GetMapping("getPreviewUrl")
     @ApiOperation("预览")
-    public ApiResponse getPreviewUrl(@RequestParam("fileKey") String fileKey,@RequestParam(value = "docId",required = false) String docId){
-        return signedInfoBizService.getPreviewUrl(fileKey,docId);
+    public ApiResponse getPreviewUrl(@RequestParam("fileKey") String fileKey, @RequestParam(value = "docId", required = false) String docId) {
+        return signedInfoBizService.getPreviewUrl(fileKey, docId);
     }
 
     @GetMapping("getSignFlowDocUrls")
     @ApiOperation("查看")
-    public ApiResponse getSignFlowDocUrls(@RequestParam("flowId") String flowId){
-        return signedInfoBizService.getSignFlowDocUrls(flowId);
+    public ApiResponse getSignFlowDocUrls(@RequestParam("signFlowId") String signFlowId) {
+        return signedInfoBizService.getSignFlowDocUrls(signFlowId);
     }
 
     @PostMapping("getSignUrl")
     @ApiOperation("获取二维码")
-    public ApiResponse getSignUrl(@RequestBody GetSignUrlsReq req){
+    public ApiResponse getSignUrl(@RequestBody GetSignUrlsReq req) {
+        if (StringUtils.isBlank(req.getAccountId())) {
+            return ApiResponse.fail(ErrorCodeEnum.PARAM_ERROR, "未检测到商户信息注册信息");
+        }
         return signedInfoBizService.getSignUrls(req);
     }
 }

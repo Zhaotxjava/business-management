@@ -80,7 +80,7 @@ public class FlowManageController {
             return JSON.toJSONString(new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), upload.getString("msg")));
         }
 //        String fileKey = upload.getString("fileKey");
-        upload.put("fileName",file.getOriginalFilename());
+        upload.put("fileName", file.getOriginalFilename());
         return JSON.toJSONString(new ApiResponse(upload));
     }
 

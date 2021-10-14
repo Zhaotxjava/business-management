@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
+import java.time.Clock;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -42,7 +44,8 @@ public class Test {
         set.add(s);
         s = "b";
         set.add(s);
-        System.out.println(set.toString());
+        LocalDateTime localdatetime = LocalDateTime.now(Clock.systemDefaultZone());
+        System.out.println(localdatetime.toLocalDate());
 
     }
 

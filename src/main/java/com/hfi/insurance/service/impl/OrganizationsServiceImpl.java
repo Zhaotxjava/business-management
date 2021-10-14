@@ -128,16 +128,19 @@ public class OrganizationsServiceImpl implements OrganizationsService {
         Map<String, String> headMap = new HashMap<>();
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("agentAccountId", institutionInfo.getAccountId());
-        jsonObject.put("legalAccountId",institutionInfo.getLegalAccountId());
+        jsonObject.put("legalAccountId", institutionInfo.getLegalAccountId());
         jsonObject.put("legalLicenseNumber", institutionInfo.getLegalIdCard());
         jsonObject.put("legalLicenseType", "IDCard");
         jsonObject.put("legalMobile", institutionInfo.getLegalPhone());
         jsonObject.put("legalName", institutionInfo.getLegalName());
         jsonObject.put("licenseNumber", institutionInfo.getOrgInstitutionCode());
 //        jsonObject.put("licenseType", "SOCNO");
-        if(Objects.nonNull(institutionInfo.getLicenseType())){
-            jsonObject.put("licenseType", institutionInfo.getLicenseType());
-        }else {
+        //如果是保险机构，仍使用信用代码
+        if (institutionInfo.getNumber().startsWith("bx")) {
+            //信用代码
+            jsonObject.put("licenseType", "SOCNO");
+        } else {
+            //营业执照
             jsonObject.put("licenseType", "OTHERNO");
         }
 //        jsonObject.put("licenseType", "OTHERNO");
@@ -154,8 +157,12 @@ public class OrganizationsServiceImpl implements OrganizationsService {
         Map<String, String> headMap = new HashMap<>();
         convertHead(headMap, "");
         Map<String, String> params = new HashMap<>();
-        params.put("organizeId", organizeId);
-        params.put("organizeNo", organizeNo);
+        if (StringUtils.isNotBlank(organizeId)) {
+            params.put("organizeId", organizeId);
+        }
+        if (StringUtils.isNotBlank(organizeNo)) {
+            params.put("organizeNo", organizeNo);
+        }
         String result = HttpUtil.doGet(url + "/V1/organizations/outerOrgans/query", headMap, params);
         log.info("查询外部机构【{}】接口响应{}", organizeId, result);
         return convertResult(result);
@@ -166,15 +173,15 @@ public class OrganizationsServiceImpl implements OrganizationsService {
         Map<String, String> headMap = new HashMap<>();
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("legalLicenseNumber", institutionInfo.getLegalIdCard());
-        jsonObject.put("legalAccountId",institutionInfo.getLegalAccountId());
+        jsonObject.put("legalAccountId", institutionInfo.getLegalAccountId());
         jsonObject.put("legalLicenseType", "IDCard");
         jsonObject.put("legalMobile", institutionInfo.getLegalPhone());
         jsonObject.put("legalName", institutionInfo.getLegalName());
         jsonObject.put("licenseNumber", institutionInfo.getOrgInstitutionCode());
 //        jsonObject.put("licenseType", "SOCNO");
-        if(Objects.nonNull(institutionInfo.getLicenseType())){
-            jsonObject.put("licenseType", institutionInfo.getLicenseType());
-        }else {
+        if (institutionInfo.getNumber().startsWith("bx")) {
+            jsonObject.put("licenseType", "SOCNO");
+        } else {
             jsonObject.put("licenseType", "OTHERNO");
         }
 //        jsonObject.put("licenseType", "OTHERNO");
@@ -241,11 +248,11 @@ public class OrganizationsServiceImpl implements OrganizationsService {
     public JSONObject queryInnerAccounts(QueryInnerAccountsReq req) {
         Map<String, String> headMap = new HashMap<>();
 
-        Map<String,String> param = new HashMap<>();
-        param.put("organizeId",req.getOrganizeId());
+        Map<String, String> param = new HashMap<>();
+        param.put("organizeId", req.getOrganizeId());
         //param.put("uniqueId", req.getUniqueId());
-        param.put("pageIndex",req.getPageIndex());
-        param.put("pageSize",req.getPageSize());
+        param.put("pageIndex", req.getPageIndex());
+        param.put("pageSize", req.getPageSize());
         convertHead(headMap, "");
         String result = HttpUtil.doGet(url + "/V1/accounts/innerAccounts/list", headMap, param);
         log.info("根据用户标识【{}】查询用户列表信息接口响应{}", req.getUniqueId(), result);
@@ -255,8 +262,8 @@ public class OrganizationsServiceImpl implements OrganizationsService {
     @Override
     public JSONObject queryInnerOrgans(String organizeNo) {
         Map<String, String> headMap = new HashMap<>();
-        Map<String,String> param = new HashMap<>();
-        param.put("organizeNo",organizeNo);
+        Map<String, String> param = new HashMap<>();
+        param.put("organizeNo", organizeNo);
         convertHead(headMap, "");
         String result = HttpUtil.doGet(url + "/V1/organizations/innerOrgans/query", headMap, param);
         log.info("根据机构编号【{}】查询内部机构信息接口响应{}", organizeNo, result);
@@ -264,10 +271,9 @@ public class OrganizationsServiceImpl implements OrganizationsService {
     }
 
 
-
     @Override
-    public String queryByOrgName(String organizeName,int pageIndex) {
-        Map<String,String> headMap = new HashMap<>();
+    public String queryByOrgName(String organizeName, int pageIndex) {
+        Map<String, String> headMap = new HashMap<>();
 
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("organizeName", organizeName);
@@ -275,6 +281,6 @@ public class OrganizationsServiceImpl implements OrganizationsService {
         jsonObject.put("pageSize", 20);
         convertHead(headMap, jsonObject.toJSONString());
         String result = HttpUtil.doPost(url + "/V1/organizations/outerOrgans/queryByOrgname?pageIndex=" + pageIndex + "&pageSize=30", headMap, jsonObject.toJSONString());
-       return result;
+        return result;
     }
 }

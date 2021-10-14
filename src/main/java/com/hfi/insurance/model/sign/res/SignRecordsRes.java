@@ -16,6 +16,7 @@ public class SignRecordsRes {
 
     private Integer flowId;
 
+
     @ApiModelProperty("流程名称")
     private String subject;
 
@@ -48,6 +49,7 @@ public class SignRecordsRes {
     @ApiModelProperty("类别")
     private String flowType;
 
+    @ApiModelProperty("用户名称")
     private String accountId;
 
     @ApiModelProperty("用户类型;1:内部,2外部")

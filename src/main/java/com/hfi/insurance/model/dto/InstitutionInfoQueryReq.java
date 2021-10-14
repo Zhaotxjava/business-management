@@ -16,5 +16,7 @@ public class InstitutionInfoQueryReq extends PageReq{
 
     @ApiModelProperty("机构名称")
     private String institutionName;
+    @ApiModelProperty("保险编号")
+    private  String  hospitalid;
 
 }

@@ -21,11 +21,62 @@
         <result column="file_key" property="fileKey" />
         <result column="create_time" property="createTime" />
         <result column="update_time" property="updateTime" />
+        <result column="flow_name" property="flowName" />
+        <result column="batch_status" property="batchStatus" />
+        <result column="batch_no" property="batchNo" />
     </resultMap>
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        flow_id, sign_flow_id, subject, flow_status,number,unique_id,account_type,sign_status, initiator, initiator_time, handle_time, signers, copy_viewers, flow_type, file_key,create_time, update_time
+        flow_id, sign_flow_id, subject, flow_status, number, unique_id, account_type, sign_status, initiator, initiator_time, handle_time, signers, copy_viewers, flow_type, file_key, create_time, update_time, flow_name, batch_status,batch_no
     </sql>
+
+
+    <sql id="YbFlowInfoWhere">
+        <where>
+            <if test="batchNo!=null  and batchNo!=''">
+                batch_no like concat ('%',#{batchNo},'%')
+            </if>
+            <if test="subject!=null  and subject!=''">
+               and subject like concat ('%',#{subject},'%')
+            </if>
+
+            <if test="mindateTime!=null">
+                and update_time >= #{mindateTime}
+            </if>
+
+            <if test="maxdateTime!=null">
+                and update_time &lt; #{maxdateTime}
+            </if>
+
+
+        </where>
+    </sql>
+
+    <select id="selectYbFlowInfoList" parameterType="com.hfi.insurance.model.dto.ArecordQueReq" resultType="com.hfi.insurance.model.YbFlowInfo">
+
+        select  t.* from (
+        select * from   yb_flow_info
+        <include refid="YbFlowInfoWhere"/>
+        group by batch_no
+        )t
+        order by update_time  desc
+        limit #{pageNum},#{pageSize}
+
+    </select>
+    <select id="selectExportYbFlowInfoList" parameterType="com.hfi.insurance.model.dto.ArecordQueReq" resultType="com.hfi.insurance.model.YbFlowInfo">
+        select * from yb_flow_info
+      where
+      <if test="batchNo!=null and batchNo!=''">
+          batch_no = #{batchNo}
+      </if>
+
+    </select>
+
+    <select id="selecttYbFlowInfoCount" parameterType="com.hfi.insurance.model.dto.ArecordQueReq" resultType="com.hfi.insurance.model.YbFlowInfo">
+        select  batch_no from   yb_flow_info
+        <include refid="YbFlowInfoWhere"/>
+        group by batch_no
+    </select>
 
 </mapper>

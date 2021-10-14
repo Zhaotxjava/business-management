@@ -1,12 +1,12 @@
 package com.hfi.insurance.controller;
 
 import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.hfi.insurance.common.ApiResponse;
 import com.hfi.insurance.enums.ErrorCodeEnum;
 import com.hfi.insurance.model.ExcelSheetPO;
 import com.hfi.insurance.model.YbInstitutionInfo;
 import com.hfi.insurance.model.YbInstitutionInfoChange;
+import com.hfi.insurance.model.dto.ArecordQueReq;
 import com.hfi.insurance.model.dto.InstitutionInfoAddReq;
 import com.hfi.insurance.model.dto.InstitutionInfoQueryReq;
 import com.hfi.insurance.model.dto.YbInstitutionInfoChangeReq;
@@ -18,7 +18,6 @@ import io.swagger.annotations.ApiOperation;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.checkerframework.checker.units.qual.C;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -27,7 +26,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @Author ChenZX
@@ -96,12 +98,29 @@ public class InstitutionController {
         if (StringUtils.isBlank(req.getContactPhone())) {
             return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(), "联系人手机号不能为空");
         }
+
+        if (req.getLegalPhone().equals(req.getContactPhone()) && req.getLegalIdCard().equals(req.getContactIdCard())
+                && !req.getContactName().equals(req.getContactName())) {
+            return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(), "相同，不可提交");
+        }
+
+        if (req.getLegalIdCard().equals(req.getContactIdCard()) && !req.getLegalPhone().equals(req.getContactPhone())) {
+            return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(), "相同，不可提交");
+
+        }
+        if (!req.getLegalIdCard().equals(req.getContactIdCard()) && req.getLegalPhone().equals(req.getContactPhone())) {
+            return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(), "相同，不可提交");
+
+        }
+
+
         return institutionInfoService.newUpdateInstitutionInfo(req);
     }
 
-    @PostMapping("checkImportInstitution")
+
+    @PostMapping(value = "checkImportInstitution", produces = "text/html;charset=UTF-8")
     @ApiOperation("批量导入机构，并检查合法性")
-    public ApiResponse checkImportInstitution(@RequestParam("file") MultipartFile multipartFile) {
+    public String checkImportInstitution(@RequestParam("file") MultipartFile multipartFile) {
         log.info("checkImportInstitution 开始：");
         List<ExcelSheetPO> excelSheetList = new ArrayList<>();
         try {
@@ -112,7 +131,7 @@ public class InstitutionController {
         }
 
         CheckImportInstitutionRes res = new CheckImportInstitutionRes();
-        if(!excelSheetList.isEmpty()){
+        if (!excelSheetList.isEmpty()) {
             ExcelSheetPO excelSheetPO = excelSheetList.get(0);
 //            List<Object> numberRow = excelSheetPO.getDataList().get(0);
             Set<String> allNumber = new HashSet<>();
@@ -121,23 +140,25 @@ public class InstitutionController {
 //                log.info("-----------------------------{}",excelSheetPO.getDataList().get(i).get(0));
                 allNumber.add(String.valueOf(excelSheetPO.getDataList().get(i).get(0)));
             }
+            if(allNumber.isEmpty()){
+                return JSONObject.toJSONString(ApiResponse.fail(ErrorCodeEnum.PARAM_ERROR, " 文件中未检测到机构，请检查入参文件是否正确"));
+            }
 //            log.info("-----------------------------{}",allNumber.toString());
-            //todo 判断是否符合正确的机构
             List<YbInstitutionInfo> list = institutionInfoService.findLegalInstitution(allNumber);
 
-            list.forEach(y->{
+            list.forEach(y -> {
                 res.getSuccessSet().add(y.getNumber());
             });
-            allNumber.forEach(number ->{
-                if(!res.getSuccessSet().contains(number)){
+            allNumber.forEach(number -> {
+                if (!res.getSuccessSet().contains(number)) {
                     res.getFailSet().add(number);
                 }
             });
 //            log.info("-----------------------------{}",JSONObject.toJSONString(res));
-        }else {
-            return ApiResponse.fail(ErrorCodeEnum.PARAM_ERROR," 请检查入参文件是否正确");
+        } else {
+            return JSONObject.toJSONString(ApiResponse.fail(ErrorCodeEnum.PARAM_ERROR, " 请检查入参文件是否正确"));
         }
-        return ApiResponse.success(res);
+        return JSONObject.toJSONString(ApiResponse.success(res));
     }
 
     @PostMapping("import")
@@ -205,6 +226,8 @@ public class InstitutionController {
     }
 
 
+
+
     @SneakyThrows
     @GetMapping("/exportExcel")
     @ApiOperation("导出机构信息变更记录表")
@@ -229,12 +252,33 @@ public class InstitutionController {
     }
 
 
-    @PostMapping("getInstitutionInfobxList")
-    @ResponseBody
+    @PostMapping("/getInstitutionInfobxList")
     @ApiOperation("筛选保险公司按钮")
-    public ApiResponse getInstitutionInfobxList(InstitutionInfoQueryReq institutionInfoQueryReq) {
+    public ApiResponse getInstitutionInfobxList(@RequestBody InstitutionInfoQueryReq institutionInfoQueryReq) {
+
         return institutionInfoService.getInstitutionInfobxList(institutionInfoQueryReq);
     }
 
+
+    @PostMapping("/getArecordList")
+    @ApiOperation("发起记录分页查询")
+    public ApiResponse getArecordList(@RequestBody ArecordQueReq arecordQueReq) {
+        return institutionInfoService.getArecordList(arecordQueReq);
+    }
+
+
+
+    @GetMapping("/exportExcel3")
+    @ApiOperation("批量发起的记录表格导出")
+    public void exportExcel3(String signFlowId, HttpServletResponse response) {
+
+        if (StringUtils.isBlank(signFlowId)) {
+            return;
+        }
+        ArecordQueReq arecordQueReq = new ArecordQueReq();
+        arecordQueReq.setFlowId(Integer.parseInt(signFlowId));
+
+        institutionInfoService.exportExcel3(arecordQueReq, response);
+    }
 
 }
