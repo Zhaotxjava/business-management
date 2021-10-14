@@ -57,5 +57,5 @@ public interface IYbInstitutionInfoService extends IService<YbInstitutionInfo> {
     void exportExcel3(ArecordQueReq arecordQueReq,HttpServletResponse response);
 
 
-    ApiResponse addYbInstitutionInfo(YbInstitutionInfoChange ybInstitutionInfoChange);
+
 }

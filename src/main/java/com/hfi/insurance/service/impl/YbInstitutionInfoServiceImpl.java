@@ -1067,12 +1067,5 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
 
     }
 
-    @Override
-    public ApiResponse addYbInstitutionInfo(YbInstitutionInfoChange ybInstitutionInfoChange) {
-        String number = ybInstitutionInfoChange.getNumber();
-
-
-        return null;
-    }
 
 }
