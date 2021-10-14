@@ -1028,6 +1028,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
                 ybFlowDownload.setInstitutionCardCode(ybInstitutionInfo.getOrgInstitutionCode());
                 ybFlowDownload.setLegalCardType("身份证");
                 ybFlowDownload.setLegalCardCode(ybInstitutionInfo.getLegalIdCard());
+                ybFlowDownload.setContactCardType("身份证");
                 ybFlowDownload.setContactCardCode(ybInstitutionInfo.getContactIdCard());
             }
             res.add(ybFlowDownload);
