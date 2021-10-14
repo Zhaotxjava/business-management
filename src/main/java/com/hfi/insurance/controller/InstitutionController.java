@@ -104,22 +104,12 @@ public class InstitutionController {
             return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(), "相同，不可提交");
         }
 
-        if (!req.getLegalPhone().equals(req.getContactPhone()) && !req.getLegalIdCard().equals(req.getContactIdCard())) {
-            return new ApiResponse(ErrorCodeEnum.SUCCESS.getCode(), "提交成功");
-        }
-
         if (req.getLegalIdCard().equals(req.getContactIdCard()) && !req.getLegalPhone().equals(req.getContactPhone())) {
             return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(), "相同，不可提交");
 
         }
         if (!req.getLegalIdCard().equals(req.getContactIdCard()) && req.getLegalPhone().equals(req.getContactPhone())) {
             return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(), "相同，不可提交");
-
-        }
-
-        if (req.getLegalPhone().equals(req.getContactPhone()) && req.getLegalIdCard().equals(req.getContactIdCard())
-                && req.getContactName().equals(req.getContactName())) {
-            return new ApiResponse(ErrorCodeEnum.SUCCESS.getCode(), "提交成功");
 
         }
 
