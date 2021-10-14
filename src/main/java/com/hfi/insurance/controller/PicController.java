@@ -21,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -145,6 +146,7 @@ public class PicController {
     })
     //file要与表单上传的名字相同
     @LogAnnotation
+    @Transactional(rollbackFor = Exception.class)
     public ApiResponse<PicPathRes> commit(HttpServletRequest request, @RequestBody(required = false) PicCommitPath inputPicPath) {
         String number = request.getHeader("number");
         String institutionName = request.getHeader("institutionName");
