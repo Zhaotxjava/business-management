@@ -141,7 +141,6 @@ public class InstitutionController {
                 allNumber.add(String.valueOf(excelSheetPO.getDataList().get(i).get(0)));
             }
 //            log.info("-----------------------------{}",allNumber.toString());
-            //todo 判断是否符合正确的机构
             List<YbInstitutionInfo> list = institutionInfoService.findLegalInstitution(allNumber);
 
             list.forEach(y -> {
