@@ -929,9 +929,9 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
                 String batchNo = x.getBatchNo();
                 String[] split = batchNo.split("-");
                 GetArecordReq getArecordReq = new GetArecordReq();
-                getArecordReq.setDocumentName(batchNo);
+                getArecordReq.setDocumentName(split[1]+split[2]);
                 getArecordReq.setRecordName(split[1]);
-                getArecordReq.setCreationDate(DateUtil.dateNew(x.getInitiatorTime()));
+                getArecordReq.setCreationDate(DateUtil.dateNew(x.getUpdateTime()));
                 getArecordReq.setSignFlowId(x.getFlowId().toString());
                 getArecordReqList.add(getArecordReq);
             }
@@ -1028,6 +1028,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
                 ybFlowDownload.setInstitutionCardCode(ybInstitutionInfo.getOrgInstitutionCode());
                 ybFlowDownload.setLegalCardType("身份证");
                 ybFlowDownload.setLegalCardCode(ybInstitutionInfo.getLegalIdCard());
+                ybFlowDownload.setContactCardType("身份证");
                 ybFlowDownload.setContactCardCode(ybInstitutionInfo.getContactIdCard());
             }
             res.add(ybFlowDownload);

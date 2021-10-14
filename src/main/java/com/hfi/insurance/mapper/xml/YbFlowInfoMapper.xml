@@ -60,7 +60,7 @@
         <include refid="YbFlowInfoWhere"/>
         group by batch_no
         )t
-        order by initiator_time desc
+        order by update_time  desc
         limit #{pageNum},#{pageSize}
 
     </select>
