@@ -929,7 +929,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
                 String batchNo = x.getBatchNo();
                 String[] split = batchNo.split("-");
                 GetArecordReq getArecordReq = new GetArecordReq();
-                getArecordReq.setDocumentName(batchNo);
+                getArecordReq.setDocumentName(split[1]+split[2]);
                 getArecordReq.setRecordName(split[1]);
                 getArecordReq.setCreationDate(DateUtil.dateNew(x.getInitiatorTime()));
                 getArecordReq.setSignFlowId(x.getFlowId().toString());
