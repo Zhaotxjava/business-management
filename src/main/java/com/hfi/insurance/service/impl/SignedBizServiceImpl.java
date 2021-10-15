@@ -601,8 +601,12 @@ public class SignedBizServiceImpl implements SignedBizService {
         } else {
             return new ApiResponse(ErrorCodeEnum.SYSTEM_ERROR.getCode(), "文档类型不能为空！");
         }
+        if (errMsg.length()<1){
+            return ApiResponse.fail(ErrorCodeEnum.SIGN_ERROR, errMsg.toString());
+        }else {
+            return new ApiResponse(ErrorCodeEnum.SUCCESS.getCode(), errMsg.toString());
+        }
 
-        return new ApiResponse(ErrorCodeEnum.SUCCESS.getCode(), errMsg.toString());
     }
 
     /**
@@ -1096,7 +1100,7 @@ public class SignedBizServiceImpl implements SignedBizService {
 //                sb.append(s.getAuthorizationOrganizeId()).append(",");
 //            });
 //            sb.deleteCharAt(sb.length() - 1);
-            errMsg.append(" 创建签署流程失败，签署文档名:").append(subject).append("，E签宝失败原因:").append(signFlows.getString("msg"));
+            errMsg.append(" 创建签署流程失败，签署文档名:").append(subject).append("，E签宝失败提示:").append(signFlows.getString("msg"));
 //            return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), signFlows.getString("msg"));
         }
 
