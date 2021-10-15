@@ -601,8 +601,12 @@ public class SignedBizServiceImpl implements SignedBizService {
         } else {
             return new ApiResponse(ErrorCodeEnum.SYSTEM_ERROR.getCode(), "文档类型不能为空！");
         }
+        if (errMsg.length()<1){
+            return new ApiResponse(ErrorCodeEnum.SIGN_ERROR.getCode(), errMsg.toString());
+        }else {
+            return new ApiResponse(ErrorCodeEnum.SUCCESS.getCode(), errMsg.toString());
+        }
 
-        return new ApiResponse(ErrorCodeEnum.SUCCESS.getCode(), errMsg.toString());
     }
 
     /**
