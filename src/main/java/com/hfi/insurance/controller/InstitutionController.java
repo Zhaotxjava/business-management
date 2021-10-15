@@ -260,6 +260,14 @@ public class InstitutionController {
     }
 
 
+    @PostMapping("/getInstitutionInfobxList2")
+    @ApiOperation("筛选保险公司按钮")
+    public ApiResponse getInstitutionInfobxList2(@RequestBody InstitutionInfoQueryReq institutionInfoQueryReq) {
+
+        return institutionInfoService.getInstitutionInfobxList2(institutionInfoQueryReq);
+    }
+
+
     @PostMapping("/getArecordList")
     @ApiOperation("发起记录分页查询")
     public ApiResponse getArecordList(@RequestBody ArecordQueReq arecordQueReq) {

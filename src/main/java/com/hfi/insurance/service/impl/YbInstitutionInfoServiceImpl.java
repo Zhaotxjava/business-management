@@ -1067,5 +1067,29 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
 
     }
 
+    @Override
+    public ApiResponse getInstitutionInfobxList2(InstitutionInfoQueryReq institutionInfoQueryReq) {
+
+        String hospitalid = institutionInfoQueryReq.getHospitalid();
+
+        if (StringUtils.isEmpty(hospitalid)) {
+            return new ApiResponse("502", "hospitalid不能为空");
+        }
+        if (hospitalid.indexOf("bx") == -1) {
+            institutionInfoQueryReq.setHospitalid("");
+            institutionInfoQueryReq.setNumber("bx");
+        }
+        institutionInfoQueryReq.setPageNum((institutionInfoQueryReq.getPageNum() - 1) * institutionInfoQueryReq.getPageSize());
+        List<YbInstitutionInfo> ybInstitutionInfos = institutionInfoMapper.getInstitutionInfobxList(institutionInfoQueryReq);
+        if (ybInstitutionInfos.size() > 0) {
+            Integer ybInstitutionInfosCount = institutionInfoMapper.selectInstitutionInfobxCount(institutionInfoQueryReq);
+            Page<YbInstitutionInfo> page = new Page<>();
+            page.setRecords(ybInstitutionInfos);
+            page.setTotal(ybInstitutionInfosCount);
+            return new ApiResponse(page);
+        }
+        return new ApiResponse("200", "无保险公司");
+    }
+
 
 }
