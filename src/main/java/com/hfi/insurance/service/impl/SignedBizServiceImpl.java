@@ -1100,7 +1100,7 @@ public class SignedBizServiceImpl implements SignedBizService {
 //                sb.append(s.getAuthorizationOrganizeId()).append(",");
 //            });
 //            sb.deleteCharAt(sb.length() - 1);
-            errMsg.append(" 创建签署流程失败，签署文档名:").append(subject).append("，E签宝失败原因:").append(signFlows.getString("msg"));
+            errMsg.append(" 创建签署流程失败，签署文档名:").append(subject).append("，E签宝失败提示:").append(signFlows.getString("msg"));
 //            return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), signFlows.getString("msg"));
         }
 
