@@ -602,7 +602,7 @@ public class SignedBizServiceImpl implements SignedBizService {
             return new ApiResponse(ErrorCodeEnum.SYSTEM_ERROR.getCode(), "文档类型不能为空！");
         }
         if (errMsg.length()<1){
-            return new ApiResponse(ErrorCodeEnum.SIGN_ERROR.getCode(), errMsg.toString());
+            return ApiResponse.fail(ErrorCodeEnum.SIGN_ERROR, errMsg.toString());
         }else {
             return new ApiResponse(ErrorCodeEnum.SUCCESS.getCode(), errMsg.toString());
         }
