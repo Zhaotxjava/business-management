@@ -608,25 +608,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
             page.setTotal(ybInstitutionInfosCount);
             return new ApiResponse(page);
         }
-        List<YbOrgTd> YbOrgTdList = orgTdMapper.getorgTdbxList(institutionInfoQueryReq);
-        List<YbInstitutionInfo> YbInstitutionInfolist = new ArrayList<>();
-        if (YbOrgTdList.size() > 0) {
-            YbOrgTdList.stream().forEach(x -> {
-                YbInstitutionInfo ybInstitutionInfo = new YbInstitutionInfo();
-                ybInstitutionInfo.setNumber(x.getAkb020());
-                ybInstitutionInfo.setInstitutionName(x.getAkb021());
-                YbInstitutionInfolist.add(ybInstitutionInfo);
 
-            });
-
-            Integer YbInstitutionInfoCount = orgTdMapper.selectorgTdbxCount(institutionInfoQueryReq);
-            Page<YbInstitutionInfo> page = new Page<>();
-            page.setRecords(YbInstitutionInfolist);
-            page.setTotal(YbInstitutionInfoCount);
-            return new ApiResponse(page);
-
-
-        }
         return new ApiResponse("200", "无保险公司");
     }
 
