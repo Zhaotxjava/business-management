@@ -187,13 +187,16 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         }
         ybInstitutionInfos.addAll(insuranceList);*/
         List<InstitutionInfoRes> InstitutionInfoResLists = new ArrayList<>();
-        ybInstitutionInfos.stream().forEach(x ->{
+        for (InstitutionInfoRes x : ybInstitutionInfos) {
             InstitutionInfoRes institutionInfoRes = new InstitutionInfoRes();
-            if (x.getNumber().indexOf("bx") != -1){
-                InstitutionInfoResLists.add(x);
+            String number = x.getNumber();
+            if (number.indexOf("bx") == -1){
+                BeanUtils.copyProperties(x,institutionInfoRes);
+                InstitutionInfoResLists.add(institutionInfoRes);
             }
 
-        });
+
+        }
 
         Integer count= institutionInfoMapper.selectCountOrgForCreateFlow(req);
 
