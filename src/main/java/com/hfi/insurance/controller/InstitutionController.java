@@ -10,6 +10,7 @@ import com.hfi.insurance.model.dto.ArecordQueReq;
 import com.hfi.insurance.model.dto.InstitutionInfoAddReq;
 import com.hfi.insurance.model.dto.InstitutionInfoQueryReq;
 import com.hfi.insurance.model.dto.YbInstitutionInfoChangeReq;
+import com.hfi.insurance.model.CheckImportInstitutionInfo;
 import com.hfi.insurance.model.dto.res.CheckImportInstitutionRes;
 import com.hfi.insurance.service.IYbInstitutionInfoService;
 import com.hfi.insurance.utils.ImportExcelUtil;
@@ -18,6 +19,7 @@ import io.swagger.annotations.ApiOperation;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -26,10 +28,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @Author ChenZX
@@ -140,20 +139,26 @@ public class InstitutionController {
 //                log.info("-----------------------------{}",excelSheetPO.getDataList().get(i).get(0));
                 allNumber.add(String.valueOf(excelSheetPO.getDataList().get(i).get(0)));
             }
-            if(allNumber.isEmpty()){
+            if (allNumber.isEmpty()) {
                 return JSONObject.toJSONString(ApiResponse.fail(ErrorCodeEnum.PARAM_ERROR, " 文件中未检测到机构，请检查入参文件是否正确"));
             }
 //            log.info("-----------------------------{}",allNumber.toString());
             List<YbInstitutionInfo> list = institutionInfoService.findLegalInstitution(allNumber);
+//            res.setSuccessList(list);
+            List<CheckImportInstitutionInfo> successList = new LinkedList<>();
 
             list.forEach(y -> {
                 res.getSuccessSet().add(y.getNumber());
+                CheckImportInstitutionInfo info = new CheckImportInstitutionInfo();
+                BeanUtils.copyProperties(y, info);
+                successList.add(info);
             });
             allNumber.forEach(number -> {
                 if (!res.getSuccessSet().contains(number)) {
                     res.getFailSet().add(number);
                 }
             });
+            res.setSuccessList(successList);
 //            log.info("-----------------------------{}",JSONObject.toJSONString(res));
         } else {
             return JSONObject.toJSONString(ApiResponse.fail(ErrorCodeEnum.PARAM_ERROR, " 请检查入参文件是否正确"));
@@ -226,8 +231,6 @@ public class InstitutionController {
     }
 
 
-
-
     @SneakyThrows
     @GetMapping("/exportExcel")
     @ApiOperation("导出机构信息变更记录表")
@@ -260,14 +263,11 @@ public class InstitutionController {
     }
 
 
-
-
     @PostMapping("/getArecordList")
     @ApiOperation("发起记录分页查询")
     public ApiResponse getArecordList(@RequestBody ArecordQueReq arecordQueReq) {
         return institutionInfoService.getArecordList(arecordQueReq);
     }
-
 
 
     @GetMapping("/exportExcel3")

@@ -608,7 +608,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
             page.setTotal(ybInstitutionInfosCount);
             return new ApiResponse(page);
         }
-        if(hospitalid.indexOf("bx") == -1){
+        if(hospitalid.indexOf("bx") != -1){
             List<YbOrgTd> YbOrgTdList = orgTdMapper.getorgTdbxList(institutionInfoQueryReq);
             List<YbInstitutionInfo> YbInstitutionInfolist = new ArrayList<>();
             if (YbOrgTdList.size() > 0) {
