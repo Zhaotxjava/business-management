@@ -138,6 +138,9 @@
                     #{type}
                 </foreach>
             </if>
+            <if test="areaCode != null and areaCode != ''">
+                and org.AAA027 = #{areaCode}
+            </if>
             <if test='institutionLevels != null and institutionLevels.size() > 0'>
                 and org.AKA101 in
                 <foreach collection="institutionLevels" item="level" open="(" close=")" separator="," index="index">
