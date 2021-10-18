@@ -357,7 +357,7 @@ public class SignedBizServiceImpl implements SignedBizService {
     @Override
     @LogAnnotation
     public ApiResponse createSignFlow(CreateSignFlowReq req, String token) {
-//        log.info("createSignFlow 批量签署入参：{}",JSONObject.toJSONString(req));
+        log.info("0.createSignFlow 批量签署入参：{}",JSONObject.toJSONString(req));
         String jsonStr = caffeineCache.asMap().get(token);
         if (StringUtils.isBlank(jsonStr)) {
             return new ApiResponse(ErrorCodeEnum.TOKEN_EXPIRED.getCode(), ErrorCodeEnum.TOKEN_EXPIRED.getMessage());
@@ -427,6 +427,9 @@ public class SignedBizServiceImpl implements SignedBizService {
                     return new ApiResponse(ErrorCodeEnum.RESPONES_ERROR.getCode(), e.getMessage());
                 }
                 String fileKey = flowDocBean.getDocFilekey();
+                if(StringUtils.isBlank(fileKey)){
+                    return ApiResponse.fail(ErrorCodeEnum.RESPONES_ERROR.getCode(),"获取文档信息失败，fileKey="+fileKey);
+                }
                 signDocs.add(flowDocBean);
 //                standardCreateFlow.setSignDocs(signDocs);
                 List<TemplateFlowBean> templateFlows = templateInfo.getTemplateFlows();
