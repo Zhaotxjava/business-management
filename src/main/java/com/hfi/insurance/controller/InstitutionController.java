@@ -147,7 +147,6 @@ public class InstitutionController {
         }
 //            log.info("-----------------------------{}",allNumber.toString());
         List<YbInstitutionInfo> list = institutionInfoService.findLegalInstitution(allNumber);
-        log.info("批量导入机构查库结果：{}",JSONObject.toJSONString(list));
 //            res.setSuccessList(list);
         List<CheckImportInstitutionInfo> successList = new LinkedList<>();
         CheckImportInstitutionRes res = new CheckImportInstitutionRes();
