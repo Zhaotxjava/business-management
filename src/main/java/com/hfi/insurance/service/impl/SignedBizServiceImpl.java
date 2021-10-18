@@ -676,6 +676,7 @@ public class SignedBizServiceImpl implements SignedBizService {
                 throw new BizServiceException("请选择" + flowName + "机构！");
             }
             List<InstitutionBaseInfo> institutionInfos = flowNameInstitutionMap.get(flowName);
+            log.info("institutionInfos = {}",JSONObject.toJSONString(institutionInfos));
             if (!CollectionUtils.isEmpty(institutionInfos)) {
                 if (flowName.equals(maxSizeFlowName)) {
                     templateFormValueParam.setFormValue(institutionInfos.get(i).getInstitutionName());
