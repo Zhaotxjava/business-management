@@ -122,8 +122,8 @@
         limit #{pageNum},#{pageSize}
     </select>
 
-    <select id="selectCountOrgForCreateFlow" resultType="com.hfi.insurance.model.dto.res.InstitutionInfoRes">
-        select org.AKB020 from yb_institution_info ins inner join yb_org_td org on org.AKB020 = ins.number
+    <select id="selectCountOrgForCreateFlow" resultType="java.lang.Integer">
+        select count(org.AKB020) from yb_institution_info ins inner join yb_org_td org on org.AKB020 = ins.number
         <where>
             org.AAA027 like '3301%' and org.BKB012 = '1'
             <if test="institutionName != null and institutionName != ''">
@@ -131,6 +131,9 @@
             </if>
             <if test="number != null and number != ''">
                 and org.AKB020 = #{number}
+            </if>
+             <if test="tb != null and tb != ''">
+                and org.AKB020 = concat(#{tb} , '%')
             </if>
             <if test='institutionTypes != null and institutionTypes.size() > 0'>
                 and org.AKB022 in

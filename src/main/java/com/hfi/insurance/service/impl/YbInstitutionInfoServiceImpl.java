@@ -195,20 +195,14 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
                 InstitutionInfoResLists.add(institutionInfoRes);
             }
         }
-        List<InstitutionInfoRes> InstitutionInfoCountResLists = new ArrayList<>();
-        List<InstitutionInfoRes> institutionInfoRes = institutionInfoMapper.selectCountOrgForCreateFlow(req);
 
-        institutionInfoRes.stream().forEach(x ->{
-            InstitutionInfoRes institutionInfoRess = new InstitutionInfoRes();
-            String number = x.getNumber();
-            if (number.indexOf("bx") == -1){
-                BeanUtils.copyProperties(x,institutionInfoRess);
-                InstitutionInfoCountResLists.add(institutionInfoRess);
-            }
-        });
+        int countOrgForCreateFlow = institutionInfoMapper.selectCountOrgForCreateFlow(req);
+
+        req.setTb("bx");
+        int countOrgForCreateFlow2 = institutionInfoMapper.selectCountOrgForCreateFlow(req);
         Page<InstitutionInfoRes> page = new Page<>(req.getPageNum(), req.getPageSize());
         page.setRecords(InstitutionInfoResLists);
-        page.setTotal(InstitutionInfoCountResLists.size());
+        page.setTotal(countOrgForCreateFlow-countOrgForCreateFlow2);
         return page;
     }
 
