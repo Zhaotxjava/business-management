@@ -34,7 +34,7 @@ public interface YbInstitutionInfoMapper extends BaseMapper<YbInstitutionInfo> {
 
     List<InstitutionInfoRes>  selectOrgForCreateFlow(OrgTdQueryReq req);
 
-    int selectCountOrgForCreateFlow(OrgTdQueryReq req);
+    List<InstitutionInfoRes> selectCountOrgForCreateFlow(OrgTdQueryReq req);
 
     List<YbInstitutionInfo> getInstitutionInfobxList(InstitutionInfoQueryReq institutionInfoQueryReq);
 

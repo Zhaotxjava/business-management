@@ -194,15 +194,21 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
                 BeanUtils.copyProperties(x,institutionInfoRes);
                 InstitutionInfoResLists.add(institutionInfoRes);
             }
-
-
         }
+        List<InstitutionInfoRes> InstitutionInfoCountResLists = new ArrayList<>();
+        List<InstitutionInfoRes> institutionInfoRes = institutionInfoMapper.selectCountOrgForCreateFlow(req);
 
-        Integer count= institutionInfoMapper.selectCountOrgForCreateFlow(req);
-
+        institutionInfoRes.stream().forEach(x ->{
+            InstitutionInfoRes institutionInfoRess = new InstitutionInfoRes();
+            String number = x.getNumber();
+            if (number.indexOf("bx") == -1){
+                BeanUtils.copyProperties(x,institutionInfoRess);
+                InstitutionInfoCountResLists.add(institutionInfoRess);
+            }
+        });
         Page<InstitutionInfoRes> page = new Page<>(req.getPageNum(), req.getPageSize());
         page.setRecords(InstitutionInfoResLists);
-        page.setTotal(count);
+        page.setTotal(InstitutionInfoCountResLists.size());
         return page;
     }
 
