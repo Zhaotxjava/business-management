@@ -260,6 +260,8 @@ public class InstitutionController {
     }
 
 
+
+
     @PostMapping("/getArecordList")
     @ApiOperation("发起记录分页查询")
     public ApiResponse getArecordList(@RequestBody ArecordQueReq arecordQueReq) {
