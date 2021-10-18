@@ -1,5 +1,6 @@
 package com.hfi.insurance.model.dto.res;
 
+import com.hfi.insurance.model.YbInstitutionInfo;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -20,6 +21,8 @@ public class CheckImportInstitutionRes implements Serializable {
     private Set<String> successSet;
     @ApiModelProperty("不符合条件的机构编码")
     private Set<String> failSet;
+    @ApiModelProperty("符合条件的机构编码-详细信息")
+    List<YbInstitutionInfo> successList;
 
     public CheckImportInstitutionRes() {
         this.successSet = new HashSet<>();

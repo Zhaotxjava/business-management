@@ -145,6 +145,7 @@ public class InstitutionController {
             }
 //            log.info("-----------------------------{}",allNumber.toString());
             List<YbInstitutionInfo> list = institutionInfoService.findLegalInstitution(allNumber);
+            res.setSuccessList(list);
 
             list.forEach(y -> {
                 res.getSuccessSet().add(y.getNumber());
