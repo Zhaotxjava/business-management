@@ -86,6 +86,7 @@
         inner join yb_org_td org on org.AKB020 = ins.number
         <where>
             org.AAA027 like '3301%' and org.BKB012 = '1'
+            and org.AKB020 not like 'bx%'
             <if test="institutionName != null and institutionName != ''">
                 and org.AKB021 = #{institutionName}
             </if>
@@ -127,7 +128,6 @@
         select count(org.AKB020) from yb_institution_info ins inner join yb_org_td org on org.AKB020 = ins.number
         <where>
             org.AAA027 like '3301%' and org.BKB012 = '1'
-            and org.AKB020 not like 'bx%'
             <if test="institutionName != null and institutionName != ''">
                 and org.AKB021 = #{institutionName}
             </if>
