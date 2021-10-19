@@ -40,5 +40,5 @@ public interface YbInstitutionInfoMapper extends BaseMapper<YbInstitutionInfo> {
 
     Integer selectInstitutionInfobxCount(InstitutionInfoQueryReq institutionInfoQueryReq);
 
-    Integer selectInstitutionInfoResCount(OrgTdQueryReq req);
+
 }
