@@ -96,12 +96,12 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
                     SingerInfoRes singerInfoRes = any.get();
                     recordsRes.setSubject(signDetail.getString("subject"));
                     recordsRes.setSignStatus(singerInfoRes.getSignStatus());
-                    recordsRes.setFlowStatus(signDetail.getInteger("flowStatus"));
 //                    recordsRes.setFileKey();
                     recordsRes.setAccountType(2);
                     recordsRes.setAccountId(institutionInfo.getAccountId());
                 }
             }
+            recordsRes.setFlowStatus(signDetail.getInteger("flowStatus"));
             recordsRes.setInitiateTime(ybFlowInfo.getInitiatorTime());
             recordsRes.setRecentHandleTime(ybFlowInfo.getHandleTime());
             recordResList.add(recordsRes);

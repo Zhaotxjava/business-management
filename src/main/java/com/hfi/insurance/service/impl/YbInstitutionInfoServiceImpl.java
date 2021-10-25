@@ -188,10 +188,12 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         ybInstitutionInfos.addAll(insuranceList);*/
 
 
-        int total = institutionInfoMapper.selectCountOrgForCreateFlow(req);
+        int count= institutionInfoMapper.selectCountOrgForCreateFlow(req);
+
+
         Page<InstitutionInfoRes> page = new Page<>(req.getPageNum(), req.getPageSize());
         page.setRecords(ybInstitutionInfos);
-        page.setTotal(total);
+        page.setTotal(count);
         return page;
     }
 

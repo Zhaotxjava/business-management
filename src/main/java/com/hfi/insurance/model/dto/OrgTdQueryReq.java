@@ -35,4 +35,6 @@ public class OrgTdQueryReq extends PageReq{
     @ApiModelProperty(value = "营利类型  BKA938",notes = "非营利1,营利2,其他9")
     private List<String> profits;
 
+    @ApiModelProperty(value = "保险机构  BKA938",notes = "保险机构  bx")
+    private String   tb;
 }

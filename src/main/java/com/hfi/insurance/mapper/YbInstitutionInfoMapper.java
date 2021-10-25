@@ -39,4 +39,6 @@ public interface YbInstitutionInfoMapper extends BaseMapper<YbInstitutionInfo> {
     List<YbInstitutionInfo> getInstitutionInfobxList(InstitutionInfoQueryReq institutionInfoQueryReq);
 
     Integer selectInstitutionInfobxCount(InstitutionInfoQueryReq institutionInfoQueryReq);
+
+
 }

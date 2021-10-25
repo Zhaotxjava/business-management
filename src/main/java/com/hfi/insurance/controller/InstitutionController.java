@@ -129,40 +129,40 @@ public class InstitutionController {
             e.printStackTrace();
         }
 
-        CheckImportInstitutionRes res = new CheckImportInstitutionRes();
-        if (!excelSheetList.isEmpty()) {
-            ExcelSheetPO excelSheetPO = excelSheetList.get(0);
-//            List<Object> numberRow = excelSheetPO.getDataList().get(0);
-            Set<String> allNumber = new HashSet<>();
-            for (int i = 0; i < excelSheetPO.getDataList().size(); i++) {
-                //去掉重复
-//                log.info("-----------------------------{}",excelSheetPO.getDataList().get(i).get(0));
-                allNumber.add(String.valueOf(excelSheetPO.getDataList().get(i).get(0)));
-            }
-            if (allNumber.isEmpty()) {
-                return JSONObject.toJSONString(ApiResponse.fail(ErrorCodeEnum.PARAM_ERROR, " 文件中未检测到机构，请检查入参文件是否正确"));
-            }
-//            log.info("-----------------------------{}",allNumber.toString());
-            List<YbInstitutionInfo> list = institutionInfoService.findLegalInstitution(allNumber);
-//            res.setSuccessList(list);
-            List<CheckImportInstitutionInfo> successList = new LinkedList<>();
 
-            list.forEach(y -> {
-                res.getSuccessSet().add(y.getNumber());
-                CheckImportInstitutionInfo info = new CheckImportInstitutionInfo();
-                BeanUtils.copyProperties(y, info);
-                successList.add(info);
-            });
-            allNumber.forEach(number -> {
-                if (!res.getSuccessSet().contains(number)) {
-                    res.getFailSet().add(number);
-                }
-            });
-            res.setSuccessList(successList);
-//            log.info("-----------------------------{}",JSONObject.toJSONString(res));
-        } else {
+        if (excelSheetList.isEmpty()) {
             return JSONObject.toJSONString(ApiResponse.fail(ErrorCodeEnum.PARAM_ERROR, " 请检查入参文件是否正确"));
         }
+
+        ExcelSheetPO excelSheetPO = excelSheetList.get(0);
+//            List<Object> numberRow = excelSheetPO.getDataList().get(0);
+        Set<String> allNumber = new HashSet<>();
+        for (int i = 0; i < excelSheetPO.getDataList().size(); i++) {
+            //去掉重复
+//                log.info("-----------------------------{}",excelSheetPO.getDataList().get(i).get(0));
+            allNumber.add(String.valueOf(excelSheetPO.getDataList().get(i).get(0)));
+        }
+        if (allNumber.isEmpty()) {
+            return JSONObject.toJSONString(ApiResponse.fail(ErrorCodeEnum.PARAM_ERROR, " 文件中未检测到机构，请检查入参文件是否正确"));
+        }
+//            log.info("-----------------------------{}",allNumber.toString());
+        List<YbInstitutionInfo> list = institutionInfoService.findLegalInstitution(allNumber);
+//            res.setSuccessList(list);
+        List<CheckImportInstitutionInfo> successList = new LinkedList<>();
+        CheckImportInstitutionRes res = new CheckImportInstitutionRes();
+        list.forEach(y -> {
+            res.getSuccessSet().add(y.getNumber());
+            CheckImportInstitutionInfo info = new CheckImportInstitutionInfo();
+            BeanUtils.copyProperties(y, info);
+            successList.add(info);
+        });
+        allNumber.forEach(number -> {
+            if (!res.getSuccessSet().contains(number)) {
+                res.getFailSet().add(number);
+            }
+        });
+        res.setSuccessList(successList);
+        log.info("批量导入机构，经查询后结果:{}",JSONObject.toJSONString(res));
         return JSONObject.toJSONString(ApiResponse.success(res));
     }
 
