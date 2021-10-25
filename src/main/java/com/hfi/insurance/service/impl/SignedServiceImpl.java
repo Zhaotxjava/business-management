@@ -35,6 +35,12 @@ public class SignedServiceImpl implements SignedService {
     private String projectId;
     @Value("${esignpro.secret}")
     private String secret;
+
+    /**
+     * Y:内网地址，N:外网地址
+     */
+    private static final String INTRANET_FLAG = "N";
+
     @Override
     public JSONObject getPageWithPermission(GetPageWithPermissionV2Model getPageWithPermissionV2Model) {
         Map<String, String> headMap = new HashMap<>();
@@ -107,7 +113,7 @@ public class SignedServiceImpl implements SignedService {
     public JSONObject getSignUrls(GetSignUrlsReq req) {
         Map<String, String> headMap = new HashMap<>();
         convertHead(headMap,"");
-        Map<String,String> urlParams = new HashMap<>(16);
+        Map<String,String> urlParams = new HashMap<>(8);
         urlParams.put("signFlowId",req.getSignFlowId());
         urlParams.put("accountType",req.getAccountType());
         urlParams.put("accountId",req.getAccountId());
@@ -122,7 +128,7 @@ public class SignedServiceImpl implements SignedService {
     public JSONObject getSignDetail(Integer signFlowId) {
         Map<String, String> headMap = new HashMap<>();
         convertHead(headMap,"");
-        Map<String,Integer> urlParams = new HashMap<>(16);
+        Map<String,Integer> urlParams = new HashMap<>(4);
         urlParams.put("signFlowId",signFlowId);
         String s = HttpUtil.doGetWithIntegerParam(url + "/V1/signFlows/signDetail", headMap, urlParams);
         return convertResult(s);
@@ -132,7 +138,7 @@ public class SignedServiceImpl implements SignedService {
     public JSONObject getSignFlowDocUrls(String signFlowId) {
         Map<String, String> headMap = new HashMap<>();
         convertHead(headMap,"");
-        Map<String,String> urlParams = new HashMap<>(16);
+        Map<String,String> urlParams = new HashMap<>(2);
         urlParams.put("signFlowId",signFlowId);
         String s = HttpUtil.doGet(url + "/V1/signFlows/getSignFlowDocUrls", headMap, urlParams);
         return convertResult(s);
@@ -142,9 +148,10 @@ public class SignedServiceImpl implements SignedService {
     public JSONObject getPreviewUrl(String fileKey, String docId) {
         Map<String, String> headMap = new HashMap<>();
         convertHead(headMap,"");
-        Map<String,String> urlParams = new HashMap<>(16);
+        Map<String,String> urlParams = new HashMap<>(4);
         urlParams.put("fileKey",fileKey);
         urlParams.put("docId",docId);
+        urlParams.put("intranetFlag",INTRANET_FLAG);
         String s = HttpUtil.doGet(url + "/V1/signDocs/getPreviewUrl", headMap, urlParams);
         return convertResult(s);
     }
@@ -153,7 +160,7 @@ public class SignedServiceImpl implements SignedService {
     public JSONObject getInnerOrgansSeals(String organizeId, String organizeNo) {
         Map<String, String> headMap = new HashMap<>();
         convertHead(headMap,"");
-        Map<String,String> urlParams = new HashMap<>(16);
+        Map<String,String> urlParams = new HashMap<>(8);
         urlParams.put("organizeId",organizeId);
         urlParams.put("organizeNo",organizeNo);
         urlParams.put("pageIndex","1");
@@ -168,7 +175,7 @@ public class SignedServiceImpl implements SignedService {
     public JSONObject getSealInfos(String sealId) {
         Map<String, String> headMap = new HashMap<>();
         convertHead(headMap,"");
-        Map<String,String> urlParams = new HashMap<>(16);
+        Map<String,String> urlParams = new HashMap<>(4);
         urlParams.put("sealId",sealId);
         String s = HttpUtil.doGet(url + "/V1/seals/query", headMap, urlParams);
         return convertResult(s);
