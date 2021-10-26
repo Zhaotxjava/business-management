@@ -91,6 +91,7 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
             YbInstitutionInfo institutionInfo = institutionInfoService.getInstitutionInfo(number);
             log.info("机构信息：{}", JSON.toJSONString(institutionInfo));
             if (institutionInfo != null && institutionInfo.getAccountId() != null) {
+                recordsRes.setAccountId(institutionInfo.getAccountId());
                 Optional<SingerInfoRes> any = singerInfos.stream().filter(singerInfoRes -> institutionInfo.getAccountId().equals(singerInfoRes.getAccountId())).findAny();
                 if (any.isPresent()) {
                     SingerInfoRes singerInfoRes = any.get();
