@@ -156,9 +156,16 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
         }
         String signDocUrlListStr = signFlowDocUrls.getString("signDocUrlList");
         List<FinishDocUrlBean> flowDocBeans = JSON.parseArray(signDocUrlListStr, FinishDocUrlBean.class);
-        List<String> urls = flowDocBeans.stream().map(FinishDocUrlBean::getDownloadDocUrl).collect(Collectors.toList());
-
-        return new ApiResponse(urls);
+        List<String> urls2 = flowDocBeans.stream().map(FinishDocUrlBean::getDownloadDocUrl).collect(Collectors.toList());
+        log.info(urls2.toString());
+        //http://192.20.97.42:8030/rest/file-system/operation/download?
+        List<String> urlsList = new ArrayList<>();
+        urls2.stream().forEach(x ->{
+            String[] split = x.split("192.20.97.42:8030");
+            urlsList.add(urls + split[1]);
+         }
+        );
+        return new ApiResponse(urlsList);
     }
 
 }
