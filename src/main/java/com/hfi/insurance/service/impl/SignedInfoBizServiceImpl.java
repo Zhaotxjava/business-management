@@ -26,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.omg.CORBA.Object;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -56,6 +57,10 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
 
     @Resource
     private Cache<String, String> caffeineCache;
+
+
+    @Value("${esignpro.urls}")
+    private String urls;
 
     @Override
     @LogAnnotation
@@ -167,7 +172,8 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
             return new ApiResponse(ErrorCodeEnum.RESPONES_ERROR.getCode(), previewUrl.getString("msg"));
         } else {
             String url = previewUrl.getString("url");
-            return new ApiResponse(url);
+            String[] split = url.split("192.20.97.42:8086");
+            return new ApiResponse(urls + split[1]);
         }
     }
 
@@ -180,8 +186,16 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
         }
         String signDocUrlListStr = signFlowDocUrls.getString("signDocUrlList");
         List<FinishDocUrlBean> flowDocBeans = JSON.parseArray(signDocUrlListStr, FinishDocUrlBean.class);
-        List<String> urls = flowDocBeans.stream().map(FinishDocUrlBean::getDownloadDocUrl).collect(Collectors.toList());
-        return new ApiResponse(urls);
+        List<String> urls2 = flowDocBeans.stream().map(FinishDocUrlBean::getDownloadDocUrl).collect(Collectors.toList());
+        log.info(urls2.toString());
+        //http://192.20.97.42:8030/rest/file-system/operation/download?
+        List<String> urlsList = new ArrayList<>();
+        urls2.stream().forEach(x ->{
+            String[] split = x.split("192.20.97.42:8030");
+            urlsList.add(urls + split[1]);
+         }
+        );
+        return new ApiResponse(urlsList);
     }
 
 }

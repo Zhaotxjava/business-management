@@ -15,6 +15,7 @@ file:
     uploadPathImg: E:\Temp\img
 #天印系统接口配置
 esignpro:
+  urls: http://172.16.29.54:8088
   url: http://172.16.80.191:8088
   projectId: 1001001
   secret: c5505d7831bc626e92c175052956c7fc
