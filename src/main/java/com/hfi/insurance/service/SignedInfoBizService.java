@@ -15,6 +15,8 @@ public interface SignedInfoBizService {
 
     ApiResponse getSignUrls(GetSignUrlsReq req);
 
+    ApiResponse getSignUrls(GetSignUrlsReq req,String token);
+
     ApiResponse getPreviewUrl(String fileKey,String docId);
 
     ApiResponse getSignFlowDocUrls(String signFlowId);

@@ -11,6 +11,8 @@ import com.hfi.insurance.enums.Cons;
 import com.hfi.insurance.enums.ErrorCodeEnum;
 import com.hfi.insurance.mapper.YbFlowInfoMapper;
 import com.hfi.insurance.model.*;
+import com.hfi.insurance.model.dto.SignedStatusUpdateByDateReq;
+import com.hfi.insurance.model.sign.req.GetPageWithPermissionReq;
 import com.hfi.insurance.model.sign.res.SingerInfoRes;
 import com.hfi.insurance.service.IYbInstitutionInfoService;
 import com.hfi.insurance.service.InstitutionInfoService;
@@ -21,13 +23,11 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
@@ -62,16 +62,32 @@ public class TaskController {
 
     }
 
+    @RequestMapping(value = "/sign/signedStatusUpdateByDate", method = RequestMethod.POST)
+    @ApiOperation("signedStatusUpdateByDate")
+    public void signedStatusUpdateByDate(@RequestBody SignedStatusUpdateByDateReq req) {
+        signedStatusUpdate(req);
+    }
+
     @RequestMapping(value = "/sign/signedStatusUpdate", method = RequestMethod.POST)
     @ApiOperation("signedStatusUpdate")
     @Scheduled(cron = "0 0/10 * * * * ")
     public void signedStatusUpdate() {
+        SignedStatusUpdateByDateReq req = new SignedStatusUpdateByDateReq();
+        req.setStart(DateUtil.yesterday());
+        req.setEnd(new Date());
+        signedStatusUpdate(req);
+    }
+
+    public void signedStatusUpdate(SignedStatusUpdateByDateReq req){
         //流程状态（0草稿，1 签署中，2完成，3 撤销，4终止，5过 期，6删除，7拒 签，8作废，9已归 档，10预盖章）
         QueryWrapper<YbFlowInfo> objectQueryWrapper = new QueryWrapper<>();
         objectQueryWrapper.and(i -> i.isNull("batch_status").or().eq("batch_status", Cons.BatchStr.BATCH_STATUS_SUCCESS));
-        objectQueryWrapper.between("update_time", DateUtil.yesterday(), new Date());
+        objectQueryWrapper.between("update_time", req.getStart(), req.getEnd());
         objectQueryWrapper.eq("flow_status","0").or().eq("flow_status","1")
                 .or().eq("flow_status","10");
+        if(StringUtils.isNotBlank(req.getSignFlowId())){
+            objectQueryWrapper.eq("sign_flow_id",req.getSignFlowId());
+        }
 
         List<YbFlowInfo> list = ybFlowInfoMapper.selectList(objectQueryWrapper);
         log.info("定时查询签署一共：{}个", list.size());
@@ -148,7 +164,6 @@ public class TaskController {
                 ybFlowInfoMapper.updateById(ybFlowInfo);
             }
         }
-
     }
 
     @RequestMapping(value = "/pic/cleanPicCommitMap", method = RequestMethod.POST)
