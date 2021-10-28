@@ -185,8 +185,9 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
             return new ApiResponse(ErrorCodeEnum.RESPONES_ERROR.getCode(), previewUrl.getString("msg"));
         } else {
             String url = previewUrl.getString("url");
-            String[] split = url.split("192.20.97.42:8086");
-            return new ApiResponse(urls + split[1]);
+            String[] split = url.split("/doc-web");
+            log.info("更新后url"+urls +"/doc-web"+ split[1]);
+            return new ApiResponse(urls +"/doc-web"+ split[1]);
         }
     }
 
@@ -203,11 +204,12 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
         log.info(urls2.toString());
         //http://192.20.97.42:8030/rest/file-system/operation/download?
         List<String> urlsList = new ArrayList<>();
-        urls2.stream().forEach(x -> {
-                    String[] split = x.split("192.20.97.42:8030");
-                    urlsList.add(urls + split[1]);
-                }
+        urls2.stream().forEach(x ->{
+            String[] split = x.split("/rest");
+            urlsList.add(urls +"/rest" +split[1]);
+         }
         );
+        log.info("获取签署流程文档下载更新后url"+urlsList);
         return new ApiResponse(urlsList);
     }
 
