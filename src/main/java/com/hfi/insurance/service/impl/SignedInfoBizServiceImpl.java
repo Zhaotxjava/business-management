@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.hfi.insurance.aspect.anno.LogAnnotation;
 import com.hfi.insurance.common.ApiResponse;
+import com.hfi.insurance.enums.Cons;
 import com.hfi.insurance.enums.ErrorCodeEnum;
 import com.hfi.insurance.model.YbFlowInfo;
 import com.hfi.insurance.model.YbInstitutionInfo;
@@ -100,15 +101,27 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
             if (institutionInfo != null && institutionInfo.getAccountId() != null) {
 //                recordsRes.setAccountId(institutionInfo.getAccountId());
                 //此处两行原institutionInfo.getAccountId(),现在改为getLegalAccountId
-                Optional<SingerInfoRes> any = singerInfos.stream().filter(singerInfoRes -> institutionInfo.getAccountId().equals(singerInfoRes.getAccountId()) || institutionInfo.getLegalAccountId().equals(singerInfoRes.getAccountId())).findAny();
-                if (any.isPresent()) {
-                    SingerInfoRes singerInfoRes = any.get();
-                    recordsRes.setSubject(signDetail.getString("subject"));
-                    recordsRes.setSignStatus(singerInfoRes.getSignStatus());
+                if (!number.startsWith(Cons.NumberStr.BX)) {
+                    //如果不是保险机构，则用法人来查看状态
+                    Optional<SingerInfoRes> any2 = singerInfos.stream().filter(singerInfoRes -> institutionInfo.getLegalAccountId().equals(singerInfoRes.getAccountId())).findAny();
+                    if (any2.isPresent()) {
+                        SingerInfoRes singerInfoRes = any2.get();
+                        recordsRes.setSignStatus(singerInfoRes.getSignStatus());
 //                    recordsRes.setFileKey();
-                    recordsRes.setAccountType(2);
-                    recordsRes.setAccountId(institutionInfo.getAccountId());
+                        recordsRes.setAccountId(institutionInfo.getAccountId());
+                    }
+                } else {
+                    Optional<SingerInfoRes> any = singerInfos.stream().filter(singerInfoRes -> institutionInfo.getAccountId().equals(singerInfoRes.getAccountId())).findAny();
+                    if (any.isPresent()) {
+                        SingerInfoRes singerInfoRes = any.get();
+                        recordsRes.setSubject(signDetail.getString("subject"));
+                        recordsRes.setSignStatus(singerInfoRes.getSignStatus());
+//                    recordsRes.setFileKey();
+                        recordsRes.setAccountId(institutionInfo.getAccountId());
+                    }
                 }
+                recordsRes.setAccountType(2);
+                recordsRes.setSubject(signDetail.getString("subject"));
             }
             recordsRes.setFlowStatus(signDetail.getInteger("flowStatus"));
             recordsRes.setInitiateTime(ybFlowInfo.getInitiatorTime());
@@ -142,7 +155,7 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
      * 为了将bumber为bx开头的机构入参accountId置换成LegalAccountId
      */
     public ApiResponse getSignUrls(GetSignUrlsReq req, String token) {
-        if(StringUtils.isBlank(token)){
+        if (StringUtils.isBlank(token)) {
             return getSignUrls(req);
         }
         String jsonStr = caffeineCache.asMap().get(token);
@@ -154,7 +167,7 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
         String institutionNumber = jsonObject.getString("number");
         if (!(StringUtils.isNotBlank(institutionNumber) && institutionNumber.startsWith("bx"))) {
             YbInstitutionInfo institutionInfo = institutionInfoService.getInstitutionInfo(institutionNumber);
-            if(Objects.nonNull(institutionInfo) && StringUtils.isNotBlank(institutionInfo.getLegalAccountId()) ){
+            if (Objects.nonNull(institutionInfo) && StringUtils.isNotBlank(institutionInfo.getLegalAccountId())) {
                 log.info("getSignUrls 更改非保险机构[{}]的accountId [{}] 为legalAccountId [{}] ,"
                         , institutionNumber, req.getAccountId(), institutionInfo.getLegalAccountId());
                 req.setAccountId(institutionInfo.getLegalAccountId());
@@ -190,10 +203,10 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
         log.info(urls2.toString());
         //http://192.20.97.42:8030/rest/file-system/operation/download?
         List<String> urlsList = new ArrayList<>();
-        urls2.stream().forEach(x ->{
-            String[] split = x.split("192.20.97.42:8030");
-            urlsList.add(urls + split[1]);
-         }
+        urls2.stream().forEach(x -> {
+                    String[] split = x.split("192.20.97.42:8030");
+                    urlsList.add(urls + split[1]);
+                }
         );
         return new ApiResponse(urlsList);
     }

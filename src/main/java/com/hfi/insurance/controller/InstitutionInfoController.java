@@ -3,6 +3,7 @@ package com.hfi.insurance.controller;
 import com.alibaba.fastjson.JSONObject;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.hfi.insurance.common.ApiResponse;
+import com.hfi.insurance.enums.Cons;
 import com.hfi.insurance.enums.ErrorCodeEnum;
 import com.hfi.insurance.model.dto.InstitutionInfoAddReq;
 import com.hfi.insurance.service.InstitutionInfoService;
@@ -69,9 +70,9 @@ public class InstitutionInfoController {
         //默认外部机构
         int flag = 2;
         if (StringUtils.isNotBlank(loginaccount)) {
-            if (!loginaccount.startsWith("hz")) {
+            if (!loginaccount.startsWith(Cons.NumberStr.HZ)) {
                 flag = 1;
-            } else if (hospitalid.startsWith("bx")) {
+            } else if (hospitalid.startsWith(Cons.NumberStr.BX)) {
                 flag = 3;
             }
         }
@@ -123,9 +124,9 @@ public class InstitutionInfoController {
         //默认外部机构
         int flag = 2;
         if (StringUtils.isNotBlank(loginaccount)) {
-            if (!loginaccount.startsWith("hz")) {
+            if (!loginaccount.startsWith(Cons.NumberStr.HZ)) {
                 flag = 1;
-            } else if (hospitalid.startsWith("bx")) {
+            } else if (hospitalid.startsWith(Cons.NumberStr.BX)) {
                 flag = 3;
             }
         }
