@@ -11,4 +11,9 @@ public class Cons {
         public final static String BATCH_STATUS_FAIL = "1";
         public final static String BATCH_STATUS_SUCCESS = "2";
     }
+    public class NumberStr{
+        //保险机构前缀
+        public final static String BX = "bx";
+        public final static String HZ = "hz";
+    }
 }

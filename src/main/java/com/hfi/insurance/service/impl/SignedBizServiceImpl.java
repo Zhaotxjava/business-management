@@ -1120,7 +1120,6 @@ public class SignedBizServiceImpl implements SignedBizService {
             singerName = singerName.substring(0, MAX_SIGNERSLENGTH);
         }
         final String sn = singerName + "……";
-        log.info("sn.L={},sn={}", sn.length(), sn);
         final String BatchStatus2 = BatchStatus;
         String batchNo = subjectPrefix + subjectSuffix;
         distinctInstitutions.forEach(institutionInfo -> {
