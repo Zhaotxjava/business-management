@@ -82,6 +82,8 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
         for (YbFlowInfo ybFlowInfo : flowInfos) {
             SignRecordsRes recordsRes = new SignRecordsRes();
             BeanUtils.copyProperties(ybFlowInfo, recordsRes);
+            //20211103 去除抄送人
+            recordsRes.setCopyViewers(" ");
             String signFlowId = ybFlowInfo.getSignFlowId();
             JSONObject signDetail = signedService.getSignDetail(Integer.valueOf(signFlowId));
             log.info("流程id：{}，详情：{}", signFlowId, signDetail);
@@ -108,13 +110,13 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
                         SingerInfoRes singerInfoRes = any2.get();
                         recordsRes.setSignStatus(singerInfoRes.getSignStatus());
 //                    recordsRes.setFileKey();
-                        recordsRes.setAccountId(institutionInfo.getAccountId());
+                        recordsRes.setAccountId(institutionInfo.getLegalAccountId());
                     }
                 } else {
                     Optional<SingerInfoRes> any = singerInfos.stream().filter(singerInfoRes -> institutionInfo.getAccountId().equals(singerInfoRes.getAccountId())).findAny();
                     if (any.isPresent()) {
                         SingerInfoRes singerInfoRes = any.get();
-                        recordsRes.setSubject(signDetail.getString("subject"));
+//                        recordsRes.setSubject(signDetail.getString("subject"));
                         recordsRes.setSignStatus(singerInfoRes.getSignStatus());
 //                    recordsRes.setFileKey();
                         recordsRes.setAccountId(institutionInfo.getAccountId());
@@ -186,8 +188,8 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
         } else {
             String url = previewUrl.getString("url");
             String[] split = url.split("/doc-web");
-            log.info("更新后url"+urls +"/doc-web"+ split[1]);
-            return new ApiResponse(urls +"/doc-web"+ split[1]);
+            log.info("更新后url" + urls + "/doc-web" + split[1]);
+            return new ApiResponse(urls + "/doc-web" + split[1]);
         }
     }
 
@@ -204,12 +206,12 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
         log.info(urls2.toString());
         //http://192.20.97.42:8030/rest/file-system/operation/download?
         List<String> urlsList = new ArrayList<>();
-        urls2.stream().forEach(x ->{
-            String[] split = x.split("/rest");
-            urlsList.add(urls +"/rest" +split[1]);
-         }
+        urls2.stream().forEach(x -> {
+                    String[] split = x.split("/rest");
+                    urlsList.add(urls + "/rest" + split[1]);
+                }
         );
-        log.info("获取签署流程文档下载更新后url"+urlsList);
+        log.info("获取签署流程文档下载更新后url" + urlsList);
         return new ApiResponse(urlsList);
     }
 
