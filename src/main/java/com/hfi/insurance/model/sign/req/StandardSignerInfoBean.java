@@ -20,6 +20,10 @@ public class StandardSignerInfoBean {
     private Integer accountType;
     @ApiModelProperty("用户名")
     private String accountName;
+    @ApiModelProperty("机构编码")
+    private String organizeNo;
+    @ApiModelProperty("机构名")
+    private String organizeName;
     private Integer allowApiSign;
     private String authorizationOrganizeId;
     private String authorizationOrganizeNo;
