@@ -37,6 +37,10 @@ public class CreateSignFlowReq {
     @ApiModelProperty("批量签署批次号")
     private String batchNo;
 
+    @ApiModelProperty("是否添加签署时间,默认false")
+    private boolean addSignTime = false;
+
+
 //    public String getTemplateId() {
 //        return templateId;
 //    }
