@@ -21,19 +21,7 @@ import com.hfi.insurance.model.sign.SealUser;
 import com.hfi.insurance.model.sign.TemplateFlowBean;
 import com.hfi.insurance.model.sign.TemplateFormBean;
 import com.hfi.insurance.model.sign.TemplateInfoBean;
-import com.hfi.insurance.model.sign.req.CopyViewerInfoBean;
-import com.hfi.insurance.model.sign.req.CreateSignFlowReq;
-import com.hfi.insurance.model.sign.req.FlowDocBean;
-import com.hfi.insurance.model.sign.req.GetPageWithPermissionReq;
-import com.hfi.insurance.model.sign.req.GetPageWithPermissionV2Model;
-import com.hfi.insurance.model.sign.req.QueryInnerAccountsReq;
-import com.hfi.insurance.model.sign.req.SignInfoBeanV2;
-import com.hfi.insurance.model.sign.req.SingerInfo;
-import com.hfi.insurance.model.sign.req.StandardCreateFlowBO;
-import com.hfi.insurance.model.sign.req.StandardSignDocBean;
-import com.hfi.insurance.model.sign.req.StandardSignerInfoBean;
-import com.hfi.insurance.model.sign.req.TemplateFormValueParam;
-import com.hfi.insurance.model.sign.req.TemplateUseParam;
+import com.hfi.insurance.model.sign.req.*;
 import com.hfi.insurance.service.IYbFlowInfoService;
 import com.hfi.insurance.service.IYbInstitutionInfoService;
 import com.hfi.insurance.service.OrganizationsService;
@@ -77,6 +65,15 @@ public class SignedBizServiceImpl implements SignedBizService {
     private Cache<String, String> caffeineCache;
 
     private int MAX_SIGNERSLENGTH = 490;
+
+//    public static SignTimeBean signTimeBean = new SignTimeBean(Cons.DateFormatStr.CHINES_DATE_FORMAT);
+//
+//    public static List<SignTimeBean> signTimeBeanList = new ArrayList<SignTimeBean>() {
+//        {
+//            SignTimeBean signTimeBean = new SignTimeBean(Cons.DateFormatStr.CHINES_DATE_FORMAT);
+//            add(signTimeBean);
+//        }
+//    };
 
 //    @Override
 //    @LogAnnotation
@@ -479,7 +476,8 @@ public class SignedBizServiceImpl implements SignedBizService {
                                 copyViewerInfoBean.setAccountType(EAccountType.EXTERNAL.getCode());
                                 copyViewerInfoBeans.add(copyViewerInfoBean);
                             }
-                            signerInfoBean = assembleStandardSignerInfoBean(institutionInfo, singerInfo, fileKey, flowNamePredefineMap, templateType, flowName);
+                            signerInfoBean = assembleStandardSignerInfoBean(institutionInfo, singerInfo, fileKey
+                                    , flowNamePredefineMap, templateType, flowName, req.isAddSignTime());
                         } catch (BizServiceException e) {
                             return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(), e.getMessage());
                         }
@@ -491,7 +489,7 @@ public class SignedBizServiceImpl implements SignedBizService {
                 //StandardSignerInfoBean legalPartyA = null;
                 try {
                     flowNameMap.put(organizeNo, "甲方");
-                    partyA = assemblePartyAInfo(flowNamePredefineMap, req.getPartyASignType(), fileKey, organizeNo, templateType);
+                    partyA = assemblePartyAInfo(flowNamePredefineMap, req.getPartyASignType(), fileKey, organizeNo, templateType, req.isAddSignTime());
                     //legalPartyA = assemblePartyAInfo(flowNamePredefineMap, req.getPartyASignType(), fileKey, organizeNo, templateType, false);
                 } catch (Exception e) {
                     log.error("6.1填充甲方信息失败：{}", e.getMessage());
@@ -561,7 +559,8 @@ public class SignedBizServiceImpl implements SignedBizService {
                             copyViewerInfoBean.setAccountType(EAccountType.EXTERNAL.getCode());
                             copyViewerInfoBeans.add(copyViewerInfoBean);
                         }
-                        signerInfoBean = assembleStandardSignerInfoBean(institutionInfo, singerInfo, fileKey, null, templateType, flowName);
+                        signerInfoBean = assembleStandardSignerInfoBean(institutionInfo, singerInfo, fileKey
+                                , null, templateType, flowName, req.isAddSignTime());
                     } catch (BizServiceException e) {
                         return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(), e.getMessage());
                     }
@@ -572,7 +571,8 @@ public class SignedBizServiceImpl implements SignedBizService {
             StandardSignerInfoBean partyA = null;
             try {
                 flowNameMap.put(organizeNo, "甲方");
-                partyA = assemblePartyAInfo(null, req.getPartyASignType(), fileKey, organizeNo, templateType);
+                partyA = assemblePartyAInfo(null, req.getPartyASignType(), fileKey
+                        , organizeNo, templateType, req.isAddSignTime());
             } catch (Exception e) {
                 log.error("6.2填充甲方信息失败：{}", e.getMessage());
                 e.printStackTrace();
@@ -735,7 +735,9 @@ public class SignedBizServiceImpl implements SignedBizService {
      * @param flowNamePredefineMap
      * @return
      */
-    private StandardSignerInfoBean assembleStandardSignerInfoBean(YbInstitutionInfo institutionInfo, SingerInfo singerInfo, String fileKey, Map<String, PredefineBean> flowNamePredefineMap, ETemplateType templateType, String flowName) throws BizServiceException {
+    private StandardSignerInfoBean assembleStandardSignerInfoBean(YbInstitutionInfo institutionInfo
+            , SingerInfo singerInfo, String fileKey, Map<String, PredefineBean> flowNamePredefineMap
+            , ETemplateType templateType, String flowName, boolean addSignTime) throws BizServiceException {
         StandardSignerInfoBean signerInfoBean = new StandardSignerInfoBean();
         //外部机构如果是保险公司则经办人签署，如果是医疗机构则法人签署
         if (institutionInfo.getNumber().startsWith("bx")) {
@@ -779,6 +781,7 @@ public class SignedBizServiceImpl implements SignedBizService {
 
                     List<Position> legalPositions = legalPredefineBean.getPositions();
                     List<SignInfoBeanV2> signPoList = new ArrayList<>();
+//                    List<SignTimeBean> signTimeBeanList = new ArrayList<>();
                     List<SignInfoBeanV2> signPos = positions.stream().map(position -> {
                         SignInfoBeanV2 signInfoBeanV2 = new SignInfoBeanV2();
                         //签署方式1-单页签署
@@ -794,7 +797,8 @@ public class SignedBizServiceImpl implements SignedBizService {
                         SignInfoBeanV2 signInfoBeanV2 = new SignInfoBeanV2();
                         //签署方式1-单页签署
                         signInfoBeanV2.setSignType(1);
-                        signInfoBeanV2.setAddSignTime(false);
+                        signInfoBeanV2.setAddSignTime(addSignTime);
+                        signInfoBeanV2.setSignDateInfos(getSignTimeBeanList());
                         signInfoBeanV2.setPosX(Float.valueOf(position.getPosX()));
                         signInfoBeanV2.setPosY(Float.valueOf(position.getPosY()));
                         signInfoBeanV2.setPosPage(position.getPageNo());
@@ -822,6 +826,8 @@ public class SignedBizServiceImpl implements SignedBizService {
             SignInfoBeanV2 legalSignInfoBeanV2 = new SignInfoBeanV2();
             legalSignInfoBeanV2.setKey(singerInfo.getKey() + "法人");
             legalSignInfoBeanV2.setSignType(4);
+            legalSignInfoBeanV2.setAddSignTime(addSignTime);
+            legalSignInfoBeanV2.setSignDateInfos(getSignTimeBeanList());
             signPos.add(signInfoBeanV2);
             signPos.add(legalSignInfoBeanV2);
             signInfoBeanV2.setSignIdentity("LEGAL");
@@ -841,7 +847,8 @@ public class SignedBizServiceImpl implements SignedBizService {
      * @param fileKey
      * @return
      */
-    private StandardSignerInfoBean assemblePartyAInfo(Map<String, PredefineBean> flowNamePredefineMap, int partyASignType, String fileKey, String organizeNo, ETemplateType templateType) throws Exception {
+    private StandardSignerInfoBean assemblePartyAInfo(Map<String, PredefineBean> flowNamePredefineMap, int partyASignType
+            , String fileKey, String organizeNo, ETemplateType templateType, boolean addSignTime) throws Exception {
         StandardSignerInfoBean partyA = new StandardSignerInfoBean();
         partyA.setSignOrder(2);
 //        partyA.setLegalSignFlag(1);
@@ -918,6 +925,7 @@ public class SignedBizServiceImpl implements SignedBizService {
                         signInfoBeanV2.setPosPage(position.getPageNo());
 //                        signInfoBeanV2.setSignIdentity("ORGANIZE");
                         signInfoBeanV2.setSealId(sealTypeAndSealIdMap.get(1));
+//                        signInfoBeanV2.setAddSignTime(addSignTime);
                         return signInfoBeanV2;
                     }).collect(Collectors.toList());
                     List<SignInfoBeanV2> legalSignPos = legalPositions.stream().map(position -> {
@@ -930,6 +938,9 @@ public class SignedBizServiceImpl implements SignedBizService {
                         signInfoBeanV2.setPosPage(position.getPageNo());
 //                        signInfoBeanV2.setSignIdentity("LEGAL");
                         signInfoBeanV2.setSealId(sealTypeAndSealIdMap.get(3));
+                        //todo 法人才需要日期
+                        signInfoBeanV2.setAddSignTime(addSignTime);
+                        signInfoBeanV2.setSignDateInfos(getSignTimeBeanList());
                         return signInfoBeanV2;
                     }).collect(Collectors.toList());
                     signPoList.addAll(signPos);
@@ -952,6 +963,9 @@ public class SignedBizServiceImpl implements SignedBizService {
             SignInfoBeanV2 legalSignInfoBeanV2 = new SignInfoBeanV2();
             legalSignInfoBeanV2.setKey("甲方法人");
             legalSignInfoBeanV2.setSignType(4);
+            //todo 法人才需要日期
+            legalSignInfoBeanV2.setAddSignTime(addSignTime);
+            legalSignInfoBeanV2.setSignDateInfos(getSignTimeBeanList());
             signPos.add(signInfoBeanV2);
             signPos.add(legalSignInfoBeanV2);
             standardSignDocBean.setSignPos(signPos);
@@ -1140,7 +1154,7 @@ public class SignedBizServiceImpl implements SignedBizService {
         List<YbFlowInfo> flowInfoList = new ArrayList<>();
 //        String singerName = String.join(",", institutionNames);
         String singerName = institutionNameMap.values().stream().collect(Collectors.joining(","));
-        log.info("partyA={}",JSONObject.toJSONString(partyA));
+        log.info("partyA={}", JSONObject.toJSONString(partyA));
         log.info("institutionNameMap={}", JSONObject.toJSONString(institutionNameMap));
         log.info("singerName={}", singerName);
         if (StringUtils.isNotBlank(singerName) && singerName.length() > MAX_SIGNERSLENGTH) {
@@ -1198,7 +1212,7 @@ public class SignedBizServiceImpl implements SignedBizService {
                 .setBatchNo(batchNo)
         ;
 
-        if (StringUtils.isBlank(flowAInfo.getSigners())){
+        if (StringUtils.isBlank(flowAInfo.getSigners())) {
             flowAInfo.setSigners(sn);
         }
         if (StringUtils.isBlank(fileKey)) {
@@ -1222,6 +1236,17 @@ public class SignedBizServiceImpl implements SignedBizService {
         }
 
 
+    }
+
+    /**
+     * 每次都新建对象，为解决JSONObject.toString()引起的循环对对象变$ref问题
+     * 使用JSONObject.toString(param,DisableCircularReferenceDetect)会引起签名错误
+     * @return
+     */
+    public List<SignTimeBean> getSignTimeBeanList(){
+        List<SignTimeBean> list = new ArrayList<>();
+        list.add(new SignTimeBean(Cons.DateFormatStr.CHINES_DATE_FORMAT));
+        return list;
     }
 
 }

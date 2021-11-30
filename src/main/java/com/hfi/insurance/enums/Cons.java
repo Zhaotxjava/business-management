@@ -16,4 +16,10 @@ public class Cons {
         public final static String BX = "bx";
         public final static String HZ = "hz";
     }
+
+    public class DateFormatStr{
+        //中文年月日格式
+        public final static String CHINES_DATE_FORMAT = "YYYY年MM月DD日";
+    }
+
 }

@@ -17,4 +17,10 @@ public class SignTimeBean {
     private Float posX;
     private Float posY;
 
+    public SignTimeBean() {
+    }
+
+    public SignTimeBean(String dateFormat) {
+        this.dateFormat = dateFormat;
+    }
 }
