@@ -37,15 +37,17 @@ public class Test {
 //        ExcelReader reader = ExcelUtil.getReader("E:\\Temp\\source\\"+"新建XLS01 工作表.xls");
 //        List<List<Object>> readAll = reader.read();
 //        System.out.println(readAll.toString());
-        Set<String> set = new HashSet<>();
-        String s ="aa";
-        set.add("aa");
-        set.add("aa");
-        set.add(s);
-        s = "b";
-        set.add(s);
-        LocalDateTime localdatetime = LocalDateTime.now(Clock.systemDefaultZone());
-        System.out.println(localdatetime.toLocalDate());
+//        Set<String> set = new HashSet<>();
+//        String s ="aa";
+//        set.add("aa");
+//        set.add("aa");
+//        set.add(s);
+//        s = "b";
+//        set.add(s);
+//        LocalDateTime localdatetime = LocalDateTime.now(Clock.systemDefaultZone());
+//        System.out.println(localdatetime.toLocalDate());
+
+        System.out.println("爱说大话法式咖啡大师开发");
 
     }
 

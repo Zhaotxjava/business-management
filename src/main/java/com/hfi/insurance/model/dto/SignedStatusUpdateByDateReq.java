@@ -1,5 +1,6 @@
 package com.hfi.insurance.model.dto;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -15,5 +16,6 @@ import java.util.Date;
 public class SignedStatusUpdateByDateReq implements Serializable {
     private Date start;
     private Date end;
+    @ApiModelProperty("天印系统签署流程id")
     private String signFlowId;
 }

@@ -70,7 +70,7 @@ public class TaskController {
 
     @RequestMapping(value = "/sign/signedStatusUpdate", method = RequestMethod.POST)
     @ApiOperation("signedStatusUpdate")
-    @Scheduled(cron = "0 0/10 * * * * ")
+    @Scheduled(cron = "0 0/15 * * * * ")
     public void signedStatusUpdate() {
         SignedStatusUpdateByDateReq req = new SignedStatusUpdateByDateReq();
         req.setStart(DateUtil.yesterday());
@@ -82,21 +82,24 @@ public class TaskController {
         //流程状态（0草稿，1 签署中，2完成，3 撤销，4终止，5过 期，6删除，7拒 签，8作废，9已归 档，10预盖章）
         QueryWrapper<YbFlowInfo> objectQueryWrapper = new QueryWrapper<>();
         objectQueryWrapper.and(i -> i.isNull("batch_status").or().eq("batch_status", Cons.BatchStr.BATCH_STATUS_SUCCESS));
-        objectQueryWrapper.between("update_time", req.getStart(), req.getEnd());
-        objectQueryWrapper.eq("flow_status","0").or().eq("flow_status","1")
-                .or().eq("flow_status","10");
+        if(Objects.nonNull(req.getStart()) && Objects.nonNull(req.getStart())){
+            objectQueryWrapper.between("update_time", req.getStart(), req.getEnd());
+        }
+//        objectQueryWrapper.eq("flow_status","0").or().eq("flow_status","1")
+//                .or().eq("flow_status","10");
+        objectQueryWrapper.in("flow_status",flowStatusList);
         if(StringUtils.isNotBlank(req.getSignFlowId())){
             objectQueryWrapper.eq("sign_flow_id",req.getSignFlowId());
         }
 
         List<YbFlowInfo> list = ybFlowInfoMapper.selectList(objectQueryWrapper);
-        log.info("定时查询签署一共：{}个", list.size());
+        log.info("定时查询签署一共：{}个,入参为：{}", list.size(),JSONObject.toJSONString(req));
         for (YbFlowInfo ybFlowInfo : list
         ) {
-            JSONObject signDetail = signedService.getSignDetail(ybFlowInfo.getFlowId());
-
+            JSONObject signDetail = signedService.getSignDetail(Integer.valueOf(ybFlowInfo.getSignFlowId()));
+//            log.debug("signDetail = {}",signDetail);
             if (signDetail.containsKey("errCode")) {
-//                log.warn("查询流程id：{}详情错误，错误原因：{}",ybFlowInfo.getFlowId(),signDetail.getString("msg"));
+                log.warn("查询流程id：{}详情错误，错误原因：{}",ybFlowInfo.getFlowId(),signDetail.getString("msg"));
                 continue;
             } else {
                 String singers = signDetail.getString("signers");
