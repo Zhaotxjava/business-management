@@ -683,16 +683,18 @@ public class SignedBizServiceImpl implements SignedBizService {
             TemplateFormValueParam templateFormValueParam = new TemplateFormValueParam();
             templateFormValueParam.setFormId(templateForm.getFormId());
             //文本域名称要是甲方、乙方、丙方机构名称...格式
-            String formName = templateForm.getFormName();
-            String flowName = formName.substring(0, 2);
+            String flowNam = templateForm.getFormName();
+            String flowName = flowNam.substring(0, 2);
             log.info("文本域名称：{}", flowName);
-            if (!flowNameInstitutionMap.containsKey(flowName)) {
+  /*          if (!flowNameInstitutionMap.containsKey(flowName)) {
                 throw new BizServiceException("请选择" + flowName + "机构！");
-            }
+            }*/
             List<InstitutionBaseInfo> institutionInfos = flowNameInstitutionMap.get(flowName);
             log.info("institutionInfos = {}", JSONObject.toJSONString(institutionInfos));
             if (!CollectionUtils.isEmpty(institutionInfos)) {
-                if (flowName.equals(maxSizeFlowName)) {
+                if(flowNam.contains("机构编码")){
+                    templateFormValueParam.setFormValue(institutionInfos.get(i).getNumber());
+                }else if (flowName.equals(maxSizeFlowName)) {
                     templateFormValueParam.setFormValue(institutionInfos.get(i).getInstitutionName());
                 } else {
                     templateFormValueParam.setFormValue(institutionInfos.get(0).getInstitutionName());
