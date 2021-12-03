@@ -374,7 +374,9 @@ public class SignedBizServiceImpl implements SignedBizService {
             Map<Integer, String> flowNameSizeMap = new LinkedHashMap<>(16);
             //获取所有签署机构名称，并使用','连接起来
             Map<String, String> institutionNameMap = new HashMap<>();
-//            List<InstitutionBaseInfo> institutionInfos = new ArrayList<>();
+            //获取机构名称于机构编码
+            Map<String,String>   licenseNumber = new HashMap<>();
+
             singerInfos.forEach(singerInfo -> {
                 int size = singerInfo.getInstitutionInfoList().size();
                 flowNameSizeMap.put(size, singerInfo.getFlowName());
@@ -383,7 +385,7 @@ public class SignedBizServiceImpl implements SignedBizService {
                 for (int i = 0; i < size; i++) {
                     InstitutionBaseInfo institutionBaseInfo = singerInfo.getInstitutionInfoList().get(i);
                     flowNameMap.put(institutionBaseInfo.getNumber(), singerInfo.getFlowName());
-
+                    licenseNumber.put(singerInfo.getFlowName(),institutionBaseInfo.getNumber());
                 }
             });
             //找出批量的机构
@@ -412,7 +414,7 @@ public class SignedBizServiceImpl implements SignedBizService {
 
                 try {
                     //填充模板信息
-                    flowDocBean = assembleSignDocs(req, templateInfo, flowNameInstitutionMap, maxSizeFlowName, i, organizeNo);
+                    flowDocBean = assembleSignDocs(req, templateInfo, flowNameInstitutionMap, maxSizeFlowName, i, organizeNo,licenseNumber);
                 } catch (BizServiceException e) {
                     return new ApiResponse(ErrorCodeEnum.RESPONES_ERROR.getCode(), e.getMessage());
                 }
@@ -669,12 +671,13 @@ public class SignedBizServiceImpl implements SignedBizService {
      * @param flowNameInstitutionMap
      * @param maxSizeFlowName
      * @param i
+     * @param licenseNumber
      * @return
      */
     private FlowDocBean assembleSignDocs(CreateSignFlowReq req, TemplateInfoBean templateInfo,
                                          Map<String, List<InstitutionBaseInfo>> flowNameInstitutionMap,
                                          String maxSizeFlowName, int i,
-                                         String areaCode) throws BizServiceException {
+                                         String areaCode, Map<String, String> licenseNumber) throws BizServiceException {
         FlowDocBean flowDocBean = new FlowDocBean();
         TemplateUseParam templateUseParam = new TemplateUseParam();
         //填充表单信息（文本域）
@@ -693,7 +696,8 @@ public class SignedBizServiceImpl implements SignedBizService {
             log.info("institutionInfos = {}", JSONObject.toJSONString(institutionInfos));
             if (!CollectionUtils.isEmpty(institutionInfos)) {
                 if(flowNam.contains("机构编码")){
-                    templateFormValueParam.setFormValue(institutionInfos.get(i).getNumber());
+                    log.info("机构编码判断"+licenseNumber);
+                    templateFormValueParam.setFormValue(licenseNumber.get(flowName));
                 }else if (flowName.equals(maxSizeFlowName)) {
                     templateFormValueParam.setFormValue(institutionInfos.get(i).getInstitutionName());
                 } else {
