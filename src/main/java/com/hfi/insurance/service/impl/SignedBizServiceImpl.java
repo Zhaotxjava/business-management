@@ -11,16 +11,7 @@ import com.hfi.insurance.common.BizServiceException;
 import com.hfi.insurance.enums.*;
 import com.hfi.insurance.model.YbFlowInfo;
 import com.hfi.insurance.model.YbInstitutionInfo;
-import com.hfi.insurance.model.sign.BindedAgentBean;
-import com.hfi.insurance.model.sign.InstitutionBaseInfo;
-import com.hfi.insurance.model.sign.Position;
-import com.hfi.insurance.model.sign.PredefineBean;
-import com.hfi.insurance.model.sign.QueryOuterOrgResult;
-import com.hfi.insurance.model.sign.Seal;
-import com.hfi.insurance.model.sign.SealUser;
-import com.hfi.insurance.model.sign.TemplateFlowBean;
-import com.hfi.insurance.model.sign.TemplateFormBean;
-import com.hfi.insurance.model.sign.TemplateInfoBean;
+import com.hfi.insurance.model.sign.*;
 import com.hfi.insurance.model.sign.req.*;
 import com.hfi.insurance.service.IYbFlowInfoService;
 import com.hfi.insurance.service.IYbInstitutionInfoService;
@@ -33,6 +24,7 @@ import com.hfi.insurance.utils.StreamUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -798,7 +790,7 @@ public class SignedBizServiceImpl implements SignedBizService {
                         //签署方式1-单页签署
                         signInfoBeanV2.setSignType(1);
                         signInfoBeanV2.setAddSignTime(addSignTime);
-                        signInfoBeanV2.setSignDateInfos(getSignTimeBeanList());
+                        signInfoBeanV2.setSignDateInfos(getSignTimeBeanList(position.getTemplateSignTimeInfos()));
                         signInfoBeanV2.setPosX(Float.valueOf(position.getPosX()));
                         signInfoBeanV2.setPosY(Float.valueOf(position.getPosY()));
                         signInfoBeanV2.setPosPage(position.getPageNo());
@@ -827,7 +819,7 @@ public class SignedBizServiceImpl implements SignedBizService {
             legalSignInfoBeanV2.setKey(singerInfo.getKey() + "法人");
             legalSignInfoBeanV2.setSignType(4);
             legalSignInfoBeanV2.setAddSignTime(addSignTime);
-            legalSignInfoBeanV2.setSignDateInfos(getSignTimeBeanList());
+//            legalSignInfoBeanV2.setSignDateInfos(getSignTimeBeanList());
             signPos.add(signInfoBeanV2);
             signPos.add(legalSignInfoBeanV2);
             signInfoBeanV2.setSignIdentity("LEGAL");
@@ -940,7 +932,7 @@ public class SignedBizServiceImpl implements SignedBizService {
                         signInfoBeanV2.setSealId(sealTypeAndSealIdMap.get(3));
                         //todo 法人才需要日期
                         signInfoBeanV2.setAddSignTime(addSignTime);
-                        signInfoBeanV2.setSignDateInfos(getSignTimeBeanList());
+                        signInfoBeanV2.setSignDateInfos(getSignTimeBeanList(position.getTemplateSignTimeInfos()));
                         return signInfoBeanV2;
                     }).collect(Collectors.toList());
                     signPoList.addAll(signPos);
@@ -965,7 +957,7 @@ public class SignedBizServiceImpl implements SignedBizService {
             legalSignInfoBeanV2.setSignType(4);
             //todo 法人才需要日期
             legalSignInfoBeanV2.setAddSignTime(addSignTime);
-            legalSignInfoBeanV2.setSignDateInfos(getSignTimeBeanList());
+//            legalSignInfoBeanV2.setSignDateInfos();
             signPos.add(signInfoBeanV2);
             signPos.add(legalSignInfoBeanV2);
             standardSignDocBean.setSignPos(signPos);
@@ -1243,9 +1235,13 @@ public class SignedBizServiceImpl implements SignedBizService {
      * 使用JSONObject.toString(param,DisableCircularReferenceDetect)会引起签名错误
      * @return
      */
-    public List<SignTimeBean> getSignTimeBeanList(){
+    public List<SignTimeBean> getSignTimeBeanList(List<TemplateSignTimeInfo> timeInfoList){
         List<SignTimeBean> list = new ArrayList<>();
-        list.add(new SignTimeBean(Cons.DateFormatStr.CHINES_DATE_FORMAT));
+        timeInfoList.forEach(tf->{
+            SignTimeBean signTimeBean = new SignTimeBean();
+            BeanUtils.copyProperties(tf,signTimeBean);
+            list.add(signTimeBean);
+        });
         return list;
     }
 
