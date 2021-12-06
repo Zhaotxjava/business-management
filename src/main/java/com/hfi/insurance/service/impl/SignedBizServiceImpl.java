@@ -385,7 +385,7 @@ public class SignedBizServiceImpl implements SignedBizService {
                 for (int i = 0; i < size; i++) {
                     InstitutionBaseInfo institutionBaseInfo = singerInfo.getInstitutionInfoList().get(i);
                     flowNameMap.put(institutionBaseInfo.getNumber(), singerInfo.getFlowName());
-                    licenseNumber.put(singerInfo.getFlowName(),institutionBaseInfo.getNumber());
+                    licenseNumber.put(institutionBaseInfo.getInstitutionName(),institutionBaseInfo.getNumber());
                 }
             });
             //找出批量的机构
@@ -695,9 +695,11 @@ public class SignedBizServiceImpl implements SignedBizService {
             List<InstitutionBaseInfo> institutionInfos = flowNameInstitutionMap.get(flowName);
             log.info("institutionInfos = {}", JSONObject.toJSONString(institutionInfos));
             if (!CollectionUtils.isEmpty(institutionInfos)) {
-                if(flowNam.contains("机构编码")){
-                    log.info("机构编码判断"+licenseNumber);
-                    templateFormValueParam.setFormValue(licenseNumber.get(flowName));
+                if(flowName.equals(maxSizeFlowName) && flowNam.contains("机构编码")){
+                    String institutionName = institutionInfos.get(i).getInstitutionName();
+                    log.info("机构编码全部数据="+licenseNumber);
+                    log.info("机构编码="+licenseNumber.get(institutionName)+"或者"+institutionInfos.get(i).getNumber());
+                    templateFormValueParam.setFormValue(licenseNumber.get(institutionName));
                 }else if (flowName.equals(maxSizeFlowName)) {
                     templateFormValueParam.setFormValue(institutionInfos.get(i).getInstitutionName());
                 } else {
