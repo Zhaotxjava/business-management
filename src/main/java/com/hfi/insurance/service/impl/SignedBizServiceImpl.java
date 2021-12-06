@@ -688,18 +688,22 @@ public class SignedBizServiceImpl implements SignedBizService {
             //文本域名称要是甲方、乙方、丙方机构名称...格式
             String flowNam = templateForm.getFormName();
             String flowName = flowNam.substring(0, 2);
-            log.info("文本域名称：{}", flowName);
+            log.info("文本域名称：{}", flowNam);
   /*          if (!flowNameInstitutionMap.containsKey(flowName)) {
                 throw new BizServiceException("请选择" + flowName + "机构！");
             }*/
             List<InstitutionBaseInfo> institutionInfos = flowNameInstitutionMap.get(flowName);
             log.info("institutionInfos = {}", JSONObject.toJSONString(institutionInfos));
+            log.info("licenseNumber = {}", licenseNumber);
             if (!CollectionUtils.isEmpty(institutionInfos)) {
-                if(flowName.equals(maxSizeFlowName) && flowNam.contains("机构编码")){
-                    String institutionName = institutionInfos.get(i).getInstitutionName();
-                    log.info("机构编码全部数据="+licenseNumber);
-                    log.info("机构编码="+licenseNumber.get(institutionName)+"或者"+institutionInfos.get(i).getNumber());
-                    templateFormValueParam.setFormValue(licenseNumber.get(institutionName));
+            if(flowNam.contains("机构编码")){
+                String institutionName = institutionInfos.get(0).getInstitutionName();
+                log.info("机构编码名称="+institutionName);
+                log.info("根据机构编码获取机构编号="+licenseNumber.get(institutionName));
+                if (flowName.equals(maxSizeFlowName)){
+                     institutionName = institutionInfos.get(i).getInstitutionName();
+                }
+                templateFormValueParam.setFormValue(licenseNumber.get(institutionName));
                 }else if (flowName.equals(maxSizeFlowName)) {
                     templateFormValueParam.setFormValue(institutionInfos.get(i).getInstitutionName());
                 } else {
