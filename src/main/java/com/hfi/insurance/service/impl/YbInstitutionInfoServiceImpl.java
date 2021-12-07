@@ -277,7 +277,7 @@ public  class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfo
             if (StringUtils.isNotBlank(legalAccountId)) {
                 defaultAccountId = legalAccountId;
 
-                JSONObject resultObj = organizationsService.updateAccounts(legalAccountId, req.getLegalName(), req.getLegalIdCard(), req.getLegalPhone());
+                JSONObject resultObj = organizationsService.updateAccounts(legalAccountId, req.getLegalName(), req.getLegalIdCard(), req.getLegalPhone(),req.getLegalCardType());
                 if (resultObj.containsKey("errCode")) {
                     log.error("更新外部用户（法人）信息异常，{}", resultObj);
                     return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
@@ -316,7 +316,7 @@ public  class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfo
             } else {
                 if (StringUtils.isNotBlank(agentAccountId)) {
                     accountId = agentAccountId;
-                    JSONObject resultObj = organizationsService.updateAccounts(agentAccountId, req.getContactName(), req.getContactIdCard(), req.getContactPhone());
+                    JSONObject resultObj = organizationsService.updateAccounts(agentAccountId, req.getContactName(), req.getContactIdCard(), req.getContactPhone(),req.getContactCardType());
                     if (resultObj.containsKey("errCode")) {
                         log.error("更新外部用户（联系人）信息异常，{}", resultObj);
                         return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
@@ -636,7 +636,7 @@ public  class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfo
             // 查询已存在的法人信息，并更新
             JSONObject data = (JSONObject) legalAccountResp.getData();
             JSONObject resultObj = organizationsService.updateAccounts(
-                    data.getString("accountId"), req.getLegalName(), req.getLegalIdCard(), req.getLegalPhone());
+                    data.getString("accountId"), req.getLegalName(), req.getLegalIdCard(), req.getLegalPhone(),req.getLegalCardType());
             if (resultObj.containsKey("errCode")) {
                 log.error("更新外部用户（法人）信息异常，{}", resultObj);
                 return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
@@ -661,7 +661,7 @@ public  class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfo
             // 查询已存在的经办人信息，并更新
             JSONObject data = (JSONObject) accountResp.getData();
             JSONObject resultObj = organizationsService.updateAccounts(
-                    data.getString("accountId"), req.getContactName(), req.getContactIdCard(), req.getContactPhone());
+                    data.getString("accountId"), req.getContactName(), req.getContactIdCard(), req.getContactPhone(),req.getContactCardType());
             if (resultObj.containsKey("errCode")) {
                 log.error("更新外部用户（经办人）信息异常，{}", resultObj);
                 return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
