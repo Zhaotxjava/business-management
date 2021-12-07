@@ -111,6 +111,14 @@ public class InstitutionController {
             return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(), "相同，不可提交");
 
         }
+        if (StringUtils.isBlank(req.getContactCardType())) {
+            return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(), "经办人类型不能为空");
+        }
+        if (StringUtils.isBlank(req.getLegalCardType())) {
+            return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(), "法人类型不能为空");
+        }
+
+
 
 
         return institutionInfoService.newUpdateInstitutionInfo(req);

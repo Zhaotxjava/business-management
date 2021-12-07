@@ -1,35 +1,38 @@
 package com.hfi.insurance.service.impl;
 
-import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.hfi.insurance.aspect.anno.LogAnnotation;
 import com.hfi.insurance.common.ApiResponse;
 import com.hfi.insurance.common.ExcelUtil;
-import com.hfi.insurance.enums.Cons;
+import com.hfi.insurance.common.PageDto;
 import com.hfi.insurance.enums.ErrorCodeEnum;
-import com.hfi.insurance.mapper.*;
+import com.hfi.insurance.mapper.YbInstitutionInfoChangeMapper;
+import com.hfi.insurance.mapper.YbInstitutionInfoMapper;
+import com.hfi.insurance.mapper.YbInstitutionPicPathMapper;
+import com.hfi.insurance.mapper.YbOrgTdMapper;
 import com.hfi.insurance.model.*;
-import com.hfi.insurance.model.dto.*;
+import com.hfi.insurance.model.dto.InstitutionInfoAddReq;
+import com.hfi.insurance.model.dto.InstitutionInfoQueryReq;
+import com.hfi.insurance.model.dto.OrgTdQueryReq;
+import com.hfi.insurance.model.dto.YbInstitutionInfoChangeReq;
 import com.hfi.insurance.model.dto.res.InstitutionInfoRes;
 import com.hfi.insurance.model.sign.BindedAgentBean;
 import com.hfi.insurance.model.sign.QueryOuterOrgResult;
-import com.hfi.insurance.model.sign.YbFlowDownload;
 import com.hfi.insurance.service.IYbInstitutionInfoService;
 import com.hfi.insurance.service.OrganizationsService;
 import com.hfi.insurance.utils.FTPUploadUtil;
+import com.hfi.insurance.utils.PicUploadUtil;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.xssf.usermodel.XSSFCell;
-import org.apache.poi.xssf.usermodel.XSSFRow;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.xssf.usermodel.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -38,9 +41,9 @@ import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -52,7 +55,7 @@ import java.util.*;
  */
 @Slf4j
 @Service
-public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoMapper, YbInstitutionInfo> implements IYbInstitutionInfoService {
+public abstract class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoMapper, YbInstitutionInfo> implements IYbInstitutionInfoService {
 
     @Resource
     private YbInstitutionInfoMapper institutionInfoMapper;
@@ -71,11 +74,6 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
     private YbInstitutionPicPathMapper ybInstitutionPicPathMapper;
     @Autowired
     private FTPUploadUtil ftpUploadUtil;
-
-    @Autowired
-    private YbFlowInfoMapper ybFlowInfoMapper;
-    @Autowired
-    private YbInstitutionInfoMapper ybInstitutionInfoMapper;
 
 
     @Override
@@ -102,9 +100,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
 //        if (StringUtils.isNotBlank(institutionName)){
 //            queryWrapper.eq("institution_name",institutionName);
 //        }
-
-
-        List<YbInstitutionInfo> ybInstitutionInfos = institutionInfoMapper.selectInstitutionInfoAndOrg(institutionNumber, number, institutionName, (current - 1) * limit, limit);
+        List<YbInstitutionInfo> ybInstitutionInfos = institutionInfoMapper.selectInstitutionInfoAndOrg(institutionNumber, number, institutionName, current - 1, limit);
         int total = institutionInfoMapper.selectCountInstitutionInfoAndOrg(institutionNumber, number, institutionName);
         Page<YbInstitutionInfoChange> page = new Page<>(current, limit);
 
@@ -140,39 +136,39 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
     @LogAnnotation
     public Page<InstitutionInfoRes> getOrgTdListForCreateFlow(OrgTdQueryReq req) {
         Integer pageNum = req.getPageNum();
-        req.setPageNum((pageNum - 1) * req.getPageSize());
+        req.setPageNum(pageNum - 1);
         List<InstitutionInfoRes> ybInstitutionInfos = institutionInfoMapper.selectOrgForCreateFlow(req);
 
-        log.info("过滤前有{}个，{}", ybInstitutionInfos.size(), JSONObject.toJSONString(ybInstitutionInfos));
+        log.info("过滤前有{}个，{}",ybInstitutionInfos.size(),JSONObject.toJSONString(ybInstitutionInfos));
         ybInstitutionInfos.removeIf(item -> (StringUtils.isBlank(item.getAccountId()))
                 || StringUtils.isBlank(item.getOrganizeId())
                 || StringUtils.isBlank(item.getLegalIdCard())
         );
-        log.info("过滤后有{}个，{}", ybInstitutionInfos.size(), JSONObject.toJSONString(ybInstitutionInfos));
+        log.info("过滤后有{}个，{}",ybInstitutionInfos.size(),JSONObject.toJSONString(ybInstitutionInfos));
         //todo 添加保险公司
 
         int pageIndex = 1;
         int size = 1;
         List<InstitutionInfoRes> insuranceList = new ArrayList<>();
         List<QueryOuterOrgResult> queryOuterOrgResultList = new ArrayList<>();
-        while (size > 0) {
-            String orgInfoListStr = organizationsService.queryByOrgName("", pageIndex);
+        while (size > 0){
+            String orgInfoListStr = organizationsService.queryByOrgName("",pageIndex);
             JSONObject object = JSONObject.parseObject(orgInfoListStr);
-            log.info("getOrgTdListForCreateFlow 调用E签宝queryByOrgName查询机构{}", object.toJSONString());
+            log.info("getOrgTdListForCreateFlow 调用E签宝queryByOrgName查询机构{}",object.toJSONString());
             if ("0".equals(object.getString("errCode"))) {
                 String data = object.getString("data");
                 List<QueryOuterOrgResult> queryOuterOrgResults = JSON.parseArray(data, QueryOuterOrgResult.class);
-                if (0 == queryOuterOrgResults.size()) {
+                if (0 == queryOuterOrgResults.size()){
                     size = 0;
                 }
-                pageIndex++;
+                pageIndex ++;
                 queryOuterOrgResultList.addAll(queryOuterOrgResults);
-            } else {
+            }else {
                 break;
             }
         }
-     /*   log.info("外部机构数量：【{}】", queryOuterOrgResultList.size());
-        for (QueryOuterOrgResult result : queryOuterOrgResultList) {
+        log.info("外部机构数量：【{}】",queryOuterOrgResultList.size());
+        for(QueryOuterOrgResult result : queryOuterOrgResultList){
             BindedAgentBean bindedAgentBean = CollectionUtils.firstElement(result.getAgentAccounts());
             String organizeNo = result.getOrganizeNo();
             if (bindedAgentBean != null && organizeNo.startsWith("bx")) {
@@ -185,15 +181,13 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
                 insuranceList.add(res);
             }
         }
-        ybInstitutionInfos.addAll(insuranceList);*/
+        ybInstitutionInfos.addAll(insuranceList);
 
 
-        int count= institutionInfoMapper.selectCountOrgForCreateFlow(req);
-
-
+        int total = institutionInfoMapper.selectCountOrgForCreateFlow(req);
         Page<InstitutionInfoRes> page = new Page<>(req.getPageNum(), req.getPageSize());
         page.setRecords(ybInstitutionInfos);
-        page.setTotal(count);
+        page.setTotal(ybInstitutionInfos.size());
         return page;
     }
 
@@ -275,7 +269,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         }
 
         if (!accountExist) { //不存在则创建用户
-            JSONObject resultObj = organizationsService.createAccounts(req.getLegalName(), req.getLegalIdCard(), req.getLegalPhone());
+            JSONObject resultObj = organizationsService.createAccounts(req.getLegalName(), req.getLegalIdCard(), req.getLegalPhone(),req.getLegalCardType());
             if (resultObj.containsKey("errCode")) {
                 log.error("创建外部用户（法人）信息异常，{}", resultObj);
                 return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
@@ -315,9 +309,8 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
                     return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), agentAccountObj.getString("msg"));
                 }
             }
-            //不存在则创建用户
-            if (!agentAccountExist) {
-                JSONObject resultObj = organizationsService.createAccounts(req.getContactName(), req.getContactIdCard(), req.getContactPhone());
+            if (!agentAccountExist) { //不存在则创建用户
+                JSONObject resultObj = organizationsService.createAccounts(req.getContactName(), req.getContactIdCard(), req.getContactPhone(),req.getContactCardType());
                 if (resultObj.containsKey("errCode")) {
                     log.error("创建外部用户（联系人）信息异常，{}", resultObj);
                     return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
@@ -441,7 +434,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         String institutionName = ybInstitutionInfoChangeReq.getInstitutionName();
         if (!StringUtils.isEmpty(number) || !StringUtils.isEmpty(institutionName)) {
             Integer pageNum = ybInstitutionInfoChangeReq.getPageNum();
-            ybInstitutionInfoChangeReq.setPageNum((pageNum - 1) * ybInstitutionInfoChangeReq.getPageSize());
+            ybInstitutionInfoChangeReq.setPageNum(pageNum-1);
 
             List<YbInstitutionInfoChange> YbInstitutionInfoChangeList = ybInstitutionInfoChangeMapper.selectChangeList(ybInstitutionInfoChangeReq);
 
@@ -463,7 +456,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
                             }
                         }
                         c.setLicensePicture(JSONObject.toJSONString(xkzList));
-                    } else {
+                    }else {
                         c.setLicensePicture("");
                     }
 
@@ -478,7 +471,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
                             }
                         }
                         c.setBusinessPicture(JSONObject.toJSONString(yyzzList));
-                    } else {
+                    }else {
                         c.setBusinessPicture("");
                     }
                     resList.add(c);
@@ -512,7 +505,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
             //表头
             String[] headers = {"机构编号", "机构名称", "统一社会信用代码", "机构法人姓名"
                     , "机构法人证件类型", "机构法人证件号", "机构法人手机号", "经办人姓名"
-                    , "经办人证件类型", "经办人证件号", "经办人手机号", "修改时间"};
+                    , "经办人证件类型", "经办人证件号", "经办人手机号","修改时间"};
 
             XSSFRow headerRow = sheet.createRow(rowIndex++);
             for (int i = 0; i < headers.length; i++) {
@@ -592,45 +585,14 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
 
     @Override
     public ApiResponse getInstitutionInfobxList(InstitutionInfoQueryReq institutionInfoQueryReq) {
-        String hospitalid = institutionInfoQueryReq.getHospitalid();
 
-        if (StringUtils.isEmpty(hospitalid)) {
-            return new ApiResponse("502", "hospitalid不能为空");
-        }
-        if (hospitalid.indexOf("bx") == -1) {
-            institutionInfoQueryReq.setHospitalid("");
-            institutionInfoQueryReq.setNumber("bx");
-        }
-        institutionInfoQueryReq.setPageNum((institutionInfoQueryReq.getPageNum() - 1) * institutionInfoQueryReq.getPageSize());
+        institutionInfoQueryReq.setPageNum(institutionInfoQueryReq.getPageNum()-1);
         List<YbInstitutionInfo> ybInstitutionInfos = institutionInfoMapper.getInstitutionInfobxList(institutionInfoQueryReq);
-        if (ybInstitutionInfos.size() > 0 ) {
-            Integer ybInstitutionInfosCount = institutionInfoMapper.selectInstitutionInfobxCount(institutionInfoQueryReq);
-            Page<YbInstitutionInfo> page = new Page<>();
-            page.setRecords(ybInstitutionInfos);
-            page.setTotal(ybInstitutionInfosCount);
-            return new ApiResponse(page);
+        if (ybInstitutionInfos.size()>0){
+            return ApiResponse.success(ybInstitutionInfos);
         }
-        if(hospitalid.indexOf("bx") != -1){
-            List<YbOrgTd> YbOrgTdList = orgTdMapper.getorgTdbxList(institutionInfoQueryReq);
-            List<YbInstitutionInfo> YbInstitutionInfolist = new ArrayList<>();
-            if (YbOrgTdList.size() > 0) {
-                YbOrgTdList.stream().forEach(x -> {
-                    YbInstitutionInfo ybInstitutionInfo = new YbInstitutionInfo();
-                    ybInstitutionInfo.setNumber(x.getAkb020());
-                    ybInstitutionInfo.setInstitutionName(x.getAkb021());
-                    YbInstitutionInfolist.add(ybInstitutionInfo);
+        return  new ApiResponse("200","无保险公司");
 
-                });
-
-                Integer YbInstitutionInfoCount = orgTdMapper.selectorgTdbxCount(institutionInfoQueryReq);
-                Page<YbInstitutionInfo> page = new Page<>();
-                page.setRecords(YbInstitutionInfolist);
-                page.setTotal(YbInstitutionInfoCount);
-                return new ApiResponse(page);
-            }
-
-        }
-        return new ApiResponse("200", "无保险公司");
     }
 
     @Override
@@ -642,8 +604,8 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         QueryWrapper<YbOrgTd> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("AKB020", number);
         YbOrgTd orgTd = orgTdMapper.selectOne(queryWrapper);
-        if (null == orgTd) {
-            return new ApiResponse(ErrorCodeEnum.SYSTEM_ERROR.getCode(), "机构不存在!");
+        if (null == orgTd){
+            return new ApiResponse(ErrorCodeEnum.SYSTEM_ERROR.getCode(),"机构不存在!");
         }
 
         // 查询机构是否在库，不在库则创建，否则更新
@@ -656,7 +618,6 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
 
     /**
      * 更新机构
-     *
      * @param req
      * @param local
      * @param institutionName
@@ -688,7 +649,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         } else {
             // 创建法人信息
             JSONObject createAccount = organizationsService.createAccounts(
-                    req.getLegalName(), req.getLegalIdCard(), req.getLegalPhone());
+                    req.getLegalName(), req.getLegalIdCard(), req.getLegalPhone(),req.getLegalCardType());
             if (createAccount.containsKey("errCode")) {
                 log.error("创建外部用户（法人）信息异常，{}", createAccount);
                 return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), createAccount.getString("msg"));
@@ -713,7 +674,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         } else {
             // 创建经办人信息
             JSONObject createAccount = organizationsService.createAccounts(
-                    req.getContactName(), req.getContactIdCard(), req.getContactPhone());
+                    req.getContactName(), req.getContactIdCard(), req.getContactPhone(),req.getContactCardType());
             if (createAccount.containsKey("errCode")) {
                 log.error("创建外部用户（经办人）信息异常，{}", createAccount);
                 return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), createAccount.getString("msg"));
@@ -771,7 +732,6 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
 
     /**
      * 新增机构
-     *
      * @param req
      * @return
      */
@@ -797,7 +757,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         } else {
             // 创建法人信息
             JSONObject createAccount = organizationsService.createAccounts(
-                    req.getLegalName(), req.getLegalIdCard(), req.getLegalPhone());
+                    req.getLegalName(), req.getLegalIdCard(), req.getLegalPhone(),req.getLegalCardType());
             if (createAccount.containsKey("errCode")) {
                 log.error("创建外部用户（法人）信息异常，{}", createAccount);
                 return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), createAccount.getString("msg"));
@@ -821,7 +781,7 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
         } else {
             // 创建经办人信息
             JSONObject createAccount = organizationsService.createAccounts(
-                    req.getContactName(), req.getContactIdCard(), req.getContactPhone());
+                    req.getContactName(), req.getContactIdCard(), req.getContactPhone(),req.getContactCardType());
             if (createAccount.containsKey("errCode")) {
                 log.error("创建外部用户（经办人）信息异常，{}", createAccount);
                 return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), createAccount.getString("msg"));
@@ -900,177 +860,18 @@ public class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoM
 
     /**
      * 通过列表查询yb_institution_info表中字段account_id | legal_account_id | organize_id都不为空的机构
-     *
      * @param inputSet
      * @return
      */
     @Override
-    public List<YbInstitutionInfo> findLegalInstitution(Set<String> inputSet) {
+    public List<YbInstitutionInfo> findLegalInstitution(Set<String> inputSet){
         QueryWrapper<YbInstitutionInfo> queryWrapper = new QueryWrapper<>();
         queryWrapper.isNotNull("account_id");
         queryWrapper.isNotNull("legal_account_id");
         queryWrapper.isNotNull("organize_id");
-        queryWrapper.in("number", inputSet);
+        queryWrapper.in("number",inputSet);
         List<YbInstitutionInfo> list = institutionInfoMapper.selectList(queryWrapper);
         return list;
     }
-
-
-    @Override
-    public ApiResponse getArecordList(ArecordQueReq arecordQueReq) {
-        String batchno = arecordQueReq.getBatchNo();
-        if (StringUtils.isEmpty(batchno)) {
-            return new ApiResponse("502", "模板名称不能为空");
-        }
-        arecordQueReq.setPageNum((arecordQueReq.getPageNum() - 1) * arecordQueReq.getPageSize());
-
-        List<YbFlowInfo> YbFlowInfoList = ybFlowInfoMapper.selectYbFlowInfoList(arecordQueReq);
-
-        if (YbFlowInfoList.size() > 0) {
-            List<GetArecordReq> getArecordReqList = new ArrayList<>();
-            for (YbFlowInfo x : YbFlowInfoList) {
-                String batchNo = x.getBatchNo();
-                String[] split = batchNo.split("-");
-                GetArecordReq getArecordReq = new GetArecordReq();
-                getArecordReq.setDocumentName(split[1]+split[2]);
-                getArecordReq.setRecordName(split[1]);
-                getArecordReq.setCreationDate(DateUtil.dateNew(x.getUpdateTime()));
-                getArecordReq.setSignFlowId(x.getFlowId().toString());
-                getArecordReqList.add(getArecordReq);
-            }
-            List<YbFlowInfo> YbFlowInfoListCount = ybFlowInfoMapper.selecttYbFlowInfoCount(arecordQueReq);
-            Page<GetArecordReq> page = new Page<>();
-            page.setRecords(getArecordReqList);
-            page.setTotal(YbFlowInfoListCount.size());
-            return new ApiResponse(page);
-        }
-        return new ApiResponse("200", "无符合条件");
-    }
-
-
-    public ApiResponse getArecordList2(ArecordQueReq arecordQueReq) {
-        QueryWrapper<YbFlowInfo> queryWrapper = new QueryWrapper<>();
-
-        if (!arecordQueReq.getBatchNo().isEmpty()) {
-            queryWrapper.like("batch_no", arecordQueReq.getBatchNo());
-        }
-        if (!Objects.isNull(arecordQueReq.getMaxdateTime())
-                && !Objects.isNull(arecordQueReq.getMindateTime())
-                && arecordQueReq.getMindateTime().compareTo(arecordQueReq.getMindateTime()) < 0) {
-            queryWrapper.between("create_time", arecordQueReq.getMindateTime(), arecordQueReq.getMaxdateTime());
-        }
-        queryWrapper.select("DISTINCT batch_no").orderByDesc("create_time");
-        IPage<YbFlowInfo> YbFlowInfoListPage = ybFlowInfoMapper.selectPage(new Page<>(arecordQueReq.getPageNum(), arecordQueReq.getPageSize()), queryWrapper);
-        List<YbFlowInfo> YbFlowInfoList = YbFlowInfoListPage.getRecords();
-
-        if (YbFlowInfoList.size() > 0) {
-            List<GetArecordReq> getArecordReqList = new ArrayList<>();
-            log.info("YbFlowInfoList = {}", JSONObject.toJSONString(YbFlowInfoList.size()));
-            log.info("YbFlowInfoList = {}", JSONObject.toJSONString(YbFlowInfoList));
-
-            for (YbFlowInfo x : YbFlowInfoList) {
-
-                String batchNo = x.getBatchNo();
-                String[] split = batchNo.split("-");
-                GetArecordReq getArecordReq = new GetArecordReq();
-                getArecordReq.setDocumentName(batchNo);
-                getArecordReq.setRecordName(split[1]);
-                getArecordReq.setCreationDate(DateUtil.dateNew(x.getInitiatorTime()));
-                getArecordReqList.add(getArecordReq);
-            }
-            Page<GetArecordReq> page = new Page<>();
-
-            BeanUtils.copyProperties(YbFlowInfoListPage, page);
-            page.setRecords(getArecordReqList);
-
-            return new ApiResponse(page);
-        }
-        return new ApiResponse("200", "无符合条件");
-    }
-
-    @Override
-    public void exportExcel3(ArecordQueReq arecordQueReq, HttpServletResponse response) {
-        QueryWrapper<YbFlowInfo> objectQueryWrapper = new QueryWrapper<>();
-        objectQueryWrapper.eq("flow_id",arecordQueReq.getFlowId());
-        YbFlowInfo ybFlowInfo = ybFlowInfoMapper.selectOne(objectQueryWrapper);
-        String batchNo = ybFlowInfo.getBatchNo();
-        log.info("batchNo", JSONObject.toJSONString(batchNo));
-        arecordQueReq.setBatchNo(ybFlowInfo.getBatchNo());
-        List<YbFlowInfo> YbFlowInfoList = ybFlowInfoMapper.selectExportYbFlowInfoList(arecordQueReq);
-        Set<String> numberSet = new HashSet<>();
-        YbFlowInfoList.forEach(y -> {
-            numberSet.add(y.getNumber());
-        });
-        QueryWrapper<YbInstitutionInfo> queryWrapper = new QueryWrapper<>();
-        queryWrapper.in("number", numberSet);
-        List<YbInstitutionInfo> ybInstitutionInfoList = ybInstitutionInfoMapper.selectList(queryWrapper);
-        Map<String, YbInstitutionInfo> numberMap = new HashMap<>();
-        ybInstitutionInfoList.forEach(y -> {
-            numberMap.put(y.getNumber(), y);
-        });
-        log.info("numberMap = {}", JSONObject.toJSONString(numberMap));
-
-        List<YbFlowDownload> res = new LinkedList<>();
-        YbFlowInfoList.forEach(y -> {
-            YbFlowDownload ybFlowDownload = new YbFlowDownload();
-            ybFlowDownload.setNumber(y.getNumber());
-            ybFlowDownload.setSignerType(y.getFlowName());
-
-            if (StringUtils.isNotBlank(y.getBatchStatus())) {
-                if (Cons.BatchStr.BATCH_STATUS_SUCCESS.equals(y.getBatchStatus())) {
-                    ybFlowDownload.setSignStatus("成功");
-                } else {
-                    ybFlowDownload.setSignStatus("失败");
-                }
-
-            }
-            YbInstitutionInfo ybInstitutionInfo = numberMap.get(y.getNumber());
-            if (!Objects.isNull(ybInstitutionInfo)) {
-                BeanUtils.copyProperties(numberMap.get(y.getNumber()), ybFlowDownload);
-                ybFlowDownload.setInstitutionCardType("营业执照");
-                ybFlowDownload.setInstitutionCardCode(ybInstitutionInfo.getOrgInstitutionCode());
-                ybFlowDownload.setLegalCardType("身份证");
-                ybFlowDownload.setLegalCardCode(ybInstitutionInfo.getLegalIdCard());
-                ybFlowDownload.setContactCardType("身份证");
-                ybFlowDownload.setContactCardCode(ybInstitutionInfo.getContactIdCard());
-            }
-            res.add(ybFlowDownload);
-        });
-
-        log.info("List<YbFlowDownload> res = {}", JSONObject.toJSON(res));
-
-        List<YbFlowDownload> list1 = new ArrayList();
-        List<YbFlowDownload> list2 = new ArrayList();
-        List<YbFlowDownload> list3 = new ArrayList();
-        XSSFWorkbook excel = new XSSFWorkbook();
-        for (YbFlowDownload ybFlowDownload : res) {
-            if (ybFlowDownload.getSignerType() == null) {
-                continue;
-            }
-            switch (ybFlowDownload.getSignerType()) {
-                case "甲方":
-                    list1.add(ybFlowDownload);
-                    break;
-                case "乙方":
-                    list2.add(ybFlowDownload);
-                    break;
-                case "丙方":
-                    list3.add(ybFlowDownload);
-                    break;
-                default:
-                    break;
-            }
-        }
-        ExcelUtil.exportExcel2(list1, excel, "甲方");
-        ExcelUtil.exportExcel2(list2, excel, "乙方");
-        ExcelUtil.exportExcel2(list3, excel, "丙方");
-        String fileName = arecordQueReq.getBatchNo();
-
-        ExcelUtil.xlsDownloadFile2(response, excel, fileName);
-
-    }
-
-
-
 
 }

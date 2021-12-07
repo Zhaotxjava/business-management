@@ -49,12 +49,12 @@ public class OrganizationsServiceImpl implements OrganizationsService {
     }
 
     @Override
-    public JSONObject createAccounts(String name, String idCode, String mobile) {
+    public JSONObject createAccounts(String name, String idCode, String mobile,String moblieType) {
         Map<String, String> headMap = new HashMap<>();
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("contactsMobile", mobile);
         jsonObject.put("licenseNumber", idCode);
-        jsonObject.put("licenseType", "IDCard");
+        jsonObject.put("licenseType",moblieType);
         jsonObject.put("loginMobile", mobile);
         jsonObject.put("name", name);
         jsonObject.put("uniqueId", UUID.randomUUID().toString());

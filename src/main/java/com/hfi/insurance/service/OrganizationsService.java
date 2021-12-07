@@ -6,7 +6,7 @@ import com.hfi.insurance.model.sign.req.QueryInnerAccountsReq;
 
 public interface OrganizationsService {
 
-    JSONObject createAccounts(String name, String idCode, String mobile);
+    JSONObject createAccounts(String name, String idCode, String mobile,String moblieType);
 
     JSONObject listAccounts(String idCode, String mobile);
 
