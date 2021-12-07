@@ -18,10 +18,7 @@ import com.hfi.insurance.mapper.YbInstitutionInfoMapper;
 import com.hfi.insurance.mapper.YbInstitutionPicPathMapper;
 import com.hfi.insurance.mapper.YbOrgTdMapper;
 import com.hfi.insurance.model.*;
-import com.hfi.insurance.model.dto.InstitutionInfoAddReq;
-import com.hfi.insurance.model.dto.InstitutionInfoQueryReq;
-import com.hfi.insurance.model.dto.OrgTdQueryReq;
-import com.hfi.insurance.model.dto.YbInstitutionInfoChangeReq;
+import com.hfi.insurance.model.dto.*;
 import com.hfi.insurance.model.dto.res.InstitutionInfoRes;
 import com.hfi.insurance.model.sign.BindedAgentBean;
 import com.hfi.insurance.model.sign.QueryOuterOrgResult;
@@ -55,7 +52,7 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Service
-public abstract class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoMapper, YbInstitutionInfo> implements IYbInstitutionInfoService {
+public  class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoMapper, YbInstitutionInfo> implements IYbInstitutionInfoService {
 
     @Resource
     private YbInstitutionInfoMapper institutionInfoMapper;
@@ -872,6 +869,16 @@ public abstract class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitu
         queryWrapper.in("number",inputSet);
         List<YbInstitutionInfo> list = institutionInfoMapper.selectList(queryWrapper);
         return list;
+    }
+
+    @Override
+    public ApiResponse getArecordList(ArecordQueReq arecordQueReq) {
+        return null;
+    }
+
+    @Override
+    public void exportExcel3(ArecordQueReq arecordQueReq, HttpServletResponse response) {
+
     }
 
 }
