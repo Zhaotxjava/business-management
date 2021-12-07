@@ -374,7 +374,9 @@ public class SignedBizServiceImpl implements SignedBizService {
             Map<Integer, String> flowNameSizeMap = new LinkedHashMap<>(16);
             //获取所有签署机构名称，并使用','连接起来
             Map<String, String> institutionNameMap = new HashMap<>();
-//            List<InstitutionBaseInfo> institutionInfos = new ArrayList<>();
+            //获取机构名称于机构编码
+            Map<String,String>   licenseNumber = new HashMap<>();
+
             singerInfos.forEach(singerInfo -> {
                 int size = singerInfo.getInstitutionInfoList().size();
                 flowNameSizeMap.put(size, singerInfo.getFlowName());
@@ -383,7 +385,7 @@ public class SignedBizServiceImpl implements SignedBizService {
                 for (int i = 0; i < size; i++) {
                     InstitutionBaseInfo institutionBaseInfo = singerInfo.getInstitutionInfoList().get(i);
                     flowNameMap.put(institutionBaseInfo.getNumber(), singerInfo.getFlowName());
-
+                    licenseNumber.put(institutionBaseInfo.getInstitutionName(),institutionBaseInfo.getNumber());
                 }
             });
             //找出批量的机构
@@ -412,7 +414,7 @@ public class SignedBizServiceImpl implements SignedBizService {
 
                 try {
                     //填充模板信息
-                    flowDocBean = assembleSignDocs(req, templateInfo, flowNameInstitutionMap, maxSizeFlowName, i, organizeNo);
+                    flowDocBean = assembleSignDocs(req, templateInfo, flowNameInstitutionMap, maxSizeFlowName, i, organizeNo,licenseNumber);
                 } catch (BizServiceException e) {
                     return new ApiResponse(ErrorCodeEnum.RESPONES_ERROR.getCode(), e.getMessage());
                 }
@@ -669,12 +671,13 @@ public class SignedBizServiceImpl implements SignedBizService {
      * @param flowNameInstitutionMap
      * @param maxSizeFlowName
      * @param i
+     * @param licenseNumber
      * @return
      */
     private FlowDocBean assembleSignDocs(CreateSignFlowReq req, TemplateInfoBean templateInfo,
                                          Map<String, List<InstitutionBaseInfo>> flowNameInstitutionMap,
                                          String maxSizeFlowName, int i,
-                                         String areaCode) throws BizServiceException {
+                                         String areaCode, Map<String, String> licenseNumber) throws BizServiceException {
         FlowDocBean flowDocBean = new FlowDocBean();
         TemplateUseParam templateUseParam = new TemplateUseParam();
         //填充表单信息（文本域）
@@ -683,16 +686,25 @@ public class SignedBizServiceImpl implements SignedBizService {
             TemplateFormValueParam templateFormValueParam = new TemplateFormValueParam();
             templateFormValueParam.setFormId(templateForm.getFormId());
             //文本域名称要是甲方、乙方、丙方机构名称...格式
-            String formName = templateForm.getFormName();
-            String flowName = formName.substring(0, 2);
-            log.info("文本域名称：{}", flowName);
-            if (!flowNameInstitutionMap.containsKey(flowName)) {
+            String flowNam = templateForm.getFormName();
+            String flowName = flowNam.substring(0, 2);
+            log.info("文本域名称：{}", flowNam);
+  /*          if (!flowNameInstitutionMap.containsKey(flowName)) {
                 throw new BizServiceException("请选择" + flowName + "机构！");
-            }
+            }*/
             List<InstitutionBaseInfo> institutionInfos = flowNameInstitutionMap.get(flowName);
             log.info("institutionInfos = {}", JSONObject.toJSONString(institutionInfos));
+            log.info("licenseNumber = {}", licenseNumber);
             if (!CollectionUtils.isEmpty(institutionInfos)) {
-                if (flowName.equals(maxSizeFlowName)) {
+            if(flowNam.contains("机构编码")){
+                String institutionName = institutionInfos.get(0).getInstitutionName();
+                log.info("机构编码名称="+institutionName);
+                log.info("根据机构编码获取机构编号="+licenseNumber.get(institutionName));
+                if (flowName.equals(maxSizeFlowName)){
+                     institutionName = institutionInfos.get(i).getInstitutionName();
+                }
+                templateFormValueParam.setFormValue(licenseNumber.get(institutionName));
+                }else if (flowName.equals(maxSizeFlowName)) {
                     templateFormValueParam.setFormValue(institutionInfos.get(i).getInstitutionName());
                 } else {
                     templateFormValueParam.setFormValue(institutionInfos.get(0).getInstitutionName());
