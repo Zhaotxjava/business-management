@@ -33,6 +33,6 @@ public class InstitutionInfo {
     private String  legalLicenseType;
     @ApiModelProperty("证件类型 SOCNO=社会信用代码，OTHERNO=许可证")
     private LicenseType licenseType;
-
-
+    public  String  legalCardType;
+    public  String  contactCardType;
 }

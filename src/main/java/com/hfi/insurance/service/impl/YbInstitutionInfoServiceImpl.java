@@ -1,5 +1,6 @@
 package com.hfi.insurance.service.impl;
 
+import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -12,16 +13,15 @@ import com.hfi.insurance.aspect.anno.LogAnnotation;
 import com.hfi.insurance.common.ApiResponse;
 import com.hfi.insurance.common.ExcelUtil;
 import com.hfi.insurance.common.PageDto;
+import com.hfi.insurance.enums.Cons;
 import com.hfi.insurance.enums.ErrorCodeEnum;
-import com.hfi.insurance.mapper.YbInstitutionInfoChangeMapper;
-import com.hfi.insurance.mapper.YbInstitutionInfoMapper;
-import com.hfi.insurance.mapper.YbInstitutionPicPathMapper;
-import com.hfi.insurance.mapper.YbOrgTdMapper;
+import com.hfi.insurance.mapper.*;
 import com.hfi.insurance.model.*;
 import com.hfi.insurance.model.dto.*;
 import com.hfi.insurance.model.dto.res.InstitutionInfoRes;
 import com.hfi.insurance.model.sign.BindedAgentBean;
 import com.hfi.insurance.model.sign.QueryOuterOrgResult;
+import com.hfi.insurance.model.sign.YbFlowDownload;
 import com.hfi.insurance.service.IYbInstitutionInfoService;
 import com.hfi.insurance.service.OrganizationsService;
 import com.hfi.insurance.utils.FTPUploadUtil;
@@ -55,14 +55,15 @@ import java.util.stream.Collectors;
 public  class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoMapper, YbInstitutionInfo> implements IYbInstitutionInfoService {
 
     @Resource
-    private YbInstitutionInfoMapper institutionInfoMapper;
+    private YbInstitutionInfoMapper ybInstitutionInfoMapper;
 
     @Resource
     private YbOrgTdMapper orgTdMapper;
 
     @Autowired
     private OrganizationsService organizationsService;
-
+    @Autowired
+    private YbFlowInfoMapper ybFlowInfoMapper;
     @Resource
     private Cache<String, String> caffeineCache;
     @Resource
@@ -97,8 +98,8 @@ public  class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfo
 //        if (StringUtils.isNotBlank(institutionName)){
 //            queryWrapper.eq("institution_name",institutionName);
 //        }
-        List<YbInstitutionInfo> ybInstitutionInfos = institutionInfoMapper.selectInstitutionInfoAndOrg(institutionNumber, number, institutionName, current - 1, limit);
-        int total = institutionInfoMapper.selectCountInstitutionInfoAndOrg(institutionNumber, number, institutionName);
+        List<YbInstitutionInfo> ybInstitutionInfos = ybInstitutionInfoMapper.selectInstitutionInfoAndOrg(institutionNumber, number, institutionName, current - 1, limit);
+        int total = ybInstitutionInfoMapper.selectCountInstitutionInfoAndOrg(institutionNumber, number, institutionName);
         Page<YbInstitutionInfoChange> page = new Page<>(current, limit);
 
 
@@ -117,9 +118,11 @@ public  class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfo
             } else {
                 log.info("ybInstitutionPicPath.getPicPath() ={}", ybInstitutionPicPath.getPicPath());
                 JSONObject jsonObject1 = JSONObject.parseObject(ybInstitutionPicPath.getPicPath());
+                log.info("jsonObject1 ={}", jsonObject1);
                 change.setLicensePicture(String.valueOf(jsonObject1.get("xkzList")));
                 change.setBusinessPicture(String.valueOf(jsonObject1.get("yyzzList")));
             }
+            log.info("change ={}", change);
             list.add(change);
         }
 
@@ -134,7 +137,7 @@ public  class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfo
     public Page<InstitutionInfoRes> getOrgTdListForCreateFlow(OrgTdQueryReq req) {
         Integer pageNum = req.getPageNum();
         req.setPageNum(pageNum - 1);
-        List<InstitutionInfoRes> ybInstitutionInfos = institutionInfoMapper.selectOrgForCreateFlow(req);
+        List<InstitutionInfoRes> ybInstitutionInfos = ybInstitutionInfoMapper.selectOrgForCreateFlow(req);
 
         log.info("过滤前有{}个，{}",ybInstitutionInfos.size(),JSONObject.toJSONString(ybInstitutionInfos));
         ybInstitutionInfos.removeIf(item -> (StringUtils.isBlank(item.getAccountId()))
@@ -181,7 +184,7 @@ public  class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfo
         ybInstitutionInfos.addAll(insuranceList);
 
 
-        int total = institutionInfoMapper.selectCountOrgForCreateFlow(req);
+        int total = ybInstitutionInfoMapper.selectCountOrgForCreateFlow(req);
         Page<InstitutionInfoRes> page = new Page<>(req.getPageNum(), req.getPageSize());
         page.setRecords(ybInstitutionInfos);
         page.setTotal(ybInstitutionInfos.size());
@@ -193,7 +196,7 @@ public  class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfo
     public YbInstitutionInfo getInstitutionInfo(String number) {
         QueryWrapper<YbInstitutionInfo> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("number", number);
-        return institutionInfoMapper.selectOne(queryWrapper);
+        return ybInstitutionInfoMapper.selectOne(queryWrapper);
     }
 
     @Override
@@ -221,7 +224,7 @@ public  class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfo
                     .setLegalName(req.getLegalName())
                     .setLegalPhone(req.getLegalPhone())
                     .setOrgInstitutionCode(req.getOrgInstitutionCode());
-            institutionInfoMapper.insert(institutionInfo);
+            ybInstitutionInfoMapper.insert(institutionInfo);
             cacheInfo = this.getInstitutionInfo(number);
         }
 
@@ -400,6 +403,7 @@ public  class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfo
         institutionInfo.setOrganizeId(organizeId);
         // 4>机构创建完成以后，更新数据库
         updateInstitutionInfo(institutionInfo);
+        log.info("添加变更记录={change}"+change);
         addYbInstitutionInfoChange(change);
         return new ApiResponse(ErrorCodeEnum.SUCCESS);
     }
@@ -415,7 +419,7 @@ public  class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfo
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         institutionInfo.setUpdateTime(df.format(new Date()));
         log.error("更新机构信息：{}", JSONObject.toJSONString(ybInstitutionInfo));
-        institutionInfoMapper.updateById(ybInstitutionInfo);
+        ybInstitutionInfoMapper.updateById(ybInstitutionInfo);
     }
 
     @Override
@@ -584,7 +588,7 @@ public  class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfo
     public ApiResponse getInstitutionInfobxList(InstitutionInfoQueryReq institutionInfoQueryReq) {
 
         institutionInfoQueryReq.setPageNum(institutionInfoQueryReq.getPageNum()-1);
-        List<YbInstitutionInfo> ybInstitutionInfos = institutionInfoMapper.getInstitutionInfobxList(institutionInfoQueryReq);
+        List<YbInstitutionInfo> ybInstitutionInfos = ybInstitutionInfoMapper.getInstitutionInfobxList(institutionInfoQueryReq);
         if (ybInstitutionInfos.size()>0){
             return ApiResponse.success(ybInstitutionInfos);
         }
@@ -604,7 +608,7 @@ public  class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfo
         if (null == orgTd){
             return new ApiResponse(ErrorCodeEnum.SYSTEM_ERROR.getCode(),"机构不存在!");
         }
-
+        log.info("经办人类型"+req.getContactCardType()+"法人类型"+req.getLegalCardType());
         // 查询机构是否在库，不在库则创建，否则更新
         YbInstitutionInfo local = this.getInstitutionInfo(number);
         if (local == null) {
@@ -627,6 +631,7 @@ public  class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfo
         // 待更新信息
         InstitutionInfo updateInfo = new InstitutionInfo();
         BeanUtils.copyProperties(req, updateInfo);
+        updateInfo.setLegalLicenseType(req.getLegalCardType());
         updateInfo.setInstitutionName(institutionName);
         updateInfo.setOrganizeId(local.getOrganizeId());
 
@@ -738,7 +743,7 @@ public  class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfo
         InstitutionInfo saveInfo = new InstitutionInfo();
         BeanUtils.copyProperties(req, saveInfo);
         saveInfo.setInstitutionName(institutionName);
-
+        saveInfo.setLegalLicenseType(req.getLegalCardType());
         // 查询或创建法人信息，获取法人的accountId
         ApiResponse legalAccountResp = findAccount(req.getLegalIdCard(), req.getLegalPhone());
         if (legalAccountResp.getData() != null) {
@@ -753,6 +758,7 @@ public  class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfo
             saveInfo.setLegalAccountId(data.getString("accountId"));
         } else {
             // 创建法人信息
+            log.info("创建法人类型={}"+req.getLegalCardType());
             JSONObject createAccount = organizationsService.createAccounts(
                     req.getLegalName(), req.getLegalIdCard(), req.getLegalPhone(),req.getLegalCardType());
             if (createAccount.containsKey("errCode")) {
@@ -777,6 +783,7 @@ public  class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfo
             saveInfo.setAccountId(data.getString("accountId"));
         } else {
             // 创建经办人信息
+            log.info("创建经办人类型={}"+req.getContactCardType());
             JSONObject createAccount = organizationsService.createAccounts(
                     req.getContactName(), req.getContactIdCard(), req.getContactPhone(),req.getContactCardType());
             if (createAccount.containsKey("errCode")) {
@@ -808,10 +815,11 @@ public  class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfo
 
         // 存储本地机构
         YbInstitutionInfo institutionInfo = JSONObject.parseObject(JSONObject.toJSONString(saveInfo), YbInstitutionInfo.class);
-        institutionInfoMapper.insert(institutionInfo);
+        ybInstitutionInfoMapper.insert(institutionInfo);
         // 添加变更记录
         YbInstitutionInfoChange changeInfo =
                 JSONObject.parseObject(JSONObject.toJSONString(institutionInfo), YbInstitutionInfoChange.class);
+        log.info("添加变更记录={}"+changeInfo);
         addYbInstitutionInfoChange(changeInfo);
 
         log.info("[新增机构] 结束 {}", institutionName);
@@ -867,18 +875,119 @@ public  class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfo
         queryWrapper.isNotNull("legal_account_id");
         queryWrapper.isNotNull("organize_id");
         queryWrapper.in("number",inputSet);
-        List<YbInstitutionInfo> list = institutionInfoMapper.selectList(queryWrapper);
+        List<YbInstitutionInfo> list = ybInstitutionInfoMapper.selectList(queryWrapper);
         return list;
     }
 
     @Override
     public ApiResponse getArecordList(ArecordQueReq arecordQueReq) {
-        return null;
-    }
+        String batchno = arecordQueReq.getBatchNo();
+        if (StringUtils.isEmpty(batchno)) {
+            return new ApiResponse("502", "模板名称不能为空");
+        }
+        arecordQueReq.setPageNum((arecordQueReq.getPageNum() - 1) * arecordQueReq.getPageSize());
 
+        List<YbFlowInfo> YbFlowInfoList = ybFlowInfoMapper.selectYbFlowInfoList(arecordQueReq);
+
+        if (YbFlowInfoList.size() > 0) {
+            List<GetArecordReq> getArecordReqList = new ArrayList<>();
+            for (YbFlowInfo x : YbFlowInfoList) {
+                String batchNo = x.getBatchNo();
+                String[] split = batchNo.split("-");
+                GetArecordReq getArecordReq = new GetArecordReq();
+                getArecordReq.setDocumentName(split[1]+split[2]);
+                getArecordReq.setRecordName(split[1]);
+                getArecordReq.setCreationDate(DateUtil.dateNew(x.getUpdateTime()));
+                getArecordReq.setSignFlowId(x.getFlowId().toString());
+                getArecordReqList.add(getArecordReq);
+            }
+            List<YbFlowInfo> YbFlowInfoListCount = ybFlowInfoMapper.selecttYbFlowInfoCount(arecordQueReq);
+            Page<GetArecordReq> page = new Page<>();
+            page.setRecords(getArecordReqList);
+            page.setTotal(YbFlowInfoListCount.size());
+            return new ApiResponse(page);
+        }
+        return new ApiResponse("200", "无符合条件");
+    }
     @Override
     public void exportExcel3(ArecordQueReq arecordQueReq, HttpServletResponse response) {
+        QueryWrapper<YbFlowInfo> objectQueryWrapper = new QueryWrapper<>();
+        objectQueryWrapper.eq("flow_id",arecordQueReq.getFlowId());
+        YbFlowInfo ybFlowInfo = ybFlowInfoMapper.selectOne(objectQueryWrapper);
+        String batchNo = ybFlowInfo.getBatchNo();
+        log.info("batchNo", JSONObject.toJSONString(batchNo));
+        arecordQueReq.setBatchNo(ybFlowInfo.getBatchNo());
+        List<YbFlowInfo> YbFlowInfoList = ybFlowInfoMapper.selectExportYbFlowInfoList(arecordQueReq);
+        Set<String> numberSet = new HashSet<>();
+        YbFlowInfoList.forEach(y -> {
+            numberSet.add(y.getNumber());
+        });
+        QueryWrapper<YbInstitutionInfo> queryWrapper = new QueryWrapper<>();
+        queryWrapper.in("number", numberSet);
+        List<YbInstitutionInfo> ybInstitutionInfoList = ybInstitutionInfoMapper.selectList(queryWrapper);
+        Map<String, YbInstitutionInfo> numberMap = new HashMap<>();
+        ybInstitutionInfoList.forEach(y -> {
+            numberMap.put(y.getNumber(), y);
+        });
+        log.info("numberMap = {}", JSONObject.toJSONString(numberMap));
+
+        List<YbFlowDownload> res = new LinkedList<>();
+        YbFlowInfoList.forEach(y -> {
+            YbFlowDownload ybFlowDownload = new YbFlowDownload();
+            ybFlowDownload.setNumber(y.getNumber());
+            ybFlowDownload.setSignerType(y.getFlowName());
+
+            if (StringUtils.isNotBlank(y.getBatchStatus())) {
+                if (Cons.BatchStr.BATCH_STATUS_SUCCESS.equals(y.getBatchStatus())) {
+                    ybFlowDownload.setSignStatus("成功");
+                } else {
+                    ybFlowDownload.setSignStatus("失败");
+                }
+
+            }
+            YbInstitutionInfo ybInstitutionInfo = numberMap.get(y.getNumber());
+            if (!Objects.isNull(ybInstitutionInfo)) {
+                BeanUtils.copyProperties(numberMap.get(y.getNumber()), ybFlowDownload);
+                ybFlowDownload.setInstitutionCardType("营业执照");
+                ybFlowDownload.setInstitutionCardCode(ybInstitutionInfo.getOrgInstitutionCode());
+                ybFlowDownload.setLegalCardType("身份证");
+                ybFlowDownload.setLegalCardCode(ybInstitutionInfo.getLegalIdCard());
+                ybFlowDownload.setContactCardType("身份证");
+                ybFlowDownload.setContactCardCode(ybInstitutionInfo.getContactIdCard());
+            }
+            res.add(ybFlowDownload);
+        });
+
+        log.info("List<YbFlowDownload> res = {}", JSONObject.toJSON(res));
+
+        List<YbFlowDownload> list1 = new ArrayList();
+        List<YbFlowDownload> list2 = new ArrayList();
+        List<YbFlowDownload> list3 = new ArrayList();
+        XSSFWorkbook excel = new XSSFWorkbook();
+        for (YbFlowDownload ybFlowDownload : res) {
+            if (ybFlowDownload.getSignerType() == null) {
+                continue;
+            }
+            switch (ybFlowDownload.getSignerType()) {
+                case "甲方":
+                    list1.add(ybFlowDownload);
+                    break;
+                case "乙方":
+                    list2.add(ybFlowDownload);
+                    break;
+                case "丙方":
+                    list3.add(ybFlowDownload);
+                    break;
+                default:
+                    break;
+            }
+        }
+        ExcelUtil.exportExcel2(list1, excel, "甲方");
+        ExcelUtil.exportExcel2(list2, excel, "乙方");
+        ExcelUtil.exportExcel2(list3, excel, "丙方");
+        String fileName = arecordQueReq.getBatchNo();
+
+        ExcelUtil.xlsDownloadFile2(response, excel, fileName);
 
     }
-
 }

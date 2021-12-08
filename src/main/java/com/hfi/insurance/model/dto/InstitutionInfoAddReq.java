@@ -17,6 +17,8 @@ public class InstitutionInfoAddReq {
     @ApiModelProperty("机构编码")
     private String number;
 
+    private String   institutionName;
+
     @ApiModelProperty("组织机构编码")
     private String orgInstitutionCode;
 
