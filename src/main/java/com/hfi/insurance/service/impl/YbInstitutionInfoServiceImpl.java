@@ -586,14 +586,45 @@ public  class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfo
 
     @Override
     public ApiResponse getInstitutionInfobxList(InstitutionInfoQueryReq institutionInfoQueryReq) {
+        String hospitalid = institutionInfoQueryReq.getHospitalid();
 
-        institutionInfoQueryReq.setPageNum(institutionInfoQueryReq.getPageNum()-1);
-        List<YbInstitutionInfo> ybInstitutionInfos = ybInstitutionInfoMapper.getInstitutionInfobxList(institutionInfoQueryReq);
-        if (ybInstitutionInfos.size()>0){
-            return ApiResponse.success(ybInstitutionInfos);
+        if (StringUtils.isEmpty(hospitalid)) {
+            return new ApiResponse("502", "hospitalid不能为空");
         }
-        return  new ApiResponse("200","无保险公司");
+        if (hospitalid.indexOf("bx") == -1) {
+            institutionInfoQueryReq.setHospitalid("");
+            institutionInfoQueryReq.setNumber("bx");
+        }
+        institutionInfoQueryReq.setPageNum((institutionInfoQueryReq.getPageNum() - 1) * institutionInfoQueryReq.getPageSize());
+        List<YbInstitutionInfo> ybInstitutionInfos = ybInstitutionInfoMapper.getInstitutionInfobxList(institutionInfoQueryReq);
+        if (ybInstitutionInfos.size() > 0 ) {
+            Integer ybInstitutionInfosCount = ybInstitutionInfoMapper.selectInstitutionInfobxCount(institutionInfoQueryReq);
+            Page<YbInstitutionInfo> page = new Page<>();
+            page.setRecords(ybInstitutionInfos);
+            page.setTotal(ybInstitutionInfosCount);
+            return new ApiResponse(page);
+        }
+        if(hospitalid.indexOf("bx") != -1){
+            List<YbOrgTd> YbOrgTdList = orgTdMapper.getorgTdbxList(institutionInfoQueryReq);
+            List<YbInstitutionInfo> YbInstitutionInfolist = new ArrayList<>();
+            if (YbOrgTdList.size() > 0) {
+                YbOrgTdList.stream().forEach(x -> {
+                    YbInstitutionInfo ybInstitutionInfo = new YbInstitutionInfo();
+                    ybInstitutionInfo.setNumber(x.getAkb020());
+                    ybInstitutionInfo.setInstitutionName(x.getAkb021());
+                    YbInstitutionInfolist.add(ybInstitutionInfo);
 
+                });
+
+                Integer YbInstitutionInfoCount = orgTdMapper.selectorgTdbxCount(institutionInfoQueryReq);
+                Page<YbInstitutionInfo> page = new Page<>();
+                page.setRecords(YbInstitutionInfolist);
+                page.setTotal(YbInstitutionInfoCount);
+                return new ApiResponse(page);
+            }
+
+        }
+        return new ApiResponse("200", "无保险公司");
     }
 
     @Override
