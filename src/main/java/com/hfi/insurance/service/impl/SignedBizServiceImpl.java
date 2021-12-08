@@ -390,6 +390,9 @@ public class SignedBizServiceImpl implements SignedBizService {
             });
             //找出批量的机构
             Integer maxSize = flowNameSizeMap.keySet().stream().max(Integer::compareTo).get();
+            if(maxSize>500){
+                return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(),"机构数量超过500家！");
+            }
             String maxSizeFlowName = flowNameSizeMap.get(maxSize);
             log.info("3.拥有{}个机构的签署方：{}", maxSize, maxSizeFlowName);
             String templateId = req.getTemplateId();

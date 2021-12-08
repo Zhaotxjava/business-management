@@ -147,8 +147,13 @@ public class InstitutionController {
 //                log.info("-----------------------------{}",excelSheetPO.getDataList().get(i).get(0));
             allNumber.add(String.valueOf(excelSheetPO.getDataList().get(i).get(0)));
         }
+
         if (allNumber.isEmpty()) {
             return JSONObject.toJSONString(ApiResponse.fail(ErrorCodeEnum.PARAM_ERROR, " 文件中未检测到机构，请检查入参文件是否正确"));
+        }
+
+        if (allNumber.size()>500){
+            return JSONObject.toJSONString(ApiResponse.fail(ErrorCodeEnum.PARAM_ERROR, " 机构数量超过500家"));
         }
 //            log.info("-----------------------------{}",allNumber.toString());
         List<YbInstitutionInfo> list = institutionInfoService.findLegalInstitution(allNumber);
