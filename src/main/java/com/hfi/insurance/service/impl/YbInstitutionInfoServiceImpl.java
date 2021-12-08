@@ -18,10 +18,7 @@ import com.hfi.insurance.mapper.YbInstitutionInfoMapper;
 import com.hfi.insurance.mapper.YbInstitutionPicPathMapper;
 import com.hfi.insurance.mapper.YbOrgTdMapper;
 import com.hfi.insurance.model.*;
-import com.hfi.insurance.model.dto.InstitutionInfoAddReq;
-import com.hfi.insurance.model.dto.InstitutionInfoQueryReq;
-import com.hfi.insurance.model.dto.OrgTdQueryReq;
-import com.hfi.insurance.model.dto.YbInstitutionInfoChangeReq;
+import com.hfi.insurance.model.dto.*;
 import com.hfi.insurance.model.dto.res.InstitutionInfoRes;
 import com.hfi.insurance.model.sign.BindedAgentBean;
 import com.hfi.insurance.model.sign.QueryOuterOrgResult;
@@ -55,7 +52,7 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Service
-public abstract class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoMapper, YbInstitutionInfo> implements IYbInstitutionInfoService {
+public  class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfoMapper, YbInstitutionInfo> implements IYbInstitutionInfoService {
 
     @Resource
     private YbInstitutionInfoMapper institutionInfoMapper;
@@ -280,7 +277,7 @@ public abstract class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitu
             if (StringUtils.isNotBlank(legalAccountId)) {
                 defaultAccountId = legalAccountId;
 
-                JSONObject resultObj = organizationsService.updateAccounts(legalAccountId, req.getLegalName(), req.getLegalIdCard(), req.getLegalPhone());
+                JSONObject resultObj = organizationsService.updateAccounts(legalAccountId, req.getLegalName(), req.getLegalIdCard(), req.getLegalPhone(),req.getLegalCardType());
                 if (resultObj.containsKey("errCode")) {
                     log.error("更新外部用户（法人）信息异常，{}", resultObj);
                     return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
@@ -319,7 +316,7 @@ public abstract class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitu
             } else {
                 if (StringUtils.isNotBlank(agentAccountId)) {
                     accountId = agentAccountId;
-                    JSONObject resultObj = organizationsService.updateAccounts(agentAccountId, req.getContactName(), req.getContactIdCard(), req.getContactPhone());
+                    JSONObject resultObj = organizationsService.updateAccounts(agentAccountId, req.getContactName(), req.getContactIdCard(), req.getContactPhone(),req.getContactCardType());
                     if (resultObj.containsKey("errCode")) {
                         log.error("更新外部用户（联系人）信息异常，{}", resultObj);
                         return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
@@ -639,7 +636,7 @@ public abstract class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitu
             // 查询已存在的法人信息，并更新
             JSONObject data = (JSONObject) legalAccountResp.getData();
             JSONObject resultObj = organizationsService.updateAccounts(
-                    data.getString("accountId"), req.getLegalName(), req.getLegalIdCard(), req.getLegalPhone());
+                    data.getString("accountId"), req.getLegalName(), req.getLegalIdCard(), req.getLegalPhone(),req.getLegalCardType());
             if (resultObj.containsKey("errCode")) {
                 log.error("更新外部用户（法人）信息异常，{}", resultObj);
                 return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
@@ -664,7 +661,7 @@ public abstract class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitu
             // 查询已存在的经办人信息，并更新
             JSONObject data = (JSONObject) accountResp.getData();
             JSONObject resultObj = organizationsService.updateAccounts(
-                    data.getString("accountId"), req.getContactName(), req.getContactIdCard(), req.getContactPhone());
+                    data.getString("accountId"), req.getContactName(), req.getContactIdCard(), req.getContactPhone(),req.getContactCardType());
             if (resultObj.containsKey("errCode")) {
                 log.error("更新外部用户（经办人）信息异常，{}", resultObj);
                 return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
@@ -872,6 +869,16 @@ public abstract class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitu
         queryWrapper.in("number",inputSet);
         List<YbInstitutionInfo> list = institutionInfoMapper.selectList(queryWrapper);
         return list;
+    }
+
+    @Override
+    public ApiResponse getArecordList(ArecordQueReq arecordQueReq) {
+        return null;
+    }
+
+    @Override
+    public void exportExcel3(ArecordQueReq arecordQueReq, HttpServletResponse response) {
+
     }
 
 }

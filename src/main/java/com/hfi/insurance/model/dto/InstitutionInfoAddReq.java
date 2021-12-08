@@ -47,7 +47,7 @@ public class InstitutionInfoAddReq {
     public static ApiResponse checkInstitutionInfoAddReq(InstitutionInfoAddReq req) {
         StringBuilder sb = new StringBuilder();
         //入参已经进行不为空校验
-        if(req.getLegalCardType().equals("IDCard")){
+        if(req.getLegalCardType().equals("IDCard") ){
             if (!(18 == req.getLegalIdCard().length())) {
                 sb.append("法人身份证号长度应为18位。");
             }

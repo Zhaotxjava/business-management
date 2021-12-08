@@ -108,13 +108,13 @@ public class OrganizationsServiceImpl implements OrganizationsService {
     }
 
     @Override
-    public JSONObject updateAccounts(String accountId, String name, String idCode, String mobile) {
+    public JSONObject updateAccounts(String accountId, String name, String idCode, String mobile,String moblieType) {
         Map<String, String> headMap = new HashMap<>();
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("accountId", accountId);
         jsonObject.put("contactsMobile", mobile);
         jsonObject.put("licenseNumber", idCode);
-        jsonObject.put("licenseType", "IDCard");
+        jsonObject.put("licenseType",  moblieType);
         jsonObject.put("loginMobile", mobile);
         jsonObject.put("name", name);
         convertHead(headMap, jsonObject.toJSONString());
@@ -130,7 +130,7 @@ public class OrganizationsServiceImpl implements OrganizationsService {
         jsonObject.put("agentAccountId", institutionInfo.getAccountId());
         jsonObject.put("legalAccountId", institutionInfo.getLegalAccountId());
         jsonObject.put("legalLicenseNumber", institutionInfo.getLegalIdCard());
-        jsonObject.put("legalLicenseType", "IDCard");
+        jsonObject.put("legalLicenseType", institutionInfo.getLegalLicenseType());
         jsonObject.put("legalMobile", institutionInfo.getLegalPhone());
         jsonObject.put("legalName", institutionInfo.getLegalName());
         jsonObject.put("licenseNumber", institutionInfo.getOrgInstitutionCode());
@@ -174,7 +174,7 @@ public class OrganizationsServiceImpl implements OrganizationsService {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("legalLicenseNumber", institutionInfo.getLegalIdCard());
         jsonObject.put("legalAccountId", institutionInfo.getLegalAccountId());
-        jsonObject.put("legalLicenseType", "IDCard");
+        jsonObject.put("legalLicenseType", institutionInfo.getLegalLicenseType());
         jsonObject.put("legalMobile", institutionInfo.getLegalPhone());
         jsonObject.put("legalName", institutionInfo.getLegalName());
         jsonObject.put("licenseNumber", institutionInfo.getOrgInstitutionCode());

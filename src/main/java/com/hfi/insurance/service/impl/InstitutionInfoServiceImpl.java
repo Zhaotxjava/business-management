@@ -263,7 +263,7 @@ public class InstitutionInfoServiceImpl implements InstitutionInfoService {
             }
         }
         if (!accountExist) { //不存在则创建用户
-            JSONObject resultObj = organizationsService.createAccounts(req.getLegalName(), req.getLegalIdCard(), req.getLegalPhone());
+            JSONObject resultObj = organizationsService.createAccounts(req.getLegalName(), req.getLegalIdCard(), req.getLegalPhone(),req.getLegalCardType());
 
             if (resultObj.containsKey("errCode")) {
                 log.error("创建外部用户（法人）信息异常，{}", resultObj);
@@ -272,7 +272,7 @@ public class InstitutionInfoServiceImpl implements InstitutionInfoService {
             defaultAccountId = resultObj.getString("accountId");
         } else {
             defaultAccountId = accountObj.getString("accountId");
-            JSONObject resultObj = organizationsService.updateAccounts(defaultAccountId, req.getLegalName(), req.getLegalIdCard(), req.getLegalPhone());
+            JSONObject resultObj = organizationsService.updateAccounts(defaultAccountId, req.getLegalName(), req.getLegalIdCard(), req.getLegalPhone(),req.getLegalCardType());
             if (resultObj.containsKey("errCode")) {
                 log.error("更新外部用户（法人）信息异常，{}", resultObj);
                 return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
@@ -290,7 +290,7 @@ public class InstitutionInfoServiceImpl implements InstitutionInfoService {
                 }
             }
             if (!accountExist) { //不存在则创建用户
-                JSONObject resultObj = organizationsService.createAccounts(req.getContactName(), req.getContactIdCard(), req.getContactPhone());
+                JSONObject resultObj = organizationsService.createAccounts(req.getContactName(), req.getContactIdCard(), req.getContactPhone(),req.getContactCardType());
                 if (resultObj.containsKey("errCode")) {
                     log.error("创建外部用户（联系人）信息异常，{}", resultObj);
                     return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
@@ -298,7 +298,7 @@ public class InstitutionInfoServiceImpl implements InstitutionInfoService {
                 accountId = resultObj.getString("accountId");
             } else {
                 accountId = accountObj.getString("accountId");
-                JSONObject resultObj = organizationsService.updateAccounts(accountId, req.getContactName(), req.getContactIdCard(), req.getContactPhone());
+                JSONObject resultObj = organizationsService.updateAccounts(accountId, req.getContactName(), req.getContactIdCard(), req.getContactPhone(),req.getContactCardType());
                 if (resultObj.containsKey("errCode")) {
                     log.error("更新外部用户（联系人）信息异常，{}", resultObj);
                     return new ApiResponse(ErrorCodeEnum.NETWORK_ERROR.getCode(), resultObj.getString("msg"));
