@@ -118,9 +118,6 @@ public class InstitutionController {
             return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(), "法人类型不能为空");
         }
 
-
-
-
         return institutionInfoService.newUpdateInstitutionInfo(req);
     }
 
