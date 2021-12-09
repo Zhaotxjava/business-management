@@ -2,6 +2,7 @@ package com.hfi.insurance.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.hfi.insurance.common.ApiResponse;
+import com.hfi.insurance.common.Constants;
 import com.hfi.insurance.enums.ErrorCodeEnum;
 import com.hfi.insurance.model.ExcelSheetPO;
 import com.hfi.insurance.model.YbInstitutionInfo;
@@ -152,7 +153,7 @@ public class InstitutionController {
             return JSONObject.toJSONString(ApiResponse.fail(ErrorCodeEnum.PARAM_ERROR, " 文件中未检测到机构，请检查入参文件是否正确"));
         }
 
-        if (allNumber.size()>500){
+        if (allNumber.size()> Constants.Counts){
             return JSONObject.toJSONString(ApiResponse.fail(ErrorCodeEnum.PARAM_ERROR, " 机构数量超过500家"));
         }
 //            log.info("-----------------------------{}",allNumber.toString());

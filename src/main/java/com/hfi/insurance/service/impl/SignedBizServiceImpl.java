@@ -8,6 +8,7 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.hfi.insurance.aspect.anno.LogAnnotation;
 import com.hfi.insurance.common.ApiResponse;
 import com.hfi.insurance.common.BizServiceException;
+import com.hfi.insurance.common.Constants;
 import com.hfi.insurance.enums.*;
 import com.hfi.insurance.model.YbFlowInfo;
 import com.hfi.insurance.model.YbInstitutionInfo;
@@ -390,7 +391,7 @@ public class SignedBizServiceImpl implements SignedBizService {
             });
             //找出批量的机构
             Integer maxSize = flowNameSizeMap.keySet().stream().max(Integer::compareTo).get();
-            if(maxSize>500){
+            if(maxSize> Constants.Counts){
                 return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(),"机构数量超过500家！");
             }
             String maxSizeFlowName = flowNameSizeMap.get(maxSize);
