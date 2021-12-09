@@ -6,6 +6,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.benmanes.caffeine.cache.Cache;
@@ -74,6 +75,9 @@ public  class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfo
     private FTPUploadUtil ftpUploadUtil;
 
 
+
+
+
     @Override
     @LogAnnotation
     public ApiResponse getInstitutionInfoList(String token, String number, String institutionName, int current, int limit) {
@@ -98,7 +102,9 @@ public  class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfo
 //        if (StringUtils.isNotBlank(institutionName)){
 //            queryWrapper.eq("institution_name",institutionName);
 //        }
-        List<YbInstitutionInfo> ybInstitutionInfos = ybInstitutionInfoMapper.selectInstitutionInfoAndOrg(institutionNumber, number, institutionName, current - 1, limit);
+
+
+        List<YbInstitutionInfo> ybInstitutionInfos = ybInstitutionInfoMapper.selectInstitutionInfoAndOrg(institutionNumber, number, institutionName, (current - 1) * limit, limit);
         int total = ybInstitutionInfoMapper.selectCountInstitutionInfoAndOrg(institutionNumber, number, institutionName);
         Page<YbInstitutionInfoChange> page = new Page<>(current, limit);
 
@@ -136,15 +142,15 @@ public  class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfo
     @LogAnnotation
     public Page<InstitutionInfoRes> getOrgTdListForCreateFlow(OrgTdQueryReq req) {
         Integer pageNum = req.getPageNum();
-        req.setPageNum(pageNum - 1);
+        req.setPageNum((pageNum - 1) * req.getPageSize());
         List<InstitutionInfoRes> ybInstitutionInfos = ybInstitutionInfoMapper.selectOrgForCreateFlow(req);
 
-        log.info("过滤前有{}个，{}",ybInstitutionInfos.size(),JSONObject.toJSONString(ybInstitutionInfos));
+        log.info("过滤前有{}个，{}", ybInstitutionInfos.size(), JSONObject.toJSONString(ybInstitutionInfos));
         ybInstitutionInfos.removeIf(item -> (StringUtils.isBlank(item.getAccountId()))
                 || StringUtils.isBlank(item.getOrganizeId())
                 || StringUtils.isBlank(item.getLegalIdCard())
         );
-        log.info("过滤后有{}个，{}",ybInstitutionInfos.size(),JSONObject.toJSONString(ybInstitutionInfos));
+        log.info("过滤后有{}个，{}", ybInstitutionInfos.size(), JSONObject.toJSONString(ybInstitutionInfos));
         //todo 添加保险公司
 
         int pageIndex = 1;
@@ -167,7 +173,7 @@ public  class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfo
                 break;
             }
         }
-        log.info("外部机构数量：【{}】",queryOuterOrgResultList.size());
+     /*   log.info("外部机构数量：【{}】",queryOuterOrgResultList.size());
         for(QueryOuterOrgResult result : queryOuterOrgResultList){
             BindedAgentBean bindedAgentBean = CollectionUtils.firstElement(result.getAgentAccounts());
             String organizeNo = result.getOrganizeNo();
@@ -181,13 +187,13 @@ public  class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfo
                 insuranceList.add(res);
             }
         }
-        ybInstitutionInfos.addAll(insuranceList);
+        ybInstitutionInfos.addAll(insuranceList);*/
 
 
         int total = ybInstitutionInfoMapper.selectCountOrgForCreateFlow(req);
         Page<InstitutionInfoRes> page = new Page<>(req.getPageNum(), req.getPageSize());
         page.setRecords(ybInstitutionInfos);
-        page.setTotal(ybInstitutionInfos.size());
+        page.setTotal(total);
         return page;
     }
 
@@ -403,7 +409,6 @@ public  class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfo
         institutionInfo.setOrganizeId(organizeId);
         // 4>机构创建完成以后，更新数据库
         updateInstitutionInfo(institutionInfo);
-        log.info("添加变更记录={change}"+change);
         addYbInstitutionInfoChange(change);
         return new ApiResponse(ErrorCodeEnum.SUCCESS);
     }
@@ -435,7 +440,7 @@ public  class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfo
         String institutionName = ybInstitutionInfoChangeReq.getInstitutionName();
         if (!StringUtils.isEmpty(number) || !StringUtils.isEmpty(institutionName)) {
             Integer pageNum = ybInstitutionInfoChangeReq.getPageNum();
-            ybInstitutionInfoChangeReq.setPageNum(pageNum-1);
+            ybInstitutionInfoChangeReq.setPageNum((pageNum - 1) * ybInstitutionInfoChangeReq.getPageSize());
 
             List<YbInstitutionInfoChange> YbInstitutionInfoChangeList = ybInstitutionInfoChangeMapper.selectChangeList(ybInstitutionInfoChangeReq);
 
@@ -506,7 +511,7 @@ public  class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfo
             //表头
             String[] headers = {"机构编号", "机构名称", "统一社会信用代码", "机构法人姓名"
                     , "机构法人证件类型", "机构法人证件号", "机构法人手机号", "经办人姓名"
-                    , "经办人证件类型", "经办人证件号", "经办人手机号","修改时间"};
+                    , "经办人证件类型", "经办人证件号", "经办人手机号", "修改时间"};
 
             XSSFRow headerRow = sheet.createRow(rowIndex++);
             for (int i = 0; i < headers.length; i++) {
@@ -940,6 +945,48 @@ public  class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfo
         }
         return new ApiResponse("200", "无符合条件");
     }
+
+
+    public ApiResponse getArecordList2(ArecordQueReq arecordQueReq) {
+        QueryWrapper<YbFlowInfo> queryWrapper = new QueryWrapper<>();
+
+        if (!arecordQueReq.getBatchNo().isEmpty()) {
+            queryWrapper.like("batch_no", arecordQueReq.getBatchNo());
+        }
+        if (!Objects.isNull(arecordQueReq.getMaxdateTime())
+                && !Objects.isNull(arecordQueReq.getMindateTime())
+                && arecordQueReq.getMindateTime().compareTo(arecordQueReq.getMindateTime()) < 0) {
+            queryWrapper.between("create_time", arecordQueReq.getMindateTime(), arecordQueReq.getMaxdateTime());
+        }
+        queryWrapper.select("DISTINCT batch_no").orderByDesc("create_time");
+        IPage<YbFlowInfo> YbFlowInfoListPage = ybFlowInfoMapper.selectPage(new Page<>(arecordQueReq.getPageNum(), arecordQueReq.getPageSize()), queryWrapper);
+        List<YbFlowInfo> YbFlowInfoList = YbFlowInfoListPage.getRecords();
+
+        if (YbFlowInfoList.size() > 0) {
+            List<GetArecordReq> getArecordReqList = new ArrayList<>();
+            log.info("YbFlowInfoList = {}", JSONObject.toJSONString(YbFlowInfoList.size()));
+            log.info("YbFlowInfoList = {}", JSONObject.toJSONString(YbFlowInfoList));
+
+            for (YbFlowInfo x : YbFlowInfoList) {
+
+                String batchNo = x.getBatchNo();
+                String[] split = batchNo.split("-");
+                GetArecordReq getArecordReq = new GetArecordReq();
+                getArecordReq.setDocumentName(batchNo);
+                getArecordReq.setRecordName(split[1]);
+                getArecordReq.setCreationDate(DateUtil.dateNew(x.getInitiatorTime()));
+                getArecordReqList.add(getArecordReq);
+            }
+            Page<GetArecordReq> page = new Page<>();
+
+            BeanUtils.copyProperties(YbFlowInfoListPage, page);
+            page.setRecords(getArecordReqList);
+
+            return new ApiResponse(page);
+        }
+        return new ApiResponse("200", "无符合条件");
+    }
+
     @Override
     public void exportExcel3(ArecordQueReq arecordQueReq, HttpServletResponse response) {
         QueryWrapper<YbFlowInfo> objectQueryWrapper = new QueryWrapper<>();
