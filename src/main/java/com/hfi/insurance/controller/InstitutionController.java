@@ -2,6 +2,7 @@ package com.hfi.insurance.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.hfi.insurance.common.ApiResponse;
+import com.hfi.insurance.common.Constants;
 import com.hfi.insurance.enums.ErrorCodeEnum;
 import com.hfi.insurance.model.ExcelSheetPO;
 import com.hfi.insurance.model.YbInstitutionInfo;
@@ -111,7 +112,12 @@ public class InstitutionController {
             return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(), "相同，不可提交");
 
         }
-
+        if (StringUtils.isBlank(req.getContactCardType())) {
+            return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(), "经办人类型不能为空");
+        }
+        if (StringUtils.isBlank(req.getLegalCardType())) {
+            return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(), "法人类型不能为空");
+        }
 
         return institutionInfoService.newUpdateInstitutionInfo(req);
     }
@@ -142,8 +148,13 @@ public class InstitutionController {
 //                log.info("-----------------------------{}",excelSheetPO.getDataList().get(i).get(0));
             allNumber.add(String.valueOf(excelSheetPO.getDataList().get(i).get(0)));
         }
+
         if (allNumber.isEmpty()) {
             return JSONObject.toJSONString(ApiResponse.fail(ErrorCodeEnum.PARAM_ERROR, " 文件中未检测到机构，请检查入参文件是否正确"));
+        }
+
+        if (allNumber.size()> Constants.Counts){
+            return JSONObject.toJSONString(ApiResponse.fail(ErrorCodeEnum.PARAM_ERROR, " 机构数量超过500家"));
         }
 //            log.info("-----------------------------{}",allNumber.toString());
         List<YbInstitutionInfo> list = institutionInfoService.findLegalInstitution(allNumber);

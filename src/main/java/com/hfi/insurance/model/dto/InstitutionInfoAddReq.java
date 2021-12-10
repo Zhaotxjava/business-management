@@ -17,6 +17,8 @@ public class InstitutionInfoAddReq {
     @ApiModelProperty("机构编码")
     private String number;
 
+    private String   institutionName;
+
     @ApiModelProperty("组织机构编码")
     private String orgInstitutionCode;
 
@@ -38,15 +40,26 @@ public class InstitutionInfoAddReq {
     @ApiModelProperty("联系人手机号")
     private String contactPhone;
 
+    @ApiModelProperty("法人类型")
+    public  String  legalCardType;
+
+    @ApiModelProperty("经办人类型")
+    public  String  contactCardType;
+
     public static ApiResponse checkInstitutionInfoAddReq(InstitutionInfoAddReq req) {
         StringBuilder sb = new StringBuilder();
         //入参已经进行不为空校验
-        if (!(18 == req.getLegalIdCard().length())) {
-            sb.append("法人身份证号长度应为18位。");
+        if(req.getLegalCardType().equals("IDCard") ){
+            if (!(18 == req.getLegalIdCard().length())) {
+                sb.append("法人身份证号长度应为18位。");
+            }
         }
-        if (!(18 == req.getContactIdCard().length())) {
-            sb.append("经办人身份证号长度应为18位。");
+        if (req.getContactCardType().equals("IDCard")){
+            if (!(18 == req.getContactIdCard().length())) {
+                sb.append("经办人身份证号长度应为18位。");
+            }
         }
+
         if (!(11 == req.getLegalPhone().length())) {
             sb.append("法人手机号长度应为11位。");
         }

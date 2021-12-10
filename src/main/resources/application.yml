@@ -30,7 +30,8 @@ spring:
     mapper:
       USE_GETTERS_AS_SETTERS: true #默认false
 
-
+log4j2:
+  formatMsgNoLookups: true
 
 
 
