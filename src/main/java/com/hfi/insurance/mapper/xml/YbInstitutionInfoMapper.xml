@@ -141,7 +141,7 @@
             </if>
 
             <if test='institutionTypes != null and institutionTypes.size() > 0'>
-                and org.AKB022 inws
+                and org.AKB022 in
                 <foreach collection="institutionTypes" item="type" open="(" close=")" separator="," index="index">
                     #{type}
                 </foreach>
