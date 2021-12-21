@@ -697,13 +697,13 @@ public class SignedBizServiceImpl implements SignedBizService {
                 throw new BizServiceException("请选择" + flowName + "机构！");
             }*/
             List<InstitutionBaseInfo> institutionInfos = flowNameInstitutionMap.get(flowName);
-            log.info("institutionInfos = {}", JSONObject.toJSONString(institutionInfos));
-            log.info("licenseNumber = {}", licenseNumber);
+//            log.info("institutionInfos = {}", JSONObject.toJSONString(institutionInfos));
+//            log.info("licenseNumber = {}", licenseNumber);
             if (!CollectionUtils.isEmpty(institutionInfos)) {
             if(flowNam.contains("机构编码")){
                 String institutionName = institutionInfos.get(0).getInstitutionName();
-                log.info("机构编码名称="+institutionName);
-                log.info("根据机构编码获取机构编号="+licenseNumber.get(institutionName));
+//                log.info("机构编码名称="+institutionName);
+//                log.info("根据机构编码获取机构编号="+licenseNumber.get(institutionName));
                 if (flowName.equals(maxSizeFlowName)){
                      institutionName = institutionInfos.get(i).getInstitutionName();
                 }
