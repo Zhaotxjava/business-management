@@ -423,7 +423,7 @@ public  class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfo
         BeanUtils.copyProperties(institutionInfo, ybInstitutionInfo);
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         institutionInfo.setUpdateTime(df.format(new Date()));
-        log.error("更新机构信息：{}", JSONObject.toJSONString(ybInstitutionInfo));
+        log.info("更新机构信息：{}", JSONObject.toJSONString(ybInstitutionInfo));
         ybInstitutionInfoMapper.updateById(ybInstitutionInfo);
     }
 
