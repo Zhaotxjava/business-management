@@ -14,6 +14,7 @@ import com.hfi.insurance.model.dto.YbInstitutionInfoChangeReq;
 import com.hfi.insurance.model.CheckImportInstitutionInfo;
 import com.hfi.insurance.model.dto.res.CheckImportInstitutionRes;
 import com.hfi.insurance.service.IYbInstitutionInfoService;
+import com.hfi.insurance.service.SignedService;
 import com.hfi.insurance.utils.ImportExcelUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -45,6 +46,9 @@ public class InstitutionController {
 
     @Resource
     private IYbInstitutionInfoService institutionInfoService;
+    @Resource
+    private SignedService signedService;
+
 
     @PostMapping("getInstitutionInfoList")
     @ApiOperation("分页查询外部机构信息")
@@ -278,6 +282,20 @@ public class InstitutionController {
     @ApiOperation("发起记录分页查询")
     public ApiResponse getArecordList(@RequestBody ArecordQueReq arecordQueReq) {
         return institutionInfoService.getArecordList(arecordQueReq);
+    }
+
+    @GetMapping("/dome")
+    @ApiOperation("发起记录分页查询")
+    public void dome( String docId, String fileKey) {
+        JSONObject downloadUrl = null;
+        try {
+            downloadUrl = signedService.getDownloadUrl(docId, fileKey);
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.info("失败"+e);
+        }
+        log.info("downloadUrl"+downloadUrl);
+
     }
 
 
