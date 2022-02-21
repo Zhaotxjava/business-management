@@ -4,16 +4,14 @@ import com.alibaba.fastjson.JSONObject;
 import com.hfi.insurance.common.ApiResponse;
 import com.hfi.insurance.common.Constants;
 import com.hfi.insurance.enums.ErrorCodeEnum;
-import com.hfi.insurance.model.ExcelSheetPO;
-import com.hfi.insurance.model.YbInstitutionInfo;
-import com.hfi.insurance.model.YbInstitutionInfoChange;
+import com.hfi.insurance.model.*;
 import com.hfi.insurance.model.dto.ArecordQueReq;
 import com.hfi.insurance.model.dto.InstitutionInfoAddReq;
 import com.hfi.insurance.model.dto.InstitutionInfoQueryReq;
 import com.hfi.insurance.model.dto.YbInstitutionInfoChangeReq;
-import com.hfi.insurance.model.CheckImportInstitutionInfo;
 import com.hfi.insurance.model.dto.res.CheckImportInstitutionRes;
 import com.hfi.insurance.service.IYbInstitutionInfoService;
+import com.hfi.insurance.service.IYbOrgTdService;
 import com.hfi.insurance.service.SignedService;
 import com.hfi.insurance.utils.ImportExcelUtil;
 import io.swagger.annotations.Api;
@@ -48,6 +46,9 @@ public class InstitutionController {
     private IYbInstitutionInfoService institutionInfoService;
     @Resource
     private SignedService signedService;
+
+    @Resource
+    private IYbOrgTdService  iYbOrgTdService;
 
 
     @PostMapping("getInstitutionInfoList")
@@ -311,5 +312,37 @@ public class InstitutionController {
 
         institutionInfoService.exportExcel3(arecordQueReq, response);
     }
+
+
+    @GetMapping("/getInstitutionsInformation")
+    @ApiOperation("机构信息维护查询")
+    public ApiResponse getInstitutionsInformation(@RequestParam(value = "number") String  number) {
+
+          if (!number.equals("")){
+              return  iYbOrgTdService.getInstitutionsInformation(number);
+          }
+        return  ApiResponse.fail("444","机构编码不能为空!");
+    }
+
+    @PostMapping("/addInstitutionsInformation")
+    @ApiOperation("机构信息维护新增")
+    public ApiResponse addInstitutionsInformation(@RequestBody Management  management) {
+
+      return  iYbOrgTdService.addInstitutionsInformation(management);
+    }
+
+
+
+    @PostMapping("/updateInstitutionsInformation")
+    @ApiOperation("机构信息维护新增")
+    public ApiResponse updateInstitutionsInformation(@RequestBody Management  management) {
+
+        return  iYbOrgTdService.updateInstitutionsInformation(management);
+    }
+
+
+
+
+
 
 }
