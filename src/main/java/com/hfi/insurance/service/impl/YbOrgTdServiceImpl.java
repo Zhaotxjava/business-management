@@ -77,16 +77,30 @@ public class YbOrgTdServiceImpl extends ServiceImpl<YbOrgTdMapper, YbOrgTd> impl
 
     @Override
     public ApiResponse getInstitutionsInformation(String number) {
+        if (!StringUtils.isEmpty(number)){
+            YbOrgTd ybOrgTd = ybOrgTdMapper.selectByIdYbOrgTd(number);
+            if(ybOrgTd!=null){
+                Management management = new Management();
+                management.setNumber(ybOrgTd.getAkb020());
+                management.setInstitutionName(ybOrgTd.getAkb021());
+                management.setYbInstitutionType(ybOrgTd.getAkb022());
+                management.setYbInstitutionState(ybOrgTd.getBkb012());
+                management.setYbInstitutionCoding(ybOrgTd.getAaa027());
+                return ApiResponse.success(management);
+            }else{
+                return ApiResponse.fail("403","没有该机构!请新增");
+            }
 
-        YbOrgTd ybOrgTd = ybOrgTdMapper.selectByIdYbOrgTd(number);
-        Management management = new Management();
-        management.setNumber(ybOrgTd.getAkb020());
-        management.setInstitutionName(ybOrgTd.getAkb021());
-        management.setYbInstitutionType(ybOrgTd.getAkb022());
-        management.setYbInstitutionState(ybOrgTd.getBkb012());
-        management.setYbInstitutionCoding(ybOrgTd.getAaa027());
-        return ApiResponse.success(management);
+
+        }
+        return ApiResponse.fail("403","机构编号不能为空!");
+
     }
+
+    public static void main(String[] args) {
+            System.out.println();
+    }
+
 
     @Override
     public ApiResponse addInstitutionsInformation(Management management) {

@@ -72,7 +72,7 @@
     </select>
     <select id="selectByIdYbOrgTd" resultType="com.hfi.insurance.model.YbOrgTd">
            SELECT  * from  yb_org_td
-           where AKB020 like concat(#{number})
+           where AKB020 = #{number}
 
     </select>
 

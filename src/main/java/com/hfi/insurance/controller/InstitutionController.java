@@ -19,6 +19,7 @@ import io.swagger.annotations.ApiOperation;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -314,14 +315,12 @@ public class InstitutionController {
     }
 
 
-    @GetMapping("/getInstitutionsInformation")
-    @ApiOperation("机构信息维护查询")
-    public ApiResponse getInstitutionsInformation(@RequestParam(value = "number") String  number) {
 
-          if (!number.equals("")){
-              return  iYbOrgTdService.getInstitutionsInformation(number);
-          }
-        return  ApiResponse.fail("444","机构编码不能为空!");
+    @PostMapping("/getInstitutionsInformation")
+    @ApiOperation("根据机构编号获取机构信息")
+    public ApiResponse getInstitutionsInformation(@RequestBody YbInstitutionInfoChangeReq ybInstitutionInfoChangeReq) {
+
+        return iYbOrgTdService.getInstitutionsInformation(ybInstitutionInfoChangeReq.getNumber());
     }
 
     @PostMapping("/addInstitutionsInformation")
