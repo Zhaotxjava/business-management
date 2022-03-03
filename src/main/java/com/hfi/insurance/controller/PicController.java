@@ -161,6 +161,7 @@ public class PicController {
             //查出原来所有的图片
 //            YbInstitutionPicPath picPath = iYbInstitutionPicPathService.getById(number);
             res = PicUploadUtil.fileCommit(operationId, inputPicPath);
+
             if (res.isSuccess()) {
                 PicPathRes data = res.getData();
                 data.setUrl(ftpUploadUtil.uploadPath);
@@ -185,6 +186,8 @@ public class PicController {
                     }
                     change.setLicensePicture(JSONObject.toJSONString(data.getXkzList()));
                     change.setBusinessPicture(JSONObject.toJSONString(data.getYyzzList()));
+                    change.setUpdateTime(new Date());
+                    log.debug("提交图片修改记录入参：{}",JSONObject.toJSONString(change));
                     iYbInstitutionInfoService.addYbInstitutionInfoChange(change);
                     return res;
                 } else {

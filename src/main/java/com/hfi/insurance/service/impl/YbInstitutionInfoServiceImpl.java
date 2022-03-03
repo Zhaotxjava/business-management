@@ -430,7 +430,8 @@ public  class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfo
     @Override
     public void addYbInstitutionInfoChange(YbInstitutionInfoChange ybInstitutionInfoChange) {
 
-        ybInstitutionInfoChangeMapper.insert(ybInstitutionInfoChange);
+        int result = ybInstitutionInfoChangeMapper.insert(ybInstitutionInfoChange);
+        log.debug("更新变更记录表[{}]条",result);
     }
 
     @Override

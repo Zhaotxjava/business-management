@@ -70,5 +70,10 @@
      SELECT  count(*) from  yb_org_td
      <include refid="torgTdbxListWhere"/>
     </select>
+    <select id="selectByIdYbOrgTd" resultType="com.hfi.insurance.model.YbOrgTd">
+           SELECT  * from  yb_org_td
+           where AKB020 = #{number}
+
+    </select>
 
 </mapper>
