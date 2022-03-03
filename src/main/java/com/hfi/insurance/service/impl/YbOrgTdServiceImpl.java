@@ -88,26 +88,17 @@ public class YbOrgTdServiceImpl extends ServiceImpl<YbOrgTdMapper, YbOrgTd> impl
                 management.setYbInstitutionCoding(ybOrgTd.getAaa027());
                 return ApiResponse.success(management);
             }else{
-                return ApiResponse.fail("403","没有该机构!请新增");
+                //机构不存在
+                return ApiResponse.success();
             }
-
-
         }
         return ApiResponse.fail("403","机构编号不能为空!");
 
     }
-
-    public static void main(String[] args) {
-            System.out.println();
-    }
-
-
     @Override
     public ApiResponse addInstitutionsInformation(Management management) {
-        QueryWrapper<YbOrgTd> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("AKB020", management.getNumber());
-        Integer integer = ybOrgTdMapper.selectCount(queryWrapper);
-        if (integer==0){
+        YbOrgTd ybOrg = ybOrgTdMapper.selectByIdYbOrgTd(management.getNumber());
+        if (ybOrg==null){
             YbOrgTd ybOrgTd = new YbOrgTd();
             ybOrgTd.setAkb020(management.getNumber());
             ybOrgTd.setAkb021(management.getInstitutionName());
@@ -119,11 +110,18 @@ public class YbOrgTdServiceImpl extends ServiceImpl<YbOrgTdMapper, YbOrgTd> impl
             } catch (Exception e) {
                 return ApiResponse.fail("406","新增机构失败!");
             }
-            return ApiResponse.success("新增成功!");
+            //成功
+            return ApiResponse.success();
         }
-        return  ApiResponse.fail("200","机构已存在!");
+        //机构已存在
+        Management mana = new Management();
+        mana.setNumber(ybOrg.getAkb020());
+        mana.setInstitutionName(ybOrg.getAkb021());
+        mana.setYbInstitutionType(ybOrg.getAkb022());
+        mana.setYbInstitutionState(ybOrg.getBkb012());
+        mana.setYbInstitutionCoding(ybOrg.getAaa027());
+        return  ApiResponse.fail("403","机构已经存在请修改",mana);
     }
-
     @Override
     public ApiResponse updateInstitutionsInformation(Management management) {
         YbOrgTd ybOrgTd = new YbOrgTd();
@@ -137,7 +135,7 @@ public class YbOrgTdServiceImpl extends ServiceImpl<YbOrgTdMapper, YbOrgTd> impl
         } catch (Exception e) {
             return ApiResponse.fail("406","新增机构修改失败!");
         }
-        return  ApiResponse.success("机构修改成功!");
+        return  ApiResponse.success();
     }
 
 }

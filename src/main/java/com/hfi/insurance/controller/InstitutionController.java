@@ -326,7 +326,21 @@ public class InstitutionController {
     @PostMapping("/addInstitutionsInformation")
     @ApiOperation("机构信息维护新增")
     public ApiResponse addInstitutionsInformation(@RequestBody Management  management) {
+        if(StringUtils.isEmpty(management.getNumber())){
+            return  ApiResponse.fail("503","机构编码不能为空");
+        }else if(StringUtils.isEmpty(management.getInstitutionName())){
 
+            return  ApiResponse.fail("503","机构名称不能为空");
+        }else if (StringUtils.isEmpty(management.getYbInstitutionCoding())){
+
+            return  ApiResponse.fail("503","请选择所属统筹区编码");
+        }else if (StringUtils.isEmpty(management.getYbInstitutionState())){
+
+            return  ApiResponse.fail("503","请选择机构服务状态");
+        }else if (StringUtils.isEmpty(management.getYbInstitutionType())){
+
+            return  ApiResponse.fail("503","请选择定点机构类型");
+        }
       return  iYbOrgTdService.addInstitutionsInformation(management);
     }
 
@@ -335,7 +349,21 @@ public class InstitutionController {
     @PostMapping("/updateInstitutionsInformation")
     @ApiOperation("机构信息维护新增")
     public ApiResponse updateInstitutionsInformation(@RequestBody Management  management) {
+        if(StringUtils.isEmpty(management.getNumber())){
+            return  ApiResponse.fail("503","机构编码不能为空");
+        }else if(StringUtils.isEmpty(management.getInstitutionName())){
 
+            return  ApiResponse.fail("503","机构名称不能为空");
+        }else if (StringUtils.isEmpty(management.getYbInstitutionCoding())){
+
+            return  ApiResponse.fail("503","请选择所属统筹区编码");
+        }else if (StringUtils.isEmpty(management.getYbInstitutionState())){
+
+            return  ApiResponse.fail("503","请选择机构服务状态");
+        }else if (StringUtils.isEmpty(management.getYbInstitutionType())){
+
+            return  ApiResponse.fail("503","请选择定点机构类型");
+        }
         return  iYbOrgTdService.updateInstitutionsInformation(management);
     }
 
