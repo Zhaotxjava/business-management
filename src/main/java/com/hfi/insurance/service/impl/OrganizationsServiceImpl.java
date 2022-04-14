@@ -287,4 +287,29 @@ public class OrganizationsServiceImpl implements OrganizationsService {
         String result = HttpUtil.doPost(url + "/V1/organizations/outerOrgans/queryByOrgname?pageIndex=" + pageIndex + "&pageSize=30", headMap, jsonObject.toJSONString());
         return result;
     }
+
+    @Override
+    public JSONObject processBatchDownload(String bizNo, String fileName, String processIds) {
+        Map<String, String> headMap = new HashMap<>();
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("bizNo", bizNo);
+        jsonObject.put("fileName", fileName);
+        jsonObject.put("processIds", processIds);
+        convertHead(headMap, jsonObject.toJSONString());
+        String result = HttpUtil.doPost(url + "/esignpro/rest/process/processBatchDownload", headMap, jsonObject.toJSONString());
+        return convertResult(result);
+    }
+
+    @Override
+    public JSONObject findProcessBatchDownload(String bizNo) {
+        Map<String, String> headMap = new HashMap<>();
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("bizNo", bizNo);
+        convertHead(headMap, jsonObject.toJSONString());
+        String result = HttpUtil.doPost(url + "/esignpro/rest/process/findProcessBatchDownload", headMap, jsonObject.toJSONString());
+        log.info("根据流程id【{}】查询查看压缩包接口响应{}", bizNo, result);
+        return convertResult(result);
+    }
+
+
 }
