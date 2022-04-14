@@ -4,7 +4,6 @@ import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -13,21 +12,17 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.hfi.insurance.aspect.anno.LogAnnotation;
 import com.hfi.insurance.common.ApiResponse;
 import com.hfi.insurance.common.ExcelUtil;
-import com.hfi.insurance.common.PageDto;
 import com.hfi.insurance.enums.Cons;
 import com.hfi.insurance.enums.ErrorCodeEnum;
 import com.hfi.insurance.mapper.*;
 import com.hfi.insurance.model.*;
 import com.hfi.insurance.model.dto.*;
 import com.hfi.insurance.model.dto.res.InstitutionInfoRes;
-import com.hfi.insurance.model.sign.BindedAgentBean;
 import com.hfi.insurance.model.sign.QueryOuterOrgResult;
 import com.hfi.insurance.model.sign.YbFlowDownload;
 import com.hfi.insurance.service.IYbInstitutionInfoService;
 import com.hfi.insurance.service.OrganizationsService;
 import com.hfi.insurance.utils.FTPUploadUtil;
-import com.hfi.insurance.utils.PicUploadUtil;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.xssf.usermodel.*;
@@ -35,13 +30,11 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -203,6 +196,22 @@ public  class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfo
         QueryWrapper<YbInstitutionInfo> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("number", number);
         return ybInstitutionInfoMapper.selectOne(queryWrapper);
+    }
+
+    @Override
+    @LogAnnotation
+    public List<YbInstitutionInfo> getInstitutionInfoByName(String name) {
+        QueryWrapper<YbInstitutionInfo> queryWrapper = new QueryWrapper<>();
+        queryWrapper.like("name", name);
+        return ybInstitutionInfoMapper.selectList(queryWrapper);
+    }
+
+    @Override
+    @LogAnnotation
+    public List<YbInstitutionInfo> getInstitutionInfoByName(List<String> names) {
+        QueryWrapper<YbInstitutionInfo> queryWrapper = new QueryWrapper<>();
+        queryWrapper.in("name", names);
+        return ybInstitutionInfoMapper.selectList(queryWrapper);
     }
 
     @Override

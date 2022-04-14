@@ -4,6 +4,7 @@ package com.hfi.insurance.controller;
 import com.alibaba.fastjson.JSONObject;
 import com.hfi.insurance.common.ApiResponse;
 import com.hfi.insurance.enums.ErrorCodeEnum;
+import com.hfi.insurance.model.sign.req.GetRecordInfoBatchReq;
 import com.hfi.insurance.model.sign.req.GetRecordInfoReq;
 import com.hfi.insurance.model.sign.req.GetSignUrlsReq;
 import com.hfi.insurance.service.SignedInfoBizService;
@@ -51,6 +52,17 @@ public class SignInfoController {
             return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(), ErrorCodeEnum.PARAM_ERROR.getMessage());
         }
         return signedInfoBizService.getSignedRecord(token, req);
+    }
+
+    @ApiOperation("批量签署获取签署流程记录")
+    @PostMapping("/getSignInfoRecordBatch")
+    public ApiResponse getSignInfoRecordBatch(@RequestBody GetRecordInfoBatchReq req, HttpServletRequest request) {
+        String token = request.getHeader("token");
+//        if (StringUtils.isBlank(token)) {
+//            return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(), ErrorCodeEnum.PARAM_ERROR.getMessage());
+//        }
+
+        return signedInfoBizService.getSignedRecordBatch(token, req);
     }
 
     @GetMapping("getSignDetail/{signFlowId}")
