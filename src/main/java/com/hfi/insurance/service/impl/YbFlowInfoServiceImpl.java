@@ -43,11 +43,16 @@ public class YbFlowInfoServiceImpl extends ServiceImpl<YbFlowInfoMapper, YbFlowI
     }
 
     @Override
-    public Page<YbFlowInfo> getSignedRecord(String institutionNumber, GetRecordInfoBatchReq req) {
+    public List<String> getSignedRecord(String institutionNumber, GetRecordInfoBatchReq req) {
         log.info("getSignedRecord input institutionNumber = {},req = {}",institutionNumber,JSONObject.toJSONString(req));
-        Page<YbFlowInfo> page = new Page<>(req.getPageNum(), req.getPageSize());
+//        Page<YbFlowInfo> page = new Page<>(req.getPageNum(), req.getPageSize());
         QueryWrapper<YbFlowInfo> queryWrapper = pkQueryWrapperByBatch(institutionNumber, req);
-        return baseMapper.selectPage(page, queryWrapper);
+        List<YbFlowInfo> list = baseMapper.selectList(queryWrapper);
+        List<String> result = new ArrayList<>();
+        list.forEach( y ->{
+            result.add(y.getSignFlowId());
+        });
+        return result;
     }
 
     @Override
@@ -185,9 +190,11 @@ public class YbFlowInfoServiceImpl extends ServiceImpl<YbFlowInfoMapper, YbFlowI
             }
         }
 
+        //只查成功的
         queryWrapper.eq("flow_status", "2");
         queryWrapper.and(i -> i.isNull("batch_status").or().eq("batch_status", Cons.BatchStr.BATCH_STATUS_SUCCESS));
-        queryWrapper.orderByDesc("initiator_time");
+        queryWrapper.select("sign_flow_id");
+        //        queryWrapper.orderByDesc("initiator_time");
 //        queryWrapper.ne("batch_status", Cons.BatchStr.BATCH_STATUS_FAIL);
         return queryWrapper;
     }

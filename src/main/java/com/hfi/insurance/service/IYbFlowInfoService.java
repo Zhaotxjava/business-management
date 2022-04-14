@@ -19,7 +19,7 @@ import java.util.List;
 public interface IYbFlowInfoService extends IService<YbFlowInfo> {
     Page<YbFlowInfo> getSignedRecord(String institutionNumber,GetRecordInfoReq req);
 
-    Page<YbFlowInfo> getSignedRecord(String institutionNumber, GetRecordInfoBatchReq req);
+    List<String> getSignedRecord(String institutionNumber, GetRecordInfoBatchReq req);
 
     List<YbFlowInfo> getSignedRecordByAreaCode(String institutionNumber);
 

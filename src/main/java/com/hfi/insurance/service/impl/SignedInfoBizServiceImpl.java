@@ -149,8 +149,8 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
 //        JSONObject jsonObject = JSON.parseObject(jsonStr);
 //        String institutionNumber = jsonObject.getString("number");
         String institutionNumber = req.getAreaCode();
-        IPage<YbFlowInfo> flowInfoPage = flowInfoService.getSignedRecord(institutionNumber, req);
-        log.info("flowInfoPage = {}",JSONObject.toJSONString(flowInfoPage));
+        List<String> result = flowInfoService.getSignedRecord(institutionNumber, req);
+        log.info("result = {}",JSONObject.toJSONString(result));
 //        Integer signedRecordCount = flowInfoService.getSignedRecordCount(institutionNumber, req);
 //        Page<SignRecordsRes> signRecordsResPage = new Page<>();
 //        BeanUtils.copyProperties(flowInfoPage, signRecordsResPage);
@@ -210,7 +210,7 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
 //        BeanUtils.copyProperties(flowInfoPage, signRecordsResPage);
 //        signRecordsResPage.setRecords(recordResList);
 
-        return new ApiResponse(flowInfoPage);
+        return new ApiResponse(result);
     }
 
     @Override
