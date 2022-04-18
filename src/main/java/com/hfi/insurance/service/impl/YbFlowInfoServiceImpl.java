@@ -2,6 +2,7 @@ package com.hfi.insurance.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.hfi.insurance.enums.BatchQueryTypeEnum;
@@ -11,6 +12,7 @@ import com.hfi.insurance.model.YbFlowInfo;
 import com.hfi.insurance.model.YbInstitutionInfo;
 import com.hfi.insurance.model.sign.req.GetRecordInfoBatchReq;
 import com.hfi.insurance.model.sign.req.GetRecordInfoReq;
+import com.hfi.insurance.model.sign.res.GetSignedRecordBatchRes;
 import com.hfi.insurance.service.IYbFlowInfoService;
 import com.hfi.insurance.service.IYbInstitutionInfoService;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +21,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+
+import static com.hfi.insurance.enums.BatchQueryTypeEnum.NAMES;
 
 /**
  * <p>
@@ -32,27 +36,60 @@ import java.util.*;
 @Slf4j
 public class YbFlowInfoServiceImpl extends ServiceImpl<YbFlowInfoMapper, YbFlowInfo> implements IYbFlowInfoService {
 
-    @Autowired
-    private IYbInstitutionInfoService iYbInstitutionInfoService;
+	@Autowired
+	private IYbInstitutionInfoService iYbInstitutionInfoService;
+
+	@Override
+	public Page<YbFlowInfo> getSignedRecord(String institutionNumber, GetRecordInfoReq req) {
+		Page<YbFlowInfo> page = new Page<>(req.getPageNum(), req.getPageSize());
+		QueryWrapper<YbFlowInfo> queryWrapper = pkQueryWrapper(institutionNumber, req);
+		return baseMapper.selectPage(page, queryWrapper);
+	}
 
     @Override
-    public Page<YbFlowInfo> getSignedRecord(String institutionNumber, GetRecordInfoReq req) {
-        Page<YbFlowInfo> page = new Page<>(req.getPageNum(), req.getPageSize());
-        QueryWrapper<YbFlowInfo> queryWrapper = pkQueryWrapper(institutionNumber, req);
-        return baseMapper.selectPage(page, queryWrapper);
-    }
-
-    @Override
-    public List<String> getSignedRecord(String institutionNumber, GetRecordInfoBatchReq req) {
-        log.info("getSignedRecord input institutionNumber = {},req = {}",institutionNumber,JSONObject.toJSONString(req));
+    public GetSignedRecordBatchRes getSignedRecord(String institutionNumber, GetRecordInfoBatchReq req) {
+        log.info("getSignedRecord input institutionNumber = {},req = {}", institutionNumber, JSONObject.toJSONString(req));
 //        Page<YbFlowInfo> page = new Page<>(req.getPageNum(), req.getPageSize());
         QueryWrapper<YbFlowInfo> queryWrapper = pkQueryWrapperByBatch(institutionNumber, req);
         List<YbFlowInfo> list = baseMapper.selectList(queryWrapper);
-        List<String> result = new ArrayList<>();
-        list.forEach( y ->{
+        Set<String> result = new HashSet<>();
+        Set<String> successSet = new HashSet<>();
+        Set<String> failSet = new HashSet<>();
+        Map<String,String> inputNameMap = new HashMap<>();
+        BatchQueryTypeEnum type = BatchQueryTypeEnum.getType(req.getQueryType());
+        if(NAMES == type){
+            List<YbInstitutionInfo> infoList = iYbInstitutionInfoService.getInstitutionInfoByName(req.getNumbers());
+            infoList.forEach(info ->{
+                inputNameMap.put(info.getNumber(),info.getInstitutionName());
+            });
+        }
+
+        //遍历结果集
+        list.forEach(y -> {
+            //将结果添加到结果集合
             result.add(y.getSignFlowId());
+            switch (type) {
+                case NUMBERS:
+                    successSet.add(y.getNumber());
+                    break;
+                case NAMES://getInstitutionInfoByName
+                    successSet.add(inputNameMap.get(y.getNumber()));
+                    break;
+                default:
+                    break;
+            }
         });
-        return result;
+
+        if( BatchQueryTypeEnum.NUMBERS == type || BatchQueryTypeEnum.NAMES == type){
+            req.getNumbers().forEach(inputParam -> {
+                if(!successSet.contains(inputParam)){
+                    failSet.add(inputParam);
+                }
+            });
+        }
+
+        GetSignedRecordBatchRes res = new GetSignedRecordBatchRes(result,failSet);
+        return res;
     }
 
     @Override
@@ -78,31 +115,42 @@ public class YbFlowInfoServiceImpl extends ServiceImpl<YbFlowInfoMapper, YbFlowI
         return baseMapper.selectCount(queryWrapper);
     }
 
-    public QueryWrapper<YbFlowInfo> pkQueryWrapper(String institutionNumber, GetRecordInfoReq req) {
-        QueryWrapper<YbFlowInfo> queryWrapper = new QueryWrapper<>();
-        //SqlUtils---concatLike
-        queryWrapper.likeRight("number", institutionNumber);
-        if (StringUtils.isNotBlank(req.getSubject())) {
-            queryWrapper.like("subject", req.getSubject());
-        }
-        if (StringUtils.isNotBlank(req.getSignStatus())) {
-            queryWrapper.eq("sign_status", req.getSignStatus());
-        }
-        if (null != req.getSignFlowId()) {
-            queryWrapper.eq("sign_flow_id", req.getSignFlowId());
-        }
-        if (null != req.getFlowStatus()) {
-            queryWrapper.eq("flow_status", req.getFlowStatus());
-        }
-        if (StringUtils.isNotEmpty(req.getBeginInitiateTime())) {
-            queryWrapper.ge("initiator_time", req.getBeginInitiateTime());
-        }
-        if (StringUtils.isNotEmpty(req.getEndInitiateTime())) {
-            //<=
-            queryWrapper.le("initiator_time", req.getEndInitiateTime());
-        }
-        queryWrapper.and(i -> i.isNull("batch_status").or().eq("batch_status", Cons.BatchStr.BATCH_STATUS_SUCCESS));
-        queryWrapper.orderByDesc("initiator_time");
+	@Override
+	public int updateFlowStatusBySignFlowId(Integer status, String signFlowId) {
+		YbFlowInfo ybFlowInfo = new YbFlowInfo();
+		ybFlowInfo.setFlowStatus(status);
+
+		UpdateWrapper<YbFlowInfo> updateWrapper = new UpdateWrapper<>();
+		updateWrapper.eq("sign_flow_id", signFlowId);
+
+		return baseMapper.update(ybFlowInfo, updateWrapper);
+	}
+
+	public QueryWrapper<YbFlowInfo> pkQueryWrapper(String institutionNumber, GetRecordInfoReq req) {
+		QueryWrapper<YbFlowInfo> queryWrapper = new QueryWrapper<>();
+		//SqlUtils---concatLike
+		queryWrapper.likeRight("number", institutionNumber);
+		if (StringUtils.isNotBlank(req.getSubject())) {
+			queryWrapper.like("subject", req.getSubject());
+		}
+		if (StringUtils.isNotBlank(req.getSignStatus())) {
+			queryWrapper.eq("sign_status", req.getSignStatus());
+		}
+		if (null != req.getSignFlowId()) {
+			queryWrapper.eq("sign_flow_id", req.getSignFlowId());
+		}
+		if (null != req.getFlowStatus()) {
+			queryWrapper.eq("flow_status", req.getFlowStatus());
+		}
+		if (StringUtils.isNotEmpty(req.getBeginInitiateTime())) {
+			queryWrapper.ge("initiator_time", req.getBeginInitiateTime());
+		}
+		if (StringUtils.isNotEmpty(req.getEndInitiateTime())) {
+			//<=
+			queryWrapper.le("initiator_time", req.getEndInitiateTime());
+		}
+		queryWrapper.and(i -> i.isNull("batch_status").or().eq("batch_status", Cons.BatchStr.BATCH_STATUS_SUCCESS));
+		queryWrapper.orderByDesc("initiator_time");
 
 
         //queryWrapper.ne("batch_status", Cons.BatchStr.BATCH_STATUS_FAIL);
@@ -118,7 +166,7 @@ public class YbFlowInfoServiceImpl extends ServiceImpl<YbFlowInfoMapper, YbFlowI
             list.forEach(y -> {
                 signFlowIdList.add(y.getSignFlowId());
             });
-            log.info("list = {}",signFlowIdList.toString());
+            log.info("list = {}", signFlowIdList.toString());
             if (!signFlowIdList.isEmpty()) {
                 queryWrapper.in("sign_flow_id", signFlowIdList);
             }
@@ -127,7 +175,15 @@ public class YbFlowInfoServiceImpl extends ServiceImpl<YbFlowInfoMapper, YbFlowI
         if (StringUtils.isNotBlank(req.getSubject())) {
             queryWrapper.likeRight("subject", req.getSubject());
         }
-
+//        if (StringUtils.isNotBlank(req.getSignStatus())) {
+//            queryWrapper.eq("sign_status", req.getSignStatus());
+//        }
+//        if (null != req.getSignFlowId()) {
+//            queryWrapper.eq("sign_flow_id", req.getSignFlowId());
+//        }
+//        if (null != req.getFlowStatus()) {
+//            queryWrapper.eq("flow_status", req.getFlowStatus());
+//        }
         if (StringUtils.isNotEmpty(req.getBeginInitiateTime())) {
             queryWrapper.ge("initiator_time", req.getBeginInitiateTime());
         }
@@ -139,42 +195,35 @@ public class YbFlowInfoServiceImpl extends ServiceImpl<YbFlowInfoMapper, YbFlowI
         if (type == BatchQueryTypeEnum.BLANK || !req.getNumbers().isEmpty()) {
             switch (type) {
                 case SIGNLE_NUMBER:
-                    if (!req.getNumbers().isEmpty()) {
-                        queryWrapper.like("number", req.getNumbers().get(0));
-                    }
+                    queryWrapper.like("number", req.getNumbers().get(0));
+
                     break;
                 case SIGNLE_NAME:
                     //把机构名变为
-                    if (!req.getNumbers().isEmpty()) {
-                        String name = req.getNumbers().get(0);
-                        //通过模糊查询，查询所有符合条件的机构number
-                        List<YbInstitutionInfo> list2 = iYbInstitutionInfoService.getInstitutionInfoByName(name);
-                        Set<String> tempNumber = new HashSet<>();
-                        list2.forEach(y -> {
-                            tempNumber.add(y.getNumber());
-                        });
-                        if (!tempNumber.isEmpty()) {
-                            queryWrapper.in("number", tempNumber);
-                        }
+                    String name = req.getNumbers().get(0);
+                    //通过模糊查询，查询所有符合条件的机构number
+                    List<YbInstitutionInfo> list2 = iYbInstitutionInfoService.getInstitutionInfoByName(name);
+                    Set<String> tempNumber = new HashSet<>();
+                    list2.forEach(y -> {
+                        tempNumber.add(y.getNumber());
+                    });
+                    if (!tempNumber.isEmpty()) {
+                        queryWrapper.in("number", tempNumber);
                     }
                     break;
                 case NUMBERS:
-                    if (!req.getNumbers().isEmpty()) {
-                        queryWrapper.in("number", req.getNumbers());
-                    }
+                    queryWrapper.in("number", req.getNumbers());
                     break;
                 case NAMES://getInstitutionInfoByName
                     //把机构名变为
-                    if (!req.getNumbers().isEmpty()) {
-                        //通过模糊查询，查询所有符合条件的机构number
-                        List<YbInstitutionInfo> list2 = iYbInstitutionInfoService.getInstitutionInfoByName(req.getNumbers());
-                        Set<String> tempNumber = new HashSet<>();
-                        list2.forEach(y -> {
-                            tempNumber.add(y.getNumber());
-                        });
-                        if (!tempNumber.isEmpty()) {
-                            queryWrapper.in("number", tempNumber);
-                        }
+                    //通过查询，查询所有符合条件的机构number
+                    List<YbInstitutionInfo> list3 = iYbInstitutionInfoService.getInstitutionInfoByName(req.getNumbers());
+                    Set<String> tempNumber2 = new HashSet<>();
+                    list3.forEach(y -> {
+                        tempNumber2.add(y.getNumber());
+                    });
+                    if (!tempNumber2.isEmpty()) {
+                        queryWrapper.in("number", tempNumber2);
                     }
                     break;
                 default:

@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.hfi.insurance.model.YbFlowInfo;
 import com.hfi.insurance.model.sign.req.GetRecordInfoBatchReq;
 import com.hfi.insurance.model.sign.req.GetRecordInfoReq;
+import com.hfi.insurance.model.sign.res.GetSignedRecordBatchRes;
 
 import java.util.List;
 
@@ -19,11 +20,14 @@ import java.util.List;
 public interface IYbFlowInfoService extends IService<YbFlowInfo> {
     Page<YbFlowInfo> getSignedRecord(String institutionNumber,GetRecordInfoReq req);
 
-    List<String> getSignedRecord(String institutionNumber, GetRecordInfoBatchReq req);
+    GetSignedRecordBatchRes getSignedRecord(String institutionNumber, GetRecordInfoBatchReq req);
 
     List<YbFlowInfo> getSignedRecordByAreaCode(String institutionNumber);
 
     Page<YbFlowInfo> getSignedRecordByBatchDownload(String institutionNumber, GetRecordInfoReq req);
 
-    Integer getSignedRecordCount(String institutionNumber, GetRecordInfoReq req);
+	Integer getSignedRecordCount(String institutionNumber, GetRecordInfoReq req);
+
+	int updateFlowStatusBySignFlowId(Integer status, String signFlowId);
+
 }

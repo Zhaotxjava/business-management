@@ -27,6 +27,11 @@ import com.hfi.insurance.service.*;
 import com.hfi.insurance.utils.GuuidUtil;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.SneakyThrows;
+import com.hfi.insurance.model.sign.res.*;
+import com.hfi.insurance.service.IYbFlowInfoService;
+import com.hfi.insurance.service.IYbInstitutionInfoService;
+import com.hfi.insurance.service.SignedInfoBizService;
+import com.hfi.insurance.service.SignedService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -168,7 +173,9 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
         if (StringUtils.isEmpty(req.getBeginInitiateTime()) && StringUtils.isEmpty(req.getEndInitiateTime())){
             return  ApiResponse.fail("234","条件时间必填!");
         }
+        GetSignedRecordBatchRes result = flowInfoService.getSignedRecord(institutionNumber, req);
         log.info("result = {}",JSONObject.toJSONString(result));
+        return new ApiResponse(result);
         //拼成文件名称 统筹区编码-导出时间.zip   生产id
         String fileName = institutionNumber + "-" + sdf.format(new Date());
         List<String> numbers = req.getNumbers();
