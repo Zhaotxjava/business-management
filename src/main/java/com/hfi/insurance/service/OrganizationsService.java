@@ -4,6 +4,8 @@ import com.alibaba.fastjson.JSONObject;
 import com.hfi.insurance.model.InstitutionInfo;
 import com.hfi.insurance.model.sign.req.QueryInnerAccountsReq;
 
+import java.util.List;
+
 public interface OrganizationsService {
 
     JSONObject createAccounts(String name, String idCode, String mobile,String moblieType);
@@ -34,9 +36,8 @@ public interface OrganizationsService {
 
     String queryByOrgName(String organizeName,int pageIndex);
 
-    JSONObject processBatchDownload(String bizNo,String fileName,String processIds);
+    JSONObject processBatchDownload(Long bizNo,String fileName, List<String> processIds);
 
-
-    JSONObject findProcessBatchDownload(String bizNo);
+    JSONObject findProcessBatchDownload(Long bizNo);
 
 }
