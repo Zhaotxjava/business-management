@@ -15,7 +15,6 @@ public interface SignedInfoBizService {
 
     ApiResponse getSignedRecord(String token,GetRecordInfoReq req);
 
-    @LogAnnotation
     ApiResponse getSignedRecordBatch(String token, GetRecordInfoBatchReq req);
 
     ApiResponse getSignUrls(GetSignUrlsReq req);
