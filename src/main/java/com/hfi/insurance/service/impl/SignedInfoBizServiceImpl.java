@@ -17,10 +17,7 @@ import com.hfi.insurance.model.sign.req.FlowDocBean;
 import com.hfi.insurance.model.sign.req.GetRecordInfoBatchReq;
 import com.hfi.insurance.model.sign.req.GetRecordInfoReq;
 import com.hfi.insurance.model.sign.req.GetSignUrlsReq;
-import com.hfi.insurance.model.sign.res.SignRecordsRes;
-import com.hfi.insurance.model.sign.res.SignUrlRes;
-import com.hfi.insurance.model.sign.res.SingerInfoRes;
-import com.hfi.insurance.model.sign.res.StandardSignDetailResult;
+import com.hfi.insurance.model.sign.res.*;
 import com.hfi.insurance.service.IYbFlowInfoService;
 import com.hfi.insurance.service.IYbInstitutionInfoService;
 import com.hfi.insurance.service.SignedInfoBizService;
@@ -149,67 +146,8 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
 //        JSONObject jsonObject = JSON.parseObject(jsonStr);
 //        String institutionNumber = jsonObject.getString("number");
         String institutionNumber = req.getAreaCode();
-        List<String> result = flowInfoService.getSignedRecord(institutionNumber, req);
+        GetSignedRecordBatchRes result = flowInfoService.getSignedRecord(institutionNumber, req);
         log.info("result = {}",JSONObject.toJSONString(result));
-//        Integer signedRecordCount = flowInfoService.getSignedRecordCount(institutionNumber, req);
-//        Page<SignRecordsRes> signRecordsResPage = new Page<>();
-//        BeanUtils.copyProperties(flowInfoPage, signRecordsResPage);
-//        List<YbFlowInfo> flowInfos = flowInfoPage.getRecords();
-//        List<SignRecordsRes> recordResList = new ArrayList<>();
-//        for (YbFlowInfo ybFlowInfo : flowInfos) {
-//            SignRecordsRes recordsRes = new SignRecordsRes();
-//            BeanUtils.copyProperties(ybFlowInfo, recordsRes);
-//            //20211103 去除抄送人
-//            recordsRes.setCopyViewers(" ");
-//            String signFlowId = ybFlowInfo.getSignFlowId();
-//            JSONObject signDetail = signedService.getSignDetail(Integer.valueOf(signFlowId));
-//            log.info("流程id：{}，详情：{}", signFlowId, signDetail);
-//            if (signDetail.containsKey("errCode")) {
-//                log.error("查询流程详情错误，错误原因：{}", signDetail.getString("msg"));
-//                continue;
-//            }
-////            String singers = signDetail.getString("signers");
-////            List<SingerInfoRes> singerInfos = JSON.parseArray(singers, SingerInfoRes.class);
-////            //String signDocDetails = signDetail.getString("signDocDetails");
-////            //List<StandardSignDetailSignDoc> standardSignDetailSignDocs = JSON.parseArray(signDocDetails, StandardSignDetailSignDoc.class);
-////            //StandardSignDetailSignDoc signDetailSignDoc = CollectionUtils.firstElement(standardSignDetailSignDocs);
-////            //匹配用户，填充信息
-////            String number = ybFlowInfo.getNumber();
-////            YbInstitutionInfo institutionInfo = institutionInfoService.getInstitutionInfo(number);
-////            log.info("机构信息：{}", JSON.toJSONString(institutionInfo));
-////            if (institutionInfo != null && institutionInfo.getAccountId() != null) {
-//////                recordsRes.setAccountId(institutionInfo.getAccountId());
-////                //此处两行原institutionInfo.getAccountId(),现在改为getLegalAccountId
-////                if (!number.startsWith(Cons.NumberStr.BX)) {
-////                    //如果不是保险机构，则用法人来查看状态
-////                    Optional<SingerInfoRes> any2 = singerInfos.stream().filter(singerInfoRes -> institutionInfo.getLegalAccountId().equals(singerInfoRes.getAccountId())).findAny();
-////                    if (any2.isPresent()) {
-////                        SingerInfoRes singerInfoRes = any2.get();
-////                        recordsRes.setSignStatus(singerInfoRes.getSignStatus());
-//////                    recordsRes.setFileKey();
-////                        recordsRes.setAccountId(institutionInfo.getLegalAccountId());
-////                    }
-////                } else {
-////                    Optional<SingerInfoRes> any = singerInfos.stream().filter(singerInfoRes -> institutionInfo.getAccountId().equals(singerInfoRes.getAccountId())).findAny();
-////                    if (any.isPresent()) {
-////                        SingerInfoRes singerInfoRes = any.get();
-//////                        recordsRes.setSubject(signDetail.getString("subject"));
-////                        recordsRes.setSignStatus(singerInfoRes.getSignStatus());
-//////                    recordsRes.setFileKey();
-////                        recordsRes.setAccountId(institutionInfo.getAccountId());
-////                    }
-////                }
-////                recordsRes.setAccountType(2);
-////                recordsRes.setSubject(signDetail.getString("subject"));
-////            }
-//            recordsRes.setFlowStatus(signDetail.getInteger("flowStatus"));
-//            recordsRes.setInitiateTime(ybFlowInfo.getInitiatorTime());
-//            recordsRes.setRecentHandleTime(ybFlowInfo.getHandleTime());
-//            recordResList.add(recordsRes);
-//        }
-//        BeanUtils.copyProperties(flowInfoPage, signRecordsResPage);
-//        signRecordsResPage.setRecords(recordResList);
-
         return new ApiResponse(result);
     }
 

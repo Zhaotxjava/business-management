@@ -11,6 +11,7 @@ import com.hfi.insurance.model.YbFlowInfo;
 import com.hfi.insurance.model.YbInstitutionInfo;
 import com.hfi.insurance.model.sign.req.GetRecordInfoBatchReq;
 import com.hfi.insurance.model.sign.req.GetRecordInfoReq;
+import com.hfi.insurance.model.sign.res.GetSignedRecordBatchRes;
 import com.hfi.insurance.service.IYbFlowInfoService;
 import com.hfi.insurance.service.IYbInstitutionInfoService;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +20,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+
+import static com.hfi.insurance.enums.BatchQueryTypeEnum.NAMES;
 
 /**
  * <p>
@@ -43,16 +46,49 @@ public class YbFlowInfoServiceImpl extends ServiceImpl<YbFlowInfoMapper, YbFlowI
     }
 
     @Override
-    public List<String> getSignedRecord(String institutionNumber, GetRecordInfoBatchReq req) {
-        log.info("getSignedRecord input institutionNumber = {},req = {}",institutionNumber,JSONObject.toJSONString(req));
+    public GetSignedRecordBatchRes getSignedRecord(String institutionNumber, GetRecordInfoBatchReq req) {
+        log.info("getSignedRecord input institutionNumber = {},req = {}", institutionNumber, JSONObject.toJSONString(req));
 //        Page<YbFlowInfo> page = new Page<>(req.getPageNum(), req.getPageSize());
         QueryWrapper<YbFlowInfo> queryWrapper = pkQueryWrapperByBatch(institutionNumber, req);
         List<YbFlowInfo> list = baseMapper.selectList(queryWrapper);
-        List<String> result = new ArrayList<>();
-        list.forEach( y ->{
+        Set<String> result = new HashSet<>();
+        Set<String> successSet = new HashSet<>();
+        Set<String> failSet = new HashSet<>();
+        Map<String,String> inputNameMap = new HashMap<>();
+        BatchQueryTypeEnum type = BatchQueryTypeEnum.getType(req.getQueryType());
+        if(NAMES == type){
+            List<YbInstitutionInfo> infoList = iYbInstitutionInfoService.getInstitutionInfoByName(req.getNumbers());
+            infoList.forEach(info ->{
+                inputNameMap.put(info.getNumber(),info.getInstitutionName());
+            });
+        }
+
+        //遍历结果集
+        list.forEach(y -> {
+            //将结果添加到结果集合
             result.add(y.getSignFlowId());
+            switch (type) {
+                case NUMBERS:
+                    successSet.add(y.getNumber());
+                    break;
+                case NAMES://getInstitutionInfoByName
+                    successSet.add(inputNameMap.get(y.getNumber()));
+                    break;
+                default:
+                    break;
+            }
         });
-        return result;
+
+        if( BatchQueryTypeEnum.NUMBERS == type || BatchQueryTypeEnum.NAMES == type){
+            req.getNumbers().forEach(inputParam -> {
+                if(!successSet.contains(inputParam)){
+                    failSet.add(inputParam);
+                }
+            });
+        }
+
+        GetSignedRecordBatchRes res = new GetSignedRecordBatchRes(result,failSet);
+        return res;
     }
 
     @Override
@@ -63,7 +99,7 @@ public class YbFlowInfoServiceImpl extends ServiceImpl<YbFlowInfoMapper, YbFlowI
         queryWrapper.and(i -> i.isNull("batch_status").or().eq("batch_status", Cons.BatchStr.BATCH_STATUS_SUCCESS));
         queryWrapper.orderByDesc("initiator_time");
         List<YbFlowInfo> list = baseMapper.selectList(queryWrapper);
-        log.info("getSignedRecordByAreaCode result list = {}",JSONObject.toJSONString(list));
+        log.info("getSignedRecordByAreaCode result list = {}", JSONObject.toJSONString(list));
         return list;
     }
 
@@ -118,7 +154,7 @@ public class YbFlowInfoServiceImpl extends ServiceImpl<YbFlowInfoMapper, YbFlowI
             list.forEach(y -> {
                 signFlowIdList.add(y.getSignFlowId());
             });
-            log.info("list = {}",signFlowIdList.toString());
+            log.info("list = {}", signFlowIdList.toString());
             if (!signFlowIdList.isEmpty()) {
                 queryWrapper.in("sign_flow_id", signFlowIdList);
             }
@@ -147,42 +183,35 @@ public class YbFlowInfoServiceImpl extends ServiceImpl<YbFlowInfoMapper, YbFlowI
         if (!req.getNumbers().isEmpty()) {
             switch (type) {
                 case SIGNLE_NUMBER:
-                    if (!req.getNumbers().isEmpty()) {
-                        queryWrapper.like("number", req.getNumbers().get(0));
-                    }
+                    queryWrapper.like("number", req.getNumbers().get(0));
+
                     break;
                 case SIGNLE_NAME:
                     //把机构名变为
-                    if (!req.getNumbers().isEmpty()) {
-                        String name = req.getNumbers().get(0);
-                        //通过模糊查询，查询所有符合条件的机构number
-                        List<YbInstitutionInfo> list2 = iYbInstitutionInfoService.getInstitutionInfoByName(name);
-                        Set<String> tempNumber = new HashSet<>();
-                        list2.forEach(y -> {
-                            tempNumber.add(y.getNumber());
-                        });
-                        if (!tempNumber.isEmpty()) {
-                            queryWrapper.in("number", tempNumber);
-                        }
+                    String name = req.getNumbers().get(0);
+                    //通过模糊查询，查询所有符合条件的机构number
+                    List<YbInstitutionInfo> list2 = iYbInstitutionInfoService.getInstitutionInfoByName(name);
+                    Set<String> tempNumber = new HashSet<>();
+                    list2.forEach(y -> {
+                        tempNumber.add(y.getNumber());
+                    });
+                    if (!tempNumber.isEmpty()) {
+                        queryWrapper.in("number", tempNumber);
                     }
                     break;
                 case NUMBERS:
-                    if (!req.getNumbers().isEmpty()) {
-                        queryWrapper.in("number", req.getNumbers());
-                    }
+                    queryWrapper.in("number", req.getNumbers());
                     break;
                 case NAMES://getInstitutionInfoByName
                     //把机构名变为
-                    if (!req.getNumbers().isEmpty()) {
-                        //通过模糊查询，查询所有符合条件的机构number
-                        List<YbInstitutionInfo> list2 = iYbInstitutionInfoService.getInstitutionInfoByName(req.getNumbers());
-                        Set<String> tempNumber = new HashSet<>();
-                        list2.forEach(y -> {
-                            tempNumber.add(y.getNumber());
-                        });
-                        if (!tempNumber.isEmpty()) {
-                            queryWrapper.in("number", tempNumber);
-                        }
+                    //通过查询，查询所有符合条件的机构number
+                    List<YbInstitutionInfo> list3 = iYbInstitutionInfoService.getInstitutionInfoByName(req.getNumbers());
+                    Set<String> tempNumber2 = new HashSet<>();
+                    list3.forEach(y -> {
+                        tempNumber2.add(y.getNumber());
+                    });
+                    if (!tempNumber2.isEmpty()) {
+                        queryWrapper.in("number", tempNumber2);
                     }
                     break;
                 default:
