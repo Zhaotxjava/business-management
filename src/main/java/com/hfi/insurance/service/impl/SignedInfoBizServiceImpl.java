@@ -144,34 +144,43 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
     }
 
 
-
-
     @SneakyThrows
     @Override
     @LogAnnotation
     public ApiResponse getSignedRecordBatch(String token, GetRecordInfoBatchReq req) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
         SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd");
+
         //获取统筹区编码
         String institutionNumber = req.getAreaCode();
+        if (institutionNumber.equals("")){
+            return   ApiResponse.fail("234","统筹区编码,不能为空!");
+        }
+        //机构编号  机构名称  模板编号  三选一必填
+        if (StringUtils.isEmpty(req.getTemplateId()) || req.getNumbers()!=null){
+            return ApiResponse.fail("234","模板编号、机构编号、机构名称必填其中一个!");
+        }
         //查询流程id
         List<String> result = flowInfoService.getSignedRecord(institutionNumber, req);
         if (result.size()== 0 && result.size()<0){
-            return  ApiResponse.fail("123","该筛选条件下没有流程，请重新选择筛选条件!");
+            return  ApiResponse.fail("234","该筛选条件下没有流程，请重新选择筛选条件!");
+        }
+        if (StringUtils.isEmpty(req.getBeginInitiateTime()) && StringUtils.isEmpty(req.getEndInitiateTime())){
+            return  ApiResponse.fail("234","条件时间必填!");
         }
         log.info("result = {}",JSONObject.toJSONString(result));
         //拼成文件名称 统筹区编码-导出时间.zip   生产id
         String fileName = institutionNumber + "-" + sdf.format(new Date());
         List<String> numbers = req.getNumbers();
         String number="";
-        if (numbers.size()>0){
+        if (req.getNumbers()!=null){
             for (String s:numbers){
                 number += s+",";
             }
         }
         //存入数据库
         YbCoursePl ybCoursePl = new YbCoursePl();
-        ybCoursePl.setCourseId(GuuidUtil.getUUID());
+        ybCoursePl.setCourseId(String.valueOf(GuuidUtil.getUUID()));
         ybCoursePl.setCourseFileName(fileName);
         ybCoursePl.setCourseFileDate(sdf.parse(sdf.format(new Date())));
         ybCoursePl.setMbnNumber(req.getTemplateId());

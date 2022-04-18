@@ -36,8 +36,8 @@ public interface OrganizationsService {
 
     String queryByOrgName(String organizeName,int pageIndex);
 
-    JSONObject processBatchDownload(Long bizNo,String fileName, List<String> processIds);
+    JSONObject processBatchDownload(String bizNo,String fileName, List<String> processIds);
 
-    JSONObject findProcessBatchDownload(Long bizNo);
+    JSONObject findProcessBatchDownload(String bizNo);
 
 }

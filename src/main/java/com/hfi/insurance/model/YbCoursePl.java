@@ -16,7 +16,7 @@ public class YbCoursePl implements Serializable {
     private   Integer  orderId;
 
     @ApiModelProperty("进程id(任务id)初步与生成id一致。")
-    private   Long  courseId;
+    private   String  courseId;
 
     @ApiModelProperty("下载任务名称")
     private   String  courseFileName;

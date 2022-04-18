@@ -136,7 +136,7 @@ public class YbFlowInfoServiceImpl extends ServiceImpl<YbFlowInfoMapper, YbFlowI
             queryWrapper.le("initiator_time", req.getEndInitiateTime());
         }
         BatchQueryTypeEnum type = BatchQueryTypeEnum.getType(req.getQueryType());
-        if (!req.getNumbers().isEmpty()) {
+        if (type == BatchQueryTypeEnum.BLANK || !req.getNumbers().isEmpty()) {
             switch (type) {
                 case SIGNLE_NUMBER:
                     if (!req.getNumbers().isEmpty()) {
