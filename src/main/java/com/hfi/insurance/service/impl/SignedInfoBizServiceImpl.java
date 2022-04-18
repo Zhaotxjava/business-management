@@ -9,6 +9,8 @@ import com.hfi.insurance.aspect.anno.LogAnnotation;
 import com.hfi.insurance.common.ApiResponse;
 import com.hfi.insurance.enums.Cons;
 import com.hfi.insurance.enums.ErrorCodeEnum;
+import com.hfi.insurance.mapper.YbCoursePlMapper;
+import com.hfi.insurance.model.YbCoursePl;
 import com.hfi.insurance.model.YbFlowInfo;
 import com.hfi.insurance.model.YbInstitutionInfo;
 import com.hfi.insurance.model.sign.FinishDocUrlBean;
@@ -21,23 +23,20 @@ import com.hfi.insurance.model.sign.res.SignRecordsRes;
 import com.hfi.insurance.model.sign.res.SignUrlRes;
 import com.hfi.insurance.model.sign.res.SingerInfoRes;
 import com.hfi.insurance.model.sign.res.StandardSignDetailResult;
-import com.hfi.insurance.service.IYbFlowInfoService;
-import com.hfi.insurance.service.IYbInstitutionInfoService;
-import com.hfi.insurance.service.SignedInfoBizService;
-import com.hfi.insurance.service.SignedService;
+import com.hfi.insurance.service.*;
+import com.hfi.insurance.utils.GuuidUtil;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.omg.CORBA.Object;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -59,8 +58,14 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
     private IYbInstitutionInfoService institutionInfoService;
 
     @Resource
+    private YbCoursePlMapper ybCoursePlMapper;
+
+    @Resource
     private Cache<String, String> caffeineCache;
 
+
+    @Resource
+    private OrganizationsService rganizationsService;
 
     @Value("${esignpro.urls}")
     private String urls;
@@ -138,79 +143,49 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
         return new ApiResponse(signRecordsResPage);
     }
 
+
+
+
+    @SneakyThrows
     @Override
     @LogAnnotation
     public ApiResponse getSignedRecordBatch(String token, GetRecordInfoBatchReq req) {
-//        String jsonStr = caffeineCache.asMap().get(token);
-//        log.info("用户信息:{}", jsonStr);
-//        if (StringUtils.isBlank(jsonStr)) {
-//            return new ApiResponse(ErrorCodeEnum.TOKEN_EXPIRED.getCode(), ErrorCodeEnum.TOKEN_EXPIRED.getMessage());
-//        }
-//        JSONObject jsonObject = JSON.parseObject(jsonStr);
-//        String institutionNumber = jsonObject.getString("number");
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+        SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd");
+        //获取统筹区编码
         String institutionNumber = req.getAreaCode();
+        //查询流程id
         List<String> result = flowInfoService.getSignedRecord(institutionNumber, req);
+        if (result.size()== 0 && result.size()<0){
+            return  ApiResponse.fail("123","该筛选条件下没有流程，请重新选择筛选条件!");
+        }
         log.info("result = {}",JSONObject.toJSONString(result));
-//        Integer signedRecordCount = flowInfoService.getSignedRecordCount(institutionNumber, req);
-//        Page<SignRecordsRes> signRecordsResPage = new Page<>();
-//        BeanUtils.copyProperties(flowInfoPage, signRecordsResPage);
-//        List<YbFlowInfo> flowInfos = flowInfoPage.getRecords();
-//        List<SignRecordsRes> recordResList = new ArrayList<>();
-//        for (YbFlowInfo ybFlowInfo : flowInfos) {
-//            SignRecordsRes recordsRes = new SignRecordsRes();
-//            BeanUtils.copyProperties(ybFlowInfo, recordsRes);
-//            //20211103 去除抄送人
-//            recordsRes.setCopyViewers(" ");
-//            String signFlowId = ybFlowInfo.getSignFlowId();
-//            JSONObject signDetail = signedService.getSignDetail(Integer.valueOf(signFlowId));
-//            log.info("流程id：{}，详情：{}", signFlowId, signDetail);
-//            if (signDetail.containsKey("errCode")) {
-//                log.error("查询流程详情错误，错误原因：{}", signDetail.getString("msg"));
-//                continue;
-//            }
-////            String singers = signDetail.getString("signers");
-////            List<SingerInfoRes> singerInfos = JSON.parseArray(singers, SingerInfoRes.class);
-////            //String signDocDetails = signDetail.getString("signDocDetails");
-////            //List<StandardSignDetailSignDoc> standardSignDetailSignDocs = JSON.parseArray(signDocDetails, StandardSignDetailSignDoc.class);
-////            //StandardSignDetailSignDoc signDetailSignDoc = CollectionUtils.firstElement(standardSignDetailSignDocs);
-////            //匹配用户，填充信息
-////            String number = ybFlowInfo.getNumber();
-////            YbInstitutionInfo institutionInfo = institutionInfoService.getInstitutionInfo(number);
-////            log.info("机构信息：{}", JSON.toJSONString(institutionInfo));
-////            if (institutionInfo != null && institutionInfo.getAccountId() != null) {
-//////                recordsRes.setAccountId(institutionInfo.getAccountId());
-////                //此处两行原institutionInfo.getAccountId(),现在改为getLegalAccountId
-////                if (!number.startsWith(Cons.NumberStr.BX)) {
-////                    //如果不是保险机构，则用法人来查看状态
-////                    Optional<SingerInfoRes> any2 = singerInfos.stream().filter(singerInfoRes -> institutionInfo.getLegalAccountId().equals(singerInfoRes.getAccountId())).findAny();
-////                    if (any2.isPresent()) {
-////                        SingerInfoRes singerInfoRes = any2.get();
-////                        recordsRes.setSignStatus(singerInfoRes.getSignStatus());
-//////                    recordsRes.setFileKey();
-////                        recordsRes.setAccountId(institutionInfo.getLegalAccountId());
-////                    }
-////                } else {
-////                    Optional<SingerInfoRes> any = singerInfos.stream().filter(singerInfoRes -> institutionInfo.getAccountId().equals(singerInfoRes.getAccountId())).findAny();
-////                    if (any.isPresent()) {
-////                        SingerInfoRes singerInfoRes = any.get();
-//////                        recordsRes.setSubject(signDetail.getString("subject"));
-////                        recordsRes.setSignStatus(singerInfoRes.getSignStatus());
-//////                    recordsRes.setFileKey();
-////                        recordsRes.setAccountId(institutionInfo.getAccountId());
-////                    }
-////                }
-////                recordsRes.setAccountType(2);
-////                recordsRes.setSubject(signDetail.getString("subject"));
-////            }
-//            recordsRes.setFlowStatus(signDetail.getInteger("flowStatus"));
-//            recordsRes.setInitiateTime(ybFlowInfo.getInitiatorTime());
-//            recordsRes.setRecentHandleTime(ybFlowInfo.getHandleTime());
-//            recordResList.add(recordsRes);
-//        }
-//        BeanUtils.copyProperties(flowInfoPage, signRecordsResPage);
-//        signRecordsResPage.setRecords(recordResList);
-
-        return new ApiResponse(result);
+        //拼成文件名称 统筹区编码-导出时间.zip   生产id
+        String fileName = institutionNumber + "-" + sdf.format(new Date());
+        List<String> numbers = req.getNumbers();
+        String number="";
+        if (numbers.size()>0){
+            for (String s:numbers){
+                number += s+",";
+            }
+        }
+        //存入数据库
+        YbCoursePl ybCoursePl = new YbCoursePl();
+        ybCoursePl.setCourseId(GuuidUtil.getUUID());
+        ybCoursePl.setCourseFileName(fileName);
+        ybCoursePl.setCourseFileDate(sdf.parse(sdf.format(new Date())));
+        ybCoursePl.setMbnNumber(req.getTemplateId());
+        ybCoursePl.setAgreeDate(sdf2.parse(req.getBeginInitiateTime())+"~"+sdf2.parse(req.getEndInitiateTime()));
+        if (req.getQueryType().equals("SIGNLE_NUMBER") || req.getQueryType().equals("3")){
+            ybCoursePl.setNumber(number);
+        }else if (req.getQueryType().equals("2") || req.getQueryType().equals("4")){
+            ybCoursePl.setInstitutionName(number);
+        }
+        ybCoursePl.setCourseStatus("0");
+        ybCoursePl.setCreateTime(sdf.parse(sdf.format(new Date())));
+        ybCoursePlMapper.insert(ybCoursePl);
+        JSONObject jsonObject = rganizationsService.processBatchDownload(ybCoursePl.getCourseId(), ybCoursePl.getCourseFileName(), result);
+        return new ApiResponse(jsonObject);
     }
 
     @Override

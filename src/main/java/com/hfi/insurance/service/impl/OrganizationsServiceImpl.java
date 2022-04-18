@@ -289,7 +289,7 @@ public class OrganizationsServiceImpl implements OrganizationsService {
     }
 
     @Override
-    public JSONObject processBatchDownload(String bizNo, String fileName, String processIds) {
+    public JSONObject processBatchDownload(Long bizNo, String fileName, List<String> processIds) {
         Map<String, String> headMap = new HashMap<>();
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("bizNo", bizNo);
@@ -297,11 +297,12 @@ public class OrganizationsServiceImpl implements OrganizationsService {
         jsonObject.put("processIds", processIds);
         convertHead(headMap, jsonObject.toJSONString());
         String result = HttpUtil.doPost(url + "/esignpro/rest/process/processBatchDownload", headMap, jsonObject.toJSONString());
+        log.info("发送文件下载接口流程id={}文件名称={}，文件id={}", bizNo, bizNo,processIds);
         return convertResult(result);
     }
 
     @Override
-    public JSONObject findProcessBatchDownload(String bizNo) {
+    public JSONObject findProcessBatchDownload(Long bizNo) {
         Map<String, String> headMap = new HashMap<>();
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("bizNo", bizNo);
