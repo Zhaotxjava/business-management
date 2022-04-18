@@ -26,5 +26,8 @@ public interface IYbFlowInfoService extends IService<YbFlowInfo> {
 
     Page<YbFlowInfo> getSignedRecordByBatchDownload(String institutionNumber, GetRecordInfoReq req);
 
-    Integer getSignedRecordCount(String institutionNumber, GetRecordInfoReq req);
+	Integer getSignedRecordCount(String institutionNumber, GetRecordInfoReq req);
+
+	int updateFlowStatusBySignFlowId(Integer status, String signFlowId);
+
 }

@@ -2,6 +2,7 @@ package com.hfi.insurance.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.hfi.insurance.enums.BatchQueryTypeEnum;
@@ -35,15 +36,15 @@ import static com.hfi.insurance.enums.BatchQueryTypeEnum.NAMES;
 @Slf4j
 public class YbFlowInfoServiceImpl extends ServiceImpl<YbFlowInfoMapper, YbFlowInfo> implements IYbFlowInfoService {
 
-    @Autowired
-    private IYbInstitutionInfoService iYbInstitutionInfoService;
+	@Autowired
+	private IYbInstitutionInfoService iYbInstitutionInfoService;
 
-    @Override
-    public Page<YbFlowInfo> getSignedRecord(String institutionNumber, GetRecordInfoReq req) {
-        Page<YbFlowInfo> page = new Page<>(req.getPageNum(), req.getPageSize());
-        QueryWrapper<YbFlowInfo> queryWrapper = pkQueryWrapper(institutionNumber, req);
-        return baseMapper.selectPage(page, queryWrapper);
-    }
+	@Override
+	public Page<YbFlowInfo> getSignedRecord(String institutionNumber, GetRecordInfoReq req) {
+		Page<YbFlowInfo> page = new Page<>(req.getPageNum(), req.getPageSize());
+		QueryWrapper<YbFlowInfo> queryWrapper = pkQueryWrapper(institutionNumber, req);
+		return baseMapper.selectPage(page, queryWrapper);
+	}
 
     @Override
     public GetSignedRecordBatchRes getSignedRecord(String institutionNumber, GetRecordInfoBatchReq req) {
@@ -99,7 +100,7 @@ public class YbFlowInfoServiceImpl extends ServiceImpl<YbFlowInfoMapper, YbFlowI
         queryWrapper.and(i -> i.isNull("batch_status").or().eq("batch_status", Cons.BatchStr.BATCH_STATUS_SUCCESS));
         queryWrapper.orderByDesc("initiator_time");
         List<YbFlowInfo> list = baseMapper.selectList(queryWrapper);
-        log.info("getSignedRecordByAreaCode result list = {}", JSONObject.toJSONString(list));
+        log.info("getSignedRecordByAreaCode result list = {}",JSONObject.toJSONString(list));
         return list;
     }
 
@@ -114,31 +115,42 @@ public class YbFlowInfoServiceImpl extends ServiceImpl<YbFlowInfoMapper, YbFlowI
         return baseMapper.selectCount(queryWrapper);
     }
 
-    public QueryWrapper<YbFlowInfo> pkQueryWrapper(String institutionNumber, GetRecordInfoReq req) {
-        QueryWrapper<YbFlowInfo> queryWrapper = new QueryWrapper<>();
-        //SqlUtils---concatLike
-        queryWrapper.likeRight("number", institutionNumber);
-        if (StringUtils.isNotBlank(req.getSubject())) {
-            queryWrapper.like("subject", req.getSubject());
-        }
-        if (StringUtils.isNotBlank(req.getSignStatus())) {
-            queryWrapper.eq("sign_status", req.getSignStatus());
-        }
-        if (null != req.getSignFlowId()) {
-            queryWrapper.eq("sign_flow_id", req.getSignFlowId());
-        }
-        if (null != req.getFlowStatus()) {
-            queryWrapper.eq("flow_status", req.getFlowStatus());
-        }
-        if (StringUtils.isNotEmpty(req.getBeginInitiateTime())) {
-            queryWrapper.ge("initiator_time", req.getBeginInitiateTime());
-        }
-        if (StringUtils.isNotEmpty(req.getEndInitiateTime())) {
-            //<=
-            queryWrapper.le("initiator_time", req.getEndInitiateTime());
-        }
-        queryWrapper.and(i -> i.isNull("batch_status").or().eq("batch_status", Cons.BatchStr.BATCH_STATUS_SUCCESS));
-        queryWrapper.orderByDesc("initiator_time");
+	@Override
+	public int updateFlowStatusBySignFlowId(Integer status, String signFlowId) {
+		YbFlowInfo ybFlowInfo = new YbFlowInfo();
+		ybFlowInfo.setFlowStatus(status);
+
+		UpdateWrapper<YbFlowInfo> updateWrapper = new UpdateWrapper<>();
+		updateWrapper.eq("sign_flow_id", signFlowId);
+
+		return baseMapper.update(ybFlowInfo, updateWrapper);
+	}
+
+	public QueryWrapper<YbFlowInfo> pkQueryWrapper(String institutionNumber, GetRecordInfoReq req) {
+		QueryWrapper<YbFlowInfo> queryWrapper = new QueryWrapper<>();
+		//SqlUtils---concatLike
+		queryWrapper.likeRight("number", institutionNumber);
+		if (StringUtils.isNotBlank(req.getSubject())) {
+			queryWrapper.like("subject", req.getSubject());
+		}
+		if (StringUtils.isNotBlank(req.getSignStatus())) {
+			queryWrapper.eq("sign_status", req.getSignStatus());
+		}
+		if (null != req.getSignFlowId()) {
+			queryWrapper.eq("sign_flow_id", req.getSignFlowId());
+		}
+		if (null != req.getFlowStatus()) {
+			queryWrapper.eq("flow_status", req.getFlowStatus());
+		}
+		if (StringUtils.isNotEmpty(req.getBeginInitiateTime())) {
+			queryWrapper.ge("initiator_time", req.getBeginInitiateTime());
+		}
+		if (StringUtils.isNotEmpty(req.getEndInitiateTime())) {
+			//<=
+			queryWrapper.le("initiator_time", req.getEndInitiateTime());
+		}
+		queryWrapper.and(i -> i.isNull("batch_status").or().eq("batch_status", Cons.BatchStr.BATCH_STATUS_SUCCESS));
+		queryWrapper.orderByDesc("initiator_time");
 
 
         //queryWrapper.ne("batch_status", Cons.BatchStr.BATCH_STATUS_FAIL);

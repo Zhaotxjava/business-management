@@ -6,7 +6,6 @@ import lombok.Data;
 
 import java.io.Serializable;
 import java.util.Date;
-
 @Data
 public class YbCoursePl implements Serializable {
 
@@ -17,7 +16,7 @@ public class YbCoursePl implements Serializable {
     private   Integer  orderId;
 
     @ApiModelProperty("进程id(任务id)初步与生成id一致。")
-    private   Integer  courseId;
+    private   Long  courseId;
 
     @ApiModelProperty("下载任务名称")
     private   String  courseFileName;
@@ -40,7 +39,7 @@ public class YbCoursePl implements Serializable {
     @ApiModelProperty("备注")
     private   String remarks;
 
-    @ApiModelProperty("任务执行状态")
+    @ApiModelProperty("任务执行状态 0=任务打包中 1=任务打包成功 2=任务打包失败 ")
     private   String courseStatus;
 
     @ApiModelProperty("下载到的流程数量")
@@ -50,6 +49,7 @@ public class YbCoursePl implements Serializable {
     private   Date createTime;
 
     @ApiModelProperty("修改时间")
-    private   Date update_time;
+    private   Date updateTime;
+
 
 }
