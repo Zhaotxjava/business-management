@@ -80,4 +80,4 @@ uploadFile:
 
 sign:
   callBack:
-    url: http://localhost:9097/insurance_info/callBack/flowStatusNotify
+    url: http://localhost:8090/insurance_info/callBack/flowStatusNotify

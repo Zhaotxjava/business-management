@@ -18,16 +18,18 @@ import java.util.List;
  * @since 2021-09-29
  */
 public interface IYbFlowInfoService extends IService<YbFlowInfo> {
-    Page<YbFlowInfo> getSignedRecord(String institutionNumber,GetRecordInfoReq req);
+	Page<YbFlowInfo> getSignedRecord(String institutionNumber, GetRecordInfoReq req);
 
-    GetSignedRecordBatchRes getSignedRecord(String institutionNumber, GetRecordInfoBatchReq req);
+	GetSignedRecordBatchRes getSignedRecord(String institutionNumber, GetRecordInfoBatchReq req);
 
-    List<YbFlowInfo> getSignedRecordByAreaCode(String institutionNumber);
+	List<YbFlowInfo> getSignedRecordByAreaCode(String institutionNumber);
 
-    Page<YbFlowInfo> getSignedRecordByBatchDownload(String institutionNumber, GetRecordInfoReq req);
+	Page<YbFlowInfo> getSignedRecordByBatchDownload(String institutionNumber, GetRecordInfoReq req);
 
 	Integer getSignedRecordCount(String institutionNumber, GetRecordInfoReq req);
 
-	int updateFlowStatusBySignFlowId(Integer status, String signFlowId);
+	int updateBySignFlowId(YbFlowInfo updateInfo, String signFlowId);
+
+	int updateBySignFlowIdAndNumber(YbFlowInfo updateInfo, String signFlowId, String number);
 
 }

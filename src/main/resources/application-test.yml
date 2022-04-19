@@ -84,4 +84,4 @@ uploadFile:
 
 sign:
   callBack:
-    url: http://localhost:9097/insurance_info/callBack/flowStatusNotify
+    url: http://192.20.97.35:18080/insurance_info/callBack/flowStatusNotify
