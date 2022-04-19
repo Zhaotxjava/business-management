@@ -81,3 +81,7 @@ uploadFile:
   password: img123_hfi_health
   host: 192.20.97.35
   port: 21
+
+sign:
+  callBack:
+    url: http://localhost:9097/insurance_info/callBack/flowStatusNotify
