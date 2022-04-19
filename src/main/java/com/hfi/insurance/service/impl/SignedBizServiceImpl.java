@@ -25,6 +25,7 @@ import com.hfi.insurance.utils.StreamUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -60,6 +61,9 @@ public class SignedBizServiceImpl implements SignedBizService {
     private int MAX_SIGNERSLENGTH = 490;
 
     private final static String SUBJECT_SEPARATOR = "-";
+
+	@Value("${sign.callBack.url}")
+	private String callBackUrl;
 
     @Override
     @LogAnnotation
@@ -859,6 +863,7 @@ public class SignedBizServiceImpl implements SignedBizService {
 
         StandardCreateFlowBO standardCreateFlow = new StandardCreateFlowBO();
         String initiatorName = partyA.getAccountName();
+        standardCreateFlow.setCallbackUrl(callBackUrl);
         standardCreateFlow.setInitiatorName(initiatorName);
         standardCreateFlow.setCopyViewers(copyViewerInfoBeans);
         //手机号或者邮箱
