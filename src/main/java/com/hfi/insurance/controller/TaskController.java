@@ -9,6 +9,7 @@ import com.hfi.insurance.aspect.anno.LogAnnotation;
 import com.hfi.insurance.common.ApiResponse;
 import com.hfi.insurance.enums.Cons;
 import com.hfi.insurance.enums.ErrorCodeEnum;
+import com.hfi.insurance.mapper.YbCoursePlMapper;
 import com.hfi.insurance.mapper.YbFlowInfoMapper;
 import com.hfi.insurance.model.*;
 import com.hfi.insurance.model.dto.SignedStatusUpdateByDateReq;
@@ -16,14 +17,22 @@ import com.hfi.insurance.model.sign.req.GetPageWithPermissionReq;
 import com.hfi.insurance.model.sign.res.SingerInfoRes;
 import com.hfi.insurance.service.IYbInstitutionInfoService;
 import com.hfi.insurance.service.InstitutionInfoService;
+import com.hfi.insurance.service.OrganizationsService;
 import com.hfi.insurance.service.SignedService;
 import com.hfi.insurance.utils.PicUploadUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -32,7 +41,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.io.File;
+import java.io.FileInputStream;
 import java.lang.reflect.Array;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -47,8 +59,15 @@ import java.util.*;
 public class TaskController {
     @Autowired
     private SignedService signedService;
-    @Autowired
+
+    @Resource
     private YbFlowInfoMapper ybFlowInfoMapper;
+
+    @Resource
+    private OrganizationsService rganizationsService;
+
+    @Resource
+    private YbCoursePlMapper ybCoursePlMapper;
 
     private static List<Integer> flowStatusList = new ArrayList<>();
 
@@ -178,6 +197,28 @@ public class TaskController {
                 PicUploadUtil.picCommitPath.remove(k);
             }
         });
+    }
+
+    @SneakyThrows
+   // @Scheduled(cron = "0 0/1 * * * * ")
+    public  void   findProcessBatchDownload(){
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Calendar now = Calendar.getInstance();
+        now.setTime(new Date());
+        now.add(Calendar.DAY_OF_MONTH,-7);
+        Date time = now.getTime();
+        System.out.println(sdf.format(time));
+        System.out.println(sdf.format(new Date()));
+        List<YbCoursePl> YbCoursePlList=ybCoursePlMapper.selectybCoursePlList(sdf.parse(sdf.format(new Date())),sdf.parse(sdf.format(time)));
+        YbCoursePlList.stream().forEach(x ->{
+            JSONObject processBatchDownload = rganizationsService.findProcessBatchDownload(x.getCourseId());
+            System.out.println(processBatchDownload);
+            Object errCode = processBatchDownload.get("errCode");
+            if (errCode.equals("0")){
+
+            }
+        });
+
     }
 
 }

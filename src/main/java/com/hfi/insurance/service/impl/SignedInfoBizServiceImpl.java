@@ -2,7 +2,6 @@ package com.hfi.insurance.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.hfi.insurance.aspect.anno.LogAnnotation;
@@ -14,18 +13,14 @@ import com.hfi.insurance.model.YbCoursePl;
 import com.hfi.insurance.model.YbFlowInfo;
 import com.hfi.insurance.model.YbInstitutionInfo;
 import com.hfi.insurance.model.sign.FinishDocUrlBean;
-import com.hfi.insurance.model.sign.StandardSignDetailSignDoc;
-import com.hfi.insurance.model.sign.req.FlowDocBean;
 import com.hfi.insurance.model.sign.req.GetRecordInfoBatchReq;
 import com.hfi.insurance.model.sign.req.GetRecordInfoReq;
 import com.hfi.insurance.model.sign.req.GetSignUrlsReq;
 import com.hfi.insurance.model.sign.res.SignRecordsRes;
 import com.hfi.insurance.model.sign.res.SignUrlRes;
 import com.hfi.insurance.model.sign.res.SingerInfoRes;
-import com.hfi.insurance.model.sign.res.StandardSignDetailResult;
 import com.hfi.insurance.service.*;
 import com.hfi.insurance.utils.GuuidUtil;
-import io.swagger.annotations.ApiModelProperty;
 import lombok.SneakyThrows;
 import com.hfi.insurance.model.sign.res.*;
 import com.hfi.insurance.service.IYbFlowInfoService;
@@ -37,7 +32,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.text.SimpleDateFormat;
@@ -167,10 +161,14 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
         if (StringUtils.isEmpty(req.getBeginInitiateTime()) && StringUtils.isEmpty(req.getEndInitiateTime())){
             return  ApiResponse.fail("234","条件时间必填!");
         }
-
         GetSignedRecordBatchRes result = flowInfoService.getSignedRecord(institutionNumber, req);
         log.info("result = {}",JSONObject.toJSONString(result));
-
+        if (req.getPlType().equals("PLPD")){
+            Map<String, Set<String>> List=new HashMap<>();
+            List.put("success",result.getSuccessSet());
+            List.put("fail",result.getFailSet());
+            return new ApiResponse(List);
+        }
         if (result.getSignFlowIdSet().isEmpty()){
             return ApiResponse.fail("234","该筛选条件下没有流程，请重新选择筛选条件!");
         }
@@ -185,9 +183,9 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
         ybCoursePl.setCourseFileDate(sdf.parse(sdf.format(new Date())));
         ybCoursePl.setMbNumber(req.getTemplateId());
         ybCoursePl.setAgreeDate(sdf2.format(sdf2.parse(req.getBeginInitiateTime()))+"~"+sdf2.format(sdf2.parse(req.getEndInitiateTime())));
-        if (req.getQueryType().equals("SIGNLE_NUMBER") || req.getQueryType().equals("3")){
+        if (req.getQueryType().equals("SIGNLE_NUMBER") || req.getQueryType().equals("NUMBERS")){
             ybCoursePl.setNumber(req.getNumbers().toString());
-        }else if (req.getQueryType().equals("2") || req.getQueryType().equals("4")){
+        }else if (req.getQueryType().equals("SIGNLE_NAME") || req.getQueryType().equals("NAMES")){
             ybCoursePl.setInstitutionName(req.getNumbers().toString());
         }
         ybCoursePl.setCourseStatus("0");
@@ -197,6 +195,9 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
         JSONObject jsonObject = rganizationsService.processBatchDownload(ybCoursePl.getCourseId(), ybCoursePl.getCourseFileName(),signFlowIdSet);
         return new ApiResponse(jsonObject);
     }
+
+
+
 
     @Override
     //@LogAnnotation

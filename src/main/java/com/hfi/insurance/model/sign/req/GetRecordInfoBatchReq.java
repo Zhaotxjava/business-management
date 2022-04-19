@@ -22,6 +22,9 @@ public class GetRecordInfoBatchReq extends PageReq {
     @ApiModelProperty("统筹区编码")
     private String areaCode;
 
+    @ApiModelProperty("批量状态 PLPD=需要返回图中没有的机构编码，或者机构名称! PLTG=不需要返回直接发起下载通知")
+    private String plType;
+
     @ApiModelProperty("查询方式，0=numberSet为空格，SIGNLE_NUMBER=单个机构编码，2=单个机构名称，3=多个机构编码，4=多个机构名称")
     private String queryType;
 

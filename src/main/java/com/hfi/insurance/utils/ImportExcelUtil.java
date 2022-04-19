@@ -127,6 +127,68 @@ public class ImportExcelUtil {
     }
 
 
+    public static List<Object> readExcel2(MultipartFile file)
+            throws FileNotFoundException, IOException {
+        List<Object> listName=new ArrayList<>();
+        // 根据后缀名称判断excel的版本
+        String extName = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
+        Workbook wb;
+        if (ExcelVersion.V2003.getSuffix().equals(extName)) {
+            wb = new HSSFWorkbook(file.getInputStream());
+
+        } else if (ExcelVersion.V2007.getSuffix().equals(extName)) {
+            wb = new XSSFWorkbook(file.getInputStream());
+
+        } else {
+            // 无效后缀名称，这里之能保证excel的后缀名称，不能保证文件类型正确，不过没关系，在创建Workbook的时候会校验文件格式
+            throw new IllegalArgumentException("Invalid excel version");
+        }
+        // 开始读取数据
+        List<ExcelSheetPO> sheetPOs = new ArrayList<>();
+        // 解析sheet
+        for (int i = 0; i < wb.getNumberOfSheets(); i++) {
+            Sheet sheet = wb.getSheetAt(i);
+            List<List<Object>> dataList = new ArrayList<>();
+            ExcelSheetPO sheetPO = new ExcelSheetPO();
+            sheetPO.setSheetName(sheet.getSheetName());
+            sheetPO.setDataList(dataList);
+//            int readRowCount = sheet.getPhysicalNumberOfRows();
+            int readRowCount = sheet.getLastRowNum();
+
+
+            // 解析sheet 的行
+            for (int j = sheet.getFirstRowNum(); j <=readRowCount; j++) {
+                Row row = sheet.getRow(j);
+                if (row == null) {
+                    continue;
+                }
+                if (row.getFirstCellNum() < 0) {
+                    continue;
+                }
+                int readColumnCount = (int) row.getLastCellNum();
+                List<Object> rowValue = new LinkedList<Object>();
+                // 解析sheet 的列
+                for (int k = 0; k < readColumnCount; k++) {
+
+                    //判断是否是合并单元格
+                    boolean isMerge = isMergedRegion(sheet, j, k);
+                    if (isMerge) {
+                        //获取合并单元格的值
+                        String mergedRegionValue = getMergedRegionValue(sheet, j, k, wb);
+                        rowValue.add(mergedRegionValue+ StringUtils.EMPTY);
+                    } else {
+                        Cell cell = row.getCell(k);
+                        listName.add(getCellValue(wb, cell));
+                    }
+
+                }
+                dataList.add(rowValue);
+            }
+            sheetPOs.add(sheetPO);
+        }
+        return listName;
+    }
+
     public static List<ExcelSheetPO> readExcel(InputStream inputStream, ExcelVersion excelVersion)
             throws IOException {
 
