@@ -6,7 +6,7 @@ spring:
   application:
     name: insurance_info
   profiles:
-    active: dev
+    active: test
 #  thymeleaf:
 #    enabled: true  #开启thymeleaf视图解析
 #    encoding: utf-8  #编码
