@@ -161,7 +161,7 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
             return   ApiResponse.fail("234","统筹区编码,不能为空!");
         }
         //机构编号  机构名称  模板编号  三选一必填
-        if (StringUtils.isEmpty(req.getTemplateId()) || req.getNumbers().isEmpty()){
+        if (StringUtils.isEmpty(req.getTemplateId()) && req.getNumbers().isEmpty()){
             return ApiResponse.fail("234","模板编号、机构编号、机构名称必填其中一个!");
         }
         if (StringUtils.isEmpty(req.getBeginInitiateTime()) && StringUtils.isEmpty(req.getEndInitiateTime())){
@@ -184,7 +184,7 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
         ybCoursePl.setCourseFileName(fileName);
         ybCoursePl.setCourseFileDate(sdf.parse(sdf.format(new Date())));
         ybCoursePl.setMbNumber(req.getTemplateId());
-        ybCoursePl.setAgreeDate(sdf2.parse(req.getBeginInitiateTime())+"~"+sdf2.parse(req.getEndInitiateTime()));
+        ybCoursePl.setAgreeDate(sdf2.format(sdf2.parse(req.getBeginInitiateTime()))+"~"+sdf2.format(sdf2.parse(req.getEndInitiateTime())));
         if (req.getQueryType().equals("SIGNLE_NUMBER") || req.getQueryType().equals("3")){
             ybCoursePl.setNumber(req.getNumbers().toString());
         }else if (req.getQueryType().equals("2") || req.getQueryType().equals("4")){
