@@ -5,6 +5,7 @@ import com.hfi.insurance.model.InstitutionInfo;
 import com.hfi.insurance.model.sign.req.QueryInnerAccountsReq;
 
 import java.util.List;
+import java.util.Set;
 
 public interface OrganizationsService {
 
@@ -36,7 +37,7 @@ public interface OrganizationsService {
 
     String queryByOrgName(String organizeName,int pageIndex);
 
-    JSONObject processBatchDownload(String bizNo,String fileName, List<String> processIds);
+    JSONObject processBatchDownload(String bizNo,String fileName, Set<String> processIds);
 
     JSONObject findProcessBatchDownload(String bizNo);
 

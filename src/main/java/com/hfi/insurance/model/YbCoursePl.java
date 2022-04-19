@@ -13,7 +13,7 @@ public class YbCoursePl implements Serializable {
 
     @ApiModelProperty("序列号{唯一}")
     @TableId(value = "order_Id")
-    private   Integer  orderId;
+    private   String  orderId;
 
     @ApiModelProperty("进程id(任务id)初步与生成id一致。")
     private   String  courseId;
@@ -25,7 +25,7 @@ public class YbCoursePl implements Serializable {
     private   Date courseFileDate;
 
     @ApiModelProperty("模板编号")
-    private   String mbnNumber;
+    private   String mbNumber;
 
     @ApiModelProperty("所包含的协议时间")
     private   String agreeDate;

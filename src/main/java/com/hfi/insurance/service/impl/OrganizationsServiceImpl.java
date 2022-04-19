@@ -289,7 +289,7 @@ public class OrganizationsServiceImpl implements OrganizationsService {
     }
 
     @Override
-    public JSONObject processBatchDownload(String bizNo, String fileName, List<String> processIds) {
+    public JSONObject processBatchDownload(String bizNo, String fileName, Set<String> processIds) {
         Map<String, String> headMap = new HashMap<>();
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("bizNo", bizNo);

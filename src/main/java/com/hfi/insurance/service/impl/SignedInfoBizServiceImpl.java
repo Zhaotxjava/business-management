@@ -155,52 +155,46 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
     public ApiResponse getSignedRecordBatch(String token, GetRecordInfoBatchReq req) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
         SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd");
-
         //获取统筹区编码
         String institutionNumber = req.getAreaCode();
         if (institutionNumber.equals("")){
             return   ApiResponse.fail("234","统筹区编码,不能为空!");
         }
         //机构编号  机构名称  模板编号  三选一必填
-        if (StringUtils.isEmpty(req.getTemplateId()) || req.getNumbers()!=null){
+        if (StringUtils.isEmpty(req.getTemplateId()) || req.getNumbers().isEmpty()){
             return ApiResponse.fail("234","模板编号、机构编号、机构名称必填其中一个!");
-        }
-        //查询流程id
-        List<String> result = flowInfoService.getSignedRecord(institutionNumber, req);
-        if (result.size()== 0 && result.size()<0){
-            return  ApiResponse.fail("234","该筛选条件下没有流程，请重新选择筛选条件!");
         }
         if (StringUtils.isEmpty(req.getBeginInitiateTime()) && StringUtils.isEmpty(req.getEndInitiateTime())){
             return  ApiResponse.fail("234","条件时间必填!");
         }
+
         GetSignedRecordBatchRes result = flowInfoService.getSignedRecord(institutionNumber, req);
         log.info("result = {}",JSONObject.toJSONString(result));
-        return new ApiResponse(result);
+
+        if (result.getSignFlowIdSet().isEmpty()){
+            return ApiResponse.fail("234","该筛选条件下没有流程，请重新选择筛选条件!");
+        }
         //拼成文件名称 统筹区编码-导出时间.zip   生产id
         String fileName = institutionNumber + "-" + sdf.format(new Date());
-        List<String> numbers = req.getNumbers();
-        String number="";
-        if (req.getNumbers()!=null){
-            for (String s:numbers){
-                number += s+",";
-            }
-        }
         //存入数据库
         YbCoursePl ybCoursePl = new YbCoursePl();
-        ybCoursePl.setCourseId(String.valueOf(GuuidUtil.getUUID()));
+        String id = String.valueOf(GuuidUtil.getUUID());
+        ybCoursePl.setOrderId(id);
+        ybCoursePl.setCourseId(id);
         ybCoursePl.setCourseFileName(fileName);
         ybCoursePl.setCourseFileDate(sdf.parse(sdf.format(new Date())));
-        ybCoursePl.setMbnNumber(req.getTemplateId());
+        ybCoursePl.setMbNumber(req.getTemplateId());
         ybCoursePl.setAgreeDate(sdf2.parse(req.getBeginInitiateTime())+"~"+sdf2.parse(req.getEndInitiateTime()));
         if (req.getQueryType().equals("SIGNLE_NUMBER") || req.getQueryType().equals("3")){
-            ybCoursePl.setNumber(number);
+            ybCoursePl.setNumber(req.getNumbers().toString());
         }else if (req.getQueryType().equals("2") || req.getQueryType().equals("4")){
-            ybCoursePl.setInstitutionName(number);
+            ybCoursePl.setInstitutionName(req.getNumbers().toString());
         }
         ybCoursePl.setCourseStatus("0");
         ybCoursePl.setCreateTime(sdf.parse(sdf.format(new Date())));
-        ybCoursePlMapper.insert(ybCoursePl);
-        JSONObject jsonObject = rganizationsService.processBatchDownload(ybCoursePl.getCourseId(), ybCoursePl.getCourseFileName(), result);
+        ybCoursePlMapper.insertybCoursePl(ybCoursePl);
+        Set<String> signFlowIdSet = result.getSignFlowIdSet();
+        JSONObject jsonObject = rganizationsService.processBatchDownload(ybCoursePl.getCourseId(), ybCoursePl.getCourseFileName(),signFlowIdSet);
         return new ApiResponse(jsonObject);
     }
 

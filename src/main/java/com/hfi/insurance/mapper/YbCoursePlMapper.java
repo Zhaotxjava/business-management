@@ -6,4 +6,5 @@ import com.hfi.insurance.model.YbCoursePl;
 
 public interface YbCoursePlMapper extends BaseMapper<YbCoursePl> {
 
+    void insertybCoursePl(YbCoursePl ybCoursePl);
 }
