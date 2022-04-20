@@ -200,7 +200,7 @@ public class TaskController {
     }
 
     @SneakyThrows
-   // @Scheduled(cron = "0 0/1 * * * * ")
+    //@Scheduled(cron = "0 0/1 * * * * ")
     public  void   findProcessBatchDownload(){
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Calendar now = Calendar.getInstance();
@@ -213,10 +213,10 @@ public class TaskController {
         YbCoursePlList.stream().forEach(x ->{
             JSONObject processBatchDownload = rganizationsService.findProcessBatchDownload(x.getCourseId());
             System.out.println(processBatchDownload);
-            Object errCode = processBatchDownload.get("errCode");
-            if (errCode.equals("0")){
+            Object processCount = processBatchDownload.get("processCount");
+            Object downloadDOList = processBatchDownload.get("downloadDOList");
 
-            }
+            x.setCourseCount(processCount.toString());
         });
 
     }

@@ -5,8 +5,8 @@
 
     <insert id="insertybCoursePl">
     INSERT INTO yb_course_pl VALUES (#{orderId},#{courseId},#{courseFileName},#{courseFileDate},#{mbNumber},#{agreeDate},#{number},#{institutionName},#{remarks},#{courseStatus},#{courseCount},#{createTime},#{updateTime})
-
     </insert>
+
     <select id="selectybCoursePlList" resultType="com.hfi.insurance.model.YbCoursePl">
         SELECT * FROM yb_course_pl WHERE  course_status =0  and create_time >= #{minDate} and create_time &lt; #{maxDate}
     </select>
