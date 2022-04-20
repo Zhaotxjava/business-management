@@ -131,7 +131,7 @@ public class InstitutionController {
 
     @PostMapping(value = "/plwjFileParser",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ApiOperation("解析文件")
-    public String plwjFileParser(@RequestParam("file") MultipartFile file) {
+    public ApiResponse plwjFileParser(@RequestParam("file") MultipartFile file) {
         log.info("解析批量文件 开始：");
         List<Object> objects=new ArrayList<>();
         try {
@@ -139,8 +139,9 @@ public class InstitutionController {
             log.info("文件解析出参：{}", JSONObject.toJSONString(objects));
         } catch (IOException e) {
             e.printStackTrace();
+            return  ApiResponse.fail("247","文件解析失败!");
         }
-        return objects.toString();
+        return new ApiResponse(objects.toString());
     }
 
     @PostMapping(value = "checkImportInstitution", produces = "text/html;charset=UTF-8")
