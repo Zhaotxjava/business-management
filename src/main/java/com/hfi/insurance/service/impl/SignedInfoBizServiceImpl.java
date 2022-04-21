@@ -190,6 +190,7 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
         }
         ybCoursePl.setCourseStatus("0");
         ybCoursePl.setCreateTime(sdf.parse(sdf.format(new Date())));
+        ybCoursePl.setAreaCode(institutionNumber);
         ybCoursePlMapper.insertybCoursePl(ybCoursePl);
         Set<String> signFlowIdSet = result.getSignFlowIdSet();
         JSONObject jsonObject = rganizationsService.processBatchDownload(ybCoursePl.getCourseId(), ybCoursePl.getCourseFileName(),signFlowIdSet);

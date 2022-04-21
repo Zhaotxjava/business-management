@@ -51,9 +51,11 @@ public class YbCoursePl implements Serializable {
     @ApiModelProperty("修改时间")
     private   Date updateTime;
 
-
     @ApiModelProperty("修改时间")
     private   String urlList;
+
+    @ApiModelProperty("统筹区编码")
+    private   String areaCode;
 
 
 }

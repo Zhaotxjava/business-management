@@ -14,5 +14,6 @@ public interface YbCoursePlMapper extends BaseMapper<YbCoursePl> {
 
     List<YbCoursePl> selectybCoursePlList(@Param("maxDate") Date maxDate,@Param("minDate") Date minDate);
 
-    void updates(List<YbCoursePl> ybCoursePlLists);
+
+    void delectCoursePlList(@Param("minDate") Date minDate);
 }

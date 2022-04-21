@@ -240,4 +240,14 @@ public class TaskController {
 
     }
 
+    @SneakyThrows
+    @Scheduled(cron = "0 0/10 * * * * ")
+    public  void   findProcessBatchDownload2(){
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Calendar now = Calendar.getInstance();
+        now.setTime(new Date());
+        now.add(Calendar.DAY_OF_MONTH,-7);
+        ybCoursePlMapper.delectCoursePlList(sdf.parse(sdf.format(now.getTime())));
+    }
+
 }
