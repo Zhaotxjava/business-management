@@ -234,7 +234,7 @@ public class SignedBizServiceImpl implements SignedBizService {
                 partyA.setOrganizeNo(organizeNo);
                 handleCreateSign(errMsg, institutionInfos, partyA, institutionNameMap, copyViewerInfoBeans
                         , subjectPrefix.toString(), fileKey, templateType, institutionNumber
-                        , singerList, signDocs, flowNameMap);
+                        , singerList, signDocs, flowNameMap,req.getTemplateId());
 
             }
         } else if (ETemplateType.FILE_UPLOAD == templateType) {
@@ -315,7 +315,7 @@ public class SignedBizServiceImpl implements SignedBizService {
             String subjectPrefix = req.getTemplateId() + "-" + req.getFileName();
 
             handleCreateSign(errMsg, institutionInfos, partyA, institutionNameMap, copyViewerInfoBeans
-                    , subjectPrefix, fileKey, templateType, institutionNumber, singerList, signDocs, flowNameMap);
+                    , subjectPrefix, fileKey, templateType, institutionNumber, singerList, signDocs, flowNameMap,req.getTemplateId());
 
 //            String signFlowId = signFlows.getString("signFlowId");
 //            List<InstitutionBaseInfo> distinctInstitutions = institutionInfos.stream().distinct().collect(Collectors.toList());
@@ -859,7 +859,7 @@ public class SignedBizServiceImpl implements SignedBizService {
             , StandardSignerInfoBean partyA, Map<String, String> institutionNameMap, List<CopyViewerInfoBean> copyViewerInfoBeans
             , String subjectPrefix,  String fileKey, ETemplateType templateType
             , String institutionNumber, List<StandardSignerInfoBean> singerList
-            , List<FlowDocBean> signDocs, Map<String, String> flowNameMap) {
+            , List<FlowDocBean> signDocs, Map<String, String> flowNameMap,String templateId) {
 
         StandardCreateFlowBO standardCreateFlow = new StandardCreateFlowBO();
         String initiatorName = partyA.getAccountName();
@@ -955,6 +955,7 @@ public class SignedBizServiceImpl implements SignedBizService {
                 .setFlowName(flowNameMap.get(partyA.getOrganizeNo()))
                 .setBatchStatus(BatchStatus2)
                 .setBatchNo(batchNo)
+                .setTemplateId(templateId)
         ;
 
         if (StringUtils.isBlank(flowAInfo.getSigners())) {

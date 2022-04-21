@@ -7,7 +7,7 @@ import lombok.Data;
  * @Description:
  */
 @Data
-public class downloadDO {
+public class DownloadDo {
 
     private  String id;
 

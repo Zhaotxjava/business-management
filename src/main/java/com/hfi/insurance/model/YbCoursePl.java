@@ -52,4 +52,8 @@ public class YbCoursePl implements Serializable {
     private   Date updateTime;
 
 
+    @ApiModelProperty("修改时间")
+    private   String urlList;
+
+
 }

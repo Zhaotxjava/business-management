@@ -129,19 +129,21 @@ public class InstitutionController {
         return institutionInfoService.newUpdateInstitutionInfo(req);
     }
 
-    @PostMapping(value = "/plwjFileParser",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/plwjFileParser", produces = "text/html;charset=UTF-8")
     @ApiOperation("解析文件")
-    public ApiResponse plwjFileParser(@RequestParam("file") MultipartFile file) {
+    public String plwjFileParser(@RequestParam("file") MultipartFile file) {
         log.info("解析批量文件 开始：");
-        List<Object> objects=new ArrayList<>();
+        List<String> objects=new ArrayList<>();
         try {
              objects = ImportExcelUtil.readExcel2(file);
             log.info("文件解析出参：{}", JSONObject.toJSONString(objects));
         } catch (IOException e) {
             e.printStackTrace();
-            return  ApiResponse.fail("247","文件解析失败!");
+            return  JSONObject.toJSONString(ApiResponse.fail("247","文件解析失败!"));
         }
-        return new ApiResponse(objects.toString());
+
+
+        return JSONObject.toJSONString(ApiResponse.success(objects));
     }
 
     @PostMapping(value = "checkImportInstitution", produces = "text/html;charset=UTF-8")

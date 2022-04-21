@@ -1,6 +1,7 @@
 
 package com.hfi.insurance.utils;
 
+import com.alibaba.fastjson.JSONObject;
 import com.hfi.insurance.enums.ExcelVersion;
 import com.hfi.insurance.model.ExcelSheetPO;
 //import org.apache.commons.collections4.CollectionUtils;
@@ -127,9 +128,9 @@ public class ImportExcelUtil {
     }
 
 
-    public static List<Object> readExcel2(MultipartFile file)
+    public static List<String> readExcel2(MultipartFile file)
             throws FileNotFoundException, IOException {
-        List<Object> listName=new ArrayList<>();
+        List<String> listName=new ArrayList<>();
         // 根据后缀名称判断excel的版本
         String extName = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
         Workbook wb;
@@ -178,7 +179,8 @@ public class ImportExcelUtil {
                         rowValue.add(mergedRegionValue+ StringUtils.EMPTY);
                     } else {
                         Cell cell = row.getCell(k);
-                        listName.add(getCellValue(wb, cell));
+                        Object cellValue = getCellValue(wb, cell);
+                        listName.add(cellValue.toString());
                     }
 
                 }

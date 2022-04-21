@@ -165,9 +165,9 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
         log.info("result = {}",JSONObject.toJSONString(result));
         if (req.getPlType().equals("PLPD")){
             Map<String, Set<String>> List=new HashMap<>();
-            List.put("success",result.getSuccessSet());
-            List.put("fail",result.getFailSet());
-            return new ApiResponse(List);
+            List.put("successSet",result.getSuccessSet());
+            List.put("failSet",result.getFailSet());
+            return new ApiResponse("404",null,List);
         }
         if (result.getSignFlowIdSet().isEmpty()){
             return ApiResponse.fail("234","该筛选条件下没有流程，请重新选择筛选条件!");

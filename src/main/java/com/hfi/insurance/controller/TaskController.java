@@ -14,6 +14,7 @@ import com.hfi.insurance.mapper.YbFlowInfoMapper;
 import com.hfi.insurance.model.*;
 import com.hfi.insurance.model.dto.SignedStatusUpdateByDateReq;
 import com.hfi.insurance.model.sign.req.GetPageWithPermissionReq;
+import com.hfi.insurance.model.sign.res.DownloadDo;
 import com.hfi.insurance.model.sign.res.SingerInfoRes;
 import com.hfi.insurance.service.IYbInstitutionInfoService;
 import com.hfi.insurance.service.InstitutionInfoService;
@@ -44,6 +45,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.FileInputStream;
 import java.lang.reflect.Array;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -200,7 +202,7 @@ public class TaskController {
     }
 
     @SneakyThrows
-    //@Scheduled(cron = "0 0/1 * * * * ")
+    @Scheduled(cron = "0 0/10 * * * * ")
     public  void   findProcessBatchDownload(){
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Calendar now = Calendar.getInstance();
@@ -210,14 +212,31 @@ public class TaskController {
         System.out.println(sdf.format(time));
         System.out.println(sdf.format(new Date()));
         List<YbCoursePl> YbCoursePlList=ybCoursePlMapper.selectybCoursePlList(sdf.parse(sdf.format(new Date())),sdf.parse(sdf.format(time)));
-        YbCoursePlList.stream().forEach(x ->{
-            JSONObject processBatchDownload = rganizationsService.findProcessBatchDownload(x.getCourseId());
-            System.out.println(processBatchDownload);
-            Object processCount = processBatchDownload.get("processCount");
-            Object downloadDOList = processBatchDownload.get("downloadDOList");
-
-            x.setCourseCount(processCount.toString());
-        });
+        if (!YbCoursePlList.isEmpty()){
+            YbCoursePlList.stream().forEach(x ->{
+                JSONObject processBatchDownload = rganizationsService.findProcessBatchDownload(x.getCourseId());
+                System.out.println(processBatchDownload);
+                Object processCount = processBatchDownload.get("processCount");
+                Object downloadDOList = processBatchDownload.get("downloadDOList");
+                List<DownloadDo> downloadDos = JSONObject.parseArray(JSONObject.toJSONString(downloadDOList), DownloadDo.class);
+                List<String> urlList=new ArrayList<>();
+                downloadDos.stream().forEach(y ->{
+                    String downloadUrl = y.getDownloadUrl();
+                    urlList.add(downloadUrl);
+                });
+                if (!urlList.isEmpty()){
+                    x.setUrlList(urlList.toString());
+                    x.setCourseStatus("1");
+                }
+                x.setCourseCount(processCount.toString());
+                try {
+                    x.setUpdateTime(sdf.parse(sdf.format(new Date())));
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+                ybCoursePlMapper.updateById(x);
+            });
+        }
 
     }
 
