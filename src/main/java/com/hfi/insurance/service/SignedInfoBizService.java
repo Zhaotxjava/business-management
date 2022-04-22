@@ -24,4 +24,6 @@ public interface SignedInfoBizService {
     ApiResponse getPreviewUrl(String fileKey,String docId);
 
     ApiResponse getSignFlowDocUrls(String signFlowId);
+
+    ApiResponse getSignInfoRecordBatchList(String token, GetRecordInfoBatchReq req);
 }

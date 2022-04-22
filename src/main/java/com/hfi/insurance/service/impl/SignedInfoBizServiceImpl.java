@@ -191,6 +191,7 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
         ybCoursePl.setCourseStatus("0");
         ybCoursePl.setCreateTime(sdf.parse(sdf.format(new Date())));
         ybCoursePl.setAreaCode(institutionNumber);
+        ybCoursePl.setUpdateTime(sdf.parse(sdf.format(new Date())));
         ybCoursePlMapper.insertybCoursePl(ybCoursePl);
         Set<String> signFlowIdSet = result.getSignFlowIdSet();
         JSONObject jsonObject = rganizationsService.processBatchDownload(ybCoursePl.getCourseId(), ybCoursePl.getCourseFileName(),signFlowIdSet);
@@ -277,6 +278,21 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
         );
         log.info("获取签署流程文档下载更新后url" + urlsList);
         return new ApiResponse(urlsList);
+    }
+
+    @SneakyThrows
+    @Override
+    public ApiResponse getSignInfoRecordBatchList(String token, GetRecordInfoBatchReq req) {
+        //获取统筹区编码
+    /*    if (StringUtils.isEmpty(req.getAreaCode())){
+            return ApiResponse.fail("352","统筹区编码不能为空");
+        }*/
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Calendar now = Calendar.getInstance();
+        now.setTime(new Date());
+        now.add(Calendar.DAY_OF_MONTH,-7);
+        List<YbCoursePl> YbCoursePlList= ybCoursePlMapper.selectSignInfoList(req.getAreaCode(),req.getTemplateId(),sdf.parse(sdf.format(new Date())),sdf.parse(sdf.format(now.getTime())),req.getPageNum(),req.getPageSize());
+        return ApiResponse.success(YbCoursePlList);
     }
 
 }

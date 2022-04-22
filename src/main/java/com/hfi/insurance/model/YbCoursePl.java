@@ -57,5 +57,8 @@ public class YbCoursePl implements Serializable {
     @ApiModelProperty("统筹区编码")
     private   String areaCode;
 
+    @ApiModelProperty("统筹区编码")
+    private   String templateId;
+
 
 }

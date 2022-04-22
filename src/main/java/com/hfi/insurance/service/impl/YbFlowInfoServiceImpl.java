@@ -95,7 +95,7 @@ public class YbFlowInfoServiceImpl extends ServiceImpl<YbFlowInfoMapper, YbFlowI
 	@Override
 	public List<YbFlowInfo> getSignedRecordByAreaCode(String institutionNumber) {
 		QueryWrapper<YbFlowInfo> queryWrapper = new QueryWrapper<>();
-		queryWrapper.select("distinct sign_flow_id").likeRight("number", institutionNumber);
+		queryWrapper.select("distinct sign_flow_id, template_id ").likeRight("number", institutionNumber);
 		queryWrapper.eq("flow_status", "2");
 		queryWrapper.and(i -> i.isNull("batch_status").or().eq("batch_status", Cons.BatchStr.BATCH_STATUS_SUCCESS));
 		queryWrapper.orderByDesc("initiator_time");

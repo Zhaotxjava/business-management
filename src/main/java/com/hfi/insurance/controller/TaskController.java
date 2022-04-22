@@ -203,14 +203,13 @@ public class TaskController {
 
     @SneakyThrows
     @Scheduled(cron = "0 0/10 * * * * ")
+    @ApiOperation("定时任务，10分钟查询一次文件下载地址。")
     public  void   findProcessBatchDownload(){
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Calendar now = Calendar.getInstance();
         now.setTime(new Date());
         now.add(Calendar.DAY_OF_MONTH,-7);
         Date time = now.getTime();
-        System.out.println(sdf.format(time));
-        System.out.println(sdf.format(new Date()));
         List<YbCoursePl> YbCoursePlList=ybCoursePlMapper.selectybCoursePlList(sdf.parse(sdf.format(new Date())),sdf.parse(sdf.format(time)));
         if (!YbCoursePlList.isEmpty()){
             YbCoursePlList.stream().forEach(x ->{
@@ -242,6 +241,7 @@ public class TaskController {
 
     @SneakyThrows
     @Scheduled(cron = "0 0/10 * * * * ")
+    @ApiOperation("定时任务，10分钟删除超过七天无效数据")
     public  void   findProcessBatchDownload2(){
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Calendar now = Calendar.getInstance();
