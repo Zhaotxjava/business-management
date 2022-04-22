@@ -88,8 +88,7 @@ public class YbFlowInfoServiceImpl extends ServiceImpl<YbFlowInfoMapper, YbFlowI
 			});
 		}
 
-		GetSignedRecordBatchRes res = new GetSignedRecordBatchRes(result, failSet);
-		return res;
+		return new GetSignedRecordBatchRes(result, successSet,failSet);
 	}
 
 	@Override
