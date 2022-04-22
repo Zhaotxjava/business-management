@@ -34,4 +34,10 @@ public class GetSignedRecordBatchRes {
         this.signFlowIdSet = signFlowIdSet;
         this.failSet = failSet;
     }
+
+    public GetSignedRecordBatchRes(Set<String> signFlowIdSet, Set<String> successSet, Set<String> failSet) {
+        this.signFlowIdSet = signFlowIdSet;
+        this.successSet = successSet;
+        this.failSet = failSet;
+    }
 }
