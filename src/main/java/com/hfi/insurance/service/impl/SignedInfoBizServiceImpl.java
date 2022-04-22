@@ -184,9 +184,9 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
         ybCoursePl.setMbNumber(req.getTemplateId());
         ybCoursePl.setAgreeDate(sdf2.format(sdf2.parse(req.getBeginInitiateTime()))+"~"+sdf2.format(sdf2.parse(req.getEndInitiateTime())));
         if (req.getQueryType().equals("SIGNLE_NUMBER") || req.getQueryType().equals("NUMBERS")){
-            ybCoursePl.setNumber(req.getNumbers().toString());
+            ybCoursePl.setNumber(testList(req.getNumbers()));
         }else if (req.getQueryType().equals("SIGNLE_NAME") || req.getQueryType().equals("NAMES")){
-            ybCoursePl.setInstitutionName(req.getNumbers().toString());
+            ybCoursePl.setInstitutionName(testList(req.getNumbers()));
         }
         ybCoursePl.setCourseStatus("0");
         ybCoursePl.setCreateTime(sdf.parse(sdf.format(new Date())));
@@ -199,7 +199,15 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
     }
 
 
+    public  String  testList(List<String> list){
+        String  lists ="";
+        for (String s:list){
+            lists += s +",";
+        }
+        String substring = lists.substring(0, lists.length() - 1);
 
+        return  substring;
+    }
 
     @Override
     //@LogAnnotation

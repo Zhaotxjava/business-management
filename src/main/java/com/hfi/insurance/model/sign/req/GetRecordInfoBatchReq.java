@@ -16,6 +16,9 @@ import java.util.Set;
 @Data
 public class GetRecordInfoBatchReq extends PageReq {
 
+    @ApiModelProperty("序列号")
+    private String orderId;
+
     @ApiModelProperty("模板编号")
     private String templateId;
 

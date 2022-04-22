@@ -220,11 +220,10 @@ public class TaskController {
                 List<DownloadDo> downloadDos = JSONObject.parseArray(JSONObject.toJSONString(downloadDOList), DownloadDo.class);
                 List<String> urlList=new ArrayList<>();
                 downloadDos.stream().forEach(y ->{
-                    String downloadUrl = y.getDownloadUrl();
-                    urlList.add(downloadUrl);
+                    urlList.add(y.getDownloadUrl());
                 });
                 if (!urlList.isEmpty()){
-                    x.setUrlList(urlList.toString());
+                    x.setUrlList(testList(urlList));
                     x.setCourseStatus("1");
                 }
                 x.setCourseCount(processCount.toString());
@@ -237,6 +236,15 @@ public class TaskController {
             });
         }
 
+    }
+    public  String  testList(List<String> list){
+        String  lists ="";
+        for (String s:list){
+            lists += s +",";
+        }
+        String substring = lists.substring(0, lists.length() - 1);
+
+        return  substring;
     }
 
     @SneakyThrows
