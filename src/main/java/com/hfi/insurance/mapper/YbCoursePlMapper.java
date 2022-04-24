@@ -18,5 +18,7 @@ public interface YbCoursePlMapper extends BaseMapper<YbCoursePl> {
 
     void delectCoursePlList(@Param("minDate") Date minDate);
 
-    List<YbCoursePl> selectSignInfoList(@Param("areaCode") String areaCode,@Param("templateId") String templateId,  @Param("maxDate") Date maxDate, @Param("minDate")Date minDate, @Param("pageNum") Integer pageNum, @Param("pageSize") Integer pageSize);
+    List<YbCoursePl> selectSignInfoList(@Param("areaCode") String areaCode,@Param("templateId") String templateId,  @Param("maxDate") Date maxDate, @Param("minDate")Date minDate, @Param("orderId") String orderId,  @Param("pageNum") Integer pageNum, @Param("pageSize") Integer pageSize);
+
+    Integer selectCounts(@Param("areaCode") String areaCode,@Param("templateId") String templateId,  @Param("maxDate") Date maxDate, @Param("minDate")Date minDate,@Param("orderId") String orderId);
 }

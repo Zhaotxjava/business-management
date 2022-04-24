@@ -8,7 +8,10 @@
                 area_code = #{areaCode}
             </if>
              <if test="templateId!=null  and templateId!=''">
-               and mb_number = #{templateId}
+               and mb_number = concat ('%',#{templateId},'%')
+            </if>
+            <if test="orderId!=null  and orderId!=''">
+               and order_id = #{orderId}
             </if>
 
             <if test="minDate!=null">
@@ -21,7 +24,7 @@
         </where>
     </sql>
     <insert id="insertybCoursePl">
-    INSERT INTO yb_course_pl VALUES (#{orderId},#{courseId},#{courseFileName},#{courseFileDate},#{mbNumber},#{agreeDate},#{number},#{institutionName},#{remarks},#{courseStatus},#{courseCount},#{createTime},#{updateTime},#{urlList},#{areaCode},#{templateId})
+    INSERT INTO yb_course_pl VALUES (#{orderId},#{courseId},#{courseFileName},#{courseFileDate},#{mbNumber},#{agreeDate},#{number},#{institutionName},#{remarks},#{courseStatus},#{courseCount},#{createTime},#{updateTime},#{urlList},#{areaCode})
     </insert>
 
     <delete id="delectCoursePlList">
@@ -38,6 +41,11 @@
         <include refid="SignInfoWhere"/>
         order by update_time desc)t
         limit #{pageNum},#{pageSize}
+
+    </select>
+    <select id="selectCounts" resultType="java.lang.Integer">
+        SELECT Count(*) FROM yb_course_pl
+        <include refid="SignInfoWhere"/>
 
     </select>
 </mapper>

@@ -9,6 +9,7 @@ import com.hfi.insurance.common.ApiResponse;
 import com.hfi.insurance.enums.Cons;
 import com.hfi.insurance.enums.ErrorCodeEnum;
 import com.hfi.insurance.mapper.YbCoursePlMapper;
+import com.hfi.insurance.model.GetArecordReq;
 import com.hfi.insurance.model.YbCoursePl;
 import com.hfi.insurance.model.YbFlowInfo;
 import com.hfi.insurance.model.YbInstitutionInfo;
@@ -148,6 +149,7 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
     @LogAnnotation
     public ApiResponse getSignedRecordBatch(String token, GetRecordInfoBatchReq req) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+        SimpleDateFormat sdf3 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd");
         //获取统筹区编码
         String institutionNumber = req.getAreaCode();
@@ -180,7 +182,7 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
         ybCoursePl.setOrderId(id);
         ybCoursePl.setCourseId(id);
         ybCoursePl.setCourseFileName(fileName);
-        ybCoursePl.setCourseFileDate(sdf.parse(sdf.format(new Date())));
+        ybCoursePl.setCourseFileDate(sdf3.parse(sdf3.format(new Date())));
         ybCoursePl.setMbNumber(req.getTemplateId());
         ybCoursePl.setAgreeDate(sdf2.format(sdf2.parse(req.getBeginInitiateTime()))+"~"+sdf2.format(sdf2.parse(req.getEndInitiateTime())));
         if (req.getQueryType().equals("SIGNLE_NUMBER") || req.getQueryType().equals("NUMBERS")){
@@ -189,9 +191,9 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
             ybCoursePl.setInstitutionName(testList(req.getNumbers()));
         }
         ybCoursePl.setCourseStatus("0");
-        ybCoursePl.setCreateTime(sdf.parse(sdf.format(new Date())));
+        ybCoursePl.setCreateTime(sdf3.parse(sdf3.format(new Date())));
         ybCoursePl.setAreaCode(institutionNumber);
-        ybCoursePl.setUpdateTime(sdf.parse(sdf.format(new Date())));
+        ybCoursePl.setUpdateTime(sdf3.parse(sdf3.format(new Date())));
         ybCoursePlMapper.insertybCoursePl(ybCoursePl);
         Set<String> signFlowIdSet = result.getSignFlowIdSet();
         JSONObject jsonObject = rganizationsService.processBatchDownload(ybCoursePl.getCourseId(), ybCoursePl.getCourseFileName(),signFlowIdSet);
@@ -299,8 +301,13 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
         Calendar now = Calendar.getInstance();
         now.setTime(new Date());
         now.add(Calendar.DAY_OF_MONTH,-7);
-        List<YbCoursePl> YbCoursePlList= ybCoursePlMapper.selectSignInfoList(req.getAreaCode(),req.getTemplateId(),sdf.parse(sdf.format(new Date())),sdf.parse(sdf.format(now.getTime())),req.getPageNum(),req.getPageSize());
-        return ApiResponse.success(YbCoursePlList);
+        req.setPageNum((req.getPageNum() - 1) * req.getPageSize());
+        List<YbCoursePl> YbCoursePlList= ybCoursePlMapper.selectSignInfoList(req.getAreaCode(),req.getTemplateId(),sdf.parse(sdf.format(new Date())),sdf.parse(sdf.format(now.getTime())),req.getOrderId(),req.getPageNum(),req.getPageSize());
+       Integer count = ybCoursePlMapper.selectCounts(req.getAreaCode(),req.getTemplateId(),sdf.parse(sdf.format(new Date())),sdf.parse(sdf.format(now.getTime())),req.getOrderId());
+        Page<YbCoursePl> page = new Page<>();
+        page.setRecords(YbCoursePlList);
+        page.setTotal(count);
+        return ApiResponse.success(page);
     }
 
 }
