@@ -82,6 +82,7 @@ public class YbFlowInfoServiceImpl extends ServiceImpl<YbFlowInfoMapper, YbFlowI
 
 		if (BatchQueryTypeEnum.NUMBERS == type || BatchQueryTypeEnum.NAMES == type) {
 			req.getNumbers().forEach(inputParam -> {
+
 				if (!successSet.contains(inputParam)) {
 					failSet.add(inputParam);
 				}
@@ -239,7 +240,7 @@ public class YbFlowInfoServiceImpl extends ServiceImpl<YbFlowInfoMapper, YbFlowI
 		//只查成功的
 		queryWrapper.eq("flow_status", "2");
 		queryWrapper.and(i -> i.isNull("batch_status").or().eq("batch_status", Cons.BatchStr.BATCH_STATUS_SUCCESS));
-		queryWrapper.select("sign_flow_id");
+		queryWrapper.select("sign_flow_id,number");
 		//        queryWrapper.orderByDesc("initiator_time");
 //        queryWrapper.ne("batch_status", Cons.BatchStr.BATCH_STATUS_FAIL);
 		return queryWrapper;

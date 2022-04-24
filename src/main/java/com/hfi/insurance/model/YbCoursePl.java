@@ -1,8 +1,11 @@
 package com.hfi.insurance.model;
 
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.hfi.insurance.config.ExportExcel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -22,6 +25,8 @@ public class YbCoursePl implements Serializable {
     private   String  courseFileName;
 
     @ApiModelProperty("下载任务操作时间")
+    @JsonFormat(pattern ="yyyy-MM-dd HH:mm:ss", timezone = "GMT+08:00")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private   Date courseFileDate;
 
     @ApiModelProperty("模板编号")
@@ -46,12 +51,17 @@ public class YbCoursePl implements Serializable {
     private   String courseCount;
 
     @ApiModelProperty("创建时间")
+    @JsonFormat(pattern ="yyyy-MM-dd HH:mm:ss", timezone = "GMT+08:00")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private   Date createTime;
 
+
+    @JsonFormat(pattern ="yyyy-MM-dd HH:mm:ss", timezone = "GMT+08:00")
     @ApiModelProperty("修改时间")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private   Date updateTime;
 
-    @ApiModelProperty("修改时间")
+    @ApiModelProperty("地址")
     private   String urlList;
 
     @ApiModelProperty("统筹区编码")
