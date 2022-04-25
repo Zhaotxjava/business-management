@@ -190,6 +190,12 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
         }else if (req.getQueryType().equals("SIGNLE_NAME") || req.getQueryType().equals("NAMES")){
             ybCoursePl.setInstitutionName(testList(req.getNumbers()));
         }
+        if (result.getFailSet().size()>0){
+            ybCoursePl.setRemarks("有"+result.getFailSet().size()+"家机构不存在。完成部署的文件。"+testList2(result.getSuccessSet()));
+        }else {
+            ybCoursePl.setRemarks("完成全部部署!");
+        }
+
         ybCoursePl.setCourseStatus("0");
         ybCoursePl.setCreateTime(sdf3.parse(sdf3.format(new Date())));
         ybCoursePl.setAreaCode(institutionNumber);
@@ -209,6 +215,18 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
         String substring = lists.substring(0, lists.length() - 1);
 
         return  substring;
+    }
+
+    public  String  testList2(Set<String> list){
+        String  lists ="";
+        int i=0;
+        for (String s:list){
+            if(i<=100){
+                lists += s +",";
+            }
+            i++;
+        }
+        return  lists.substring(0, lists.length() - 1);
     }
 
     @Override

@@ -8,7 +8,7 @@
                 area_code = #{areaCode}
             </if>
              <if test="templateId!=null  and templateId!=''">
-               and mb_number = concat ('%',#{templateId},'%')
+               and mb_number = #{templateId}
             </if>
             <if test="orderId!=null  and orderId!=''">
                and order_id = #{orderId}
