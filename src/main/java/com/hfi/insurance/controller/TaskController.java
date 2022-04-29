@@ -35,6 +35,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
@@ -70,6 +71,10 @@ public class TaskController {
 
     @Resource
     private YbCoursePlMapper ybCoursePlMapper;
+
+
+    @Value("${esignpro.port}")
+    private String port;
 
     private static List<Integer> flowStatusList = new ArrayList<>();
 
@@ -202,7 +207,7 @@ public class TaskController {
     }
 
     @SneakyThrows
-    @Scheduled(cron = "0 0/10 * * * * ")
+    @Scheduled(cron = "0 0/1 * * * * ")
     @ApiOperation("定时任务，10分钟查询一次文件下载地址。")
     public  void   findProcessBatchDownload(){
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -240,10 +245,11 @@ public class TaskController {
     public  String  testList(List<String> list){
         String  lists ="";
         for (String s:list){
-            lists += s +",";
+            String[] split = s.split(":8030/rest/file-system");
+            String urls= port+split[1];
+            lists += urls +",";
         }
         String substring = lists.substring(0, lists.length() - 1);
-
         return  substring;
     }
 
