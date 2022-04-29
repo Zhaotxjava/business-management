@@ -3,6 +3,7 @@ package com.hfi.insurance.model.sign.res;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -24,6 +25,7 @@ public class GetSignedRecordBatchRes {
     private Set<String> failSet;
 
     public GetSignedRecordBatchRes(){
+        this.signFlowIdSet = new HashSet<>();
     }
 
     public GetSignedRecordBatchRes(Set<String> signFlowIdSet) {

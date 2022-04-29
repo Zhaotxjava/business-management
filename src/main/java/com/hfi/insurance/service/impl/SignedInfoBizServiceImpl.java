@@ -9,7 +9,6 @@ import com.hfi.insurance.common.ApiResponse;
 import com.hfi.insurance.enums.Cons;
 import com.hfi.insurance.enums.ErrorCodeEnum;
 import com.hfi.insurance.mapper.YbCoursePlMapper;
-import com.hfi.insurance.model.GetArecordReq;
 import com.hfi.insurance.model.YbCoursePl;
 import com.hfi.insurance.model.YbFlowInfo;
 import com.hfi.insurance.model.YbInstitutionInfo;
@@ -17,17 +16,13 @@ import com.hfi.insurance.model.sign.FinishDocUrlBean;
 import com.hfi.insurance.model.sign.req.GetRecordInfoBatchReq;
 import com.hfi.insurance.model.sign.req.GetRecordInfoReq;
 import com.hfi.insurance.model.sign.req.GetSignUrlsReq;
+import com.hfi.insurance.model.sign.res.GetSignedRecordBatchRes;
 import com.hfi.insurance.model.sign.res.SignRecordsRes;
 import com.hfi.insurance.model.sign.res.SignUrlRes;
 import com.hfi.insurance.model.sign.res.SingerInfoRes;
 import com.hfi.insurance.service.*;
 import com.hfi.insurance.utils.GuuidUtil;
 import lombok.SneakyThrows;
-import com.hfi.insurance.model.sign.res.*;
-import com.hfi.insurance.service.IYbFlowInfoService;
-import com.hfi.insurance.service.IYbInstitutionInfoService;
-import com.hfi.insurance.service.SignedInfoBizService;
-import com.hfi.insurance.service.SignedService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -153,7 +148,7 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
         SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd");
         //获取统筹区编码
         String institutionNumber = req.getAreaCode();
-        if (institutionNumber.equals("")){
+        if ("".equals(institutionNumber)){
             return   ApiResponse.fail("234","统筹区编码,不能为空!");
         }
         //机构编号  机构名称  模板编号  三选一必填
@@ -165,7 +160,7 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
         }
         GetSignedRecordBatchRes result = flowInfoService.getSignedRecord(institutionNumber, req);
         log.info("result = {}",JSONObject.toJSONString(result));
-        if (req.getPlType().equals("PLPD")){
+        if ("PLPD".equals(req.getPlType())){
             Map<String, Set<String>> List=new HashMap<>();
             List.put("successSet",result.getSuccessSet());
             List.put("failSet",result.getFailSet());
@@ -185,9 +180,9 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
         ybCoursePl.setCourseFileDate(sdf3.parse(sdf3.format(new Date())));
         ybCoursePl.setMbNumber(req.getTemplateId());
         ybCoursePl.setAgreeDate(sdf2.format(sdf2.parse(req.getBeginInitiateTime()))+"~"+sdf2.format(sdf2.parse(req.getEndInitiateTime())));
-        if (req.getQueryType().equals("SIGNLE_NUMBER") || req.getQueryType().equals("NUMBERS")){
+        if (req.getQueryType().equals("SINGLE_NUMBER") || req.getQueryType().equals("NUMBERS")){
             ybCoursePl.setNumber(testList(req.getNumbers()));
-        }else if (req.getQueryType().equals("SIGNLE_NAME") || req.getQueryType().equals("NAMES")){
+        }else if (req.getQueryType().equals("SINGLE_NAME") || req.getQueryType().equals("NAMES")){
             ybCoursePl.setInstitutionName(testList(req.getNumbers()));
         }
         if (result.getFailSet().size()>0){
