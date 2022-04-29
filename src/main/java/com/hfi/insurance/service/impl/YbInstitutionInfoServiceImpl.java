@@ -214,6 +214,7 @@ public  class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfo
         return ybInstitutionInfoMapper.selectList(queryWrapper);
     }
 
+
     @Override
     @LogAnnotation
     @Transactional(rollbackFor = Exception.class)
