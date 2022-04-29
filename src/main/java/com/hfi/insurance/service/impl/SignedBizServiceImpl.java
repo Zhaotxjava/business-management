@@ -924,7 +924,8 @@ public class SignedBizServiceImpl implements SignedBizService {
                     .setFlowType("Common")
                     .setFlowName(flowNameMap.get(institutionInfo.getNumber()))
                     .setBatchStatus(BatchStatus2)
-                    .setBatchNo(batchNo);
+                    .setBatchNo(batchNo)
+                    .setTemplateId(templateId);
             if (StringUtils.isBlank(fileKey)) {
                 flowInfo.setFileKey("文档为空");
             } else {
