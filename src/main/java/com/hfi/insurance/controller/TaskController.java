@@ -246,7 +246,7 @@ public class TaskController {
         String  lists ="";
         for (String s:list){
             String[] split = s.split(":8030/rest/file-system");
-            String urls=  split[0]+port+split[1];
+            String urls= port+split[1];
             lists += urls +",";
         }
         String substring = lists.substring(0, lists.length() - 1);

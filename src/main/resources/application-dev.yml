@@ -19,7 +19,7 @@ esignpro:
   url: http://172.16.80.191:8088
   projectId: 1001001
   secret: c5505d7831bc626e92c175052956c7fc
-  port: 8088
+  port: http://172.16.29.54:8088
 spring:
   datasource:
     username: test
