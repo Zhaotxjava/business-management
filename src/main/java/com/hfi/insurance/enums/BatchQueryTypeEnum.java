@@ -7,14 +7,14 @@ package com.hfi.insurance.enums;
  * @Version 1.0
  */
 public enum BatchQueryTypeEnum {
-    BLANK,SIGNLE_NUMBER,SIGNLE_NAME,NUMBERS,NAMES;
+    BLANK,SINGLE_NUMBER,SINGLE_NAME,NUMBERS,NAMES;
 
     public static BatchQueryTypeEnum getType(String str){
         switch (str){
-            case "SIGNLE_NUMBER":
-                return SIGNLE_NUMBER;
-            case "SIGNLE_NAME":
-                return SIGNLE_NAME;
+            case "SINGLE_NUMBER":
+                return SINGLE_NUMBER;
+            case "SINGLE_NAME":
+                return SINGLE_NAME;
             case "NUMBERS":
                 return NUMBERS;
             case "NAMES":

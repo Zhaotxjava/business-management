@@ -202,7 +202,7 @@ public  class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfo
     @LogAnnotation
     public List<YbInstitutionInfo> getInstitutionInfoByName(String name) {
         QueryWrapper<YbInstitutionInfo> queryWrapper = new QueryWrapper<>();
-        queryWrapper.like("name", name);
+        queryWrapper.like("institution_name", name);
         return ybInstitutionInfoMapper.selectList(queryWrapper);
     }
 
@@ -210,7 +210,7 @@ public  class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfo
     @LogAnnotation
     public List<YbInstitutionInfo> getInstitutionInfoByName(List<String> names) {
         QueryWrapper<YbInstitutionInfo> queryWrapper = new QueryWrapper<>();
-        queryWrapper.in("name", names);
+        queryWrapper.in("institution_name", names);
         return ybInstitutionInfoMapper.selectList(queryWrapper);
     }
 
