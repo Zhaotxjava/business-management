@@ -245,8 +245,10 @@ public class TaskController {
     public  String  testList(List<String> list){
         String  lists ="";
         for (String s:list){
-            String[] split = s.split(":8030/rest/file-system");
-            String urls= port+split[1];
+            //http://192.20.97.42:8030/rest
+            String[] split = s.split("http://192.20.97.42:8030/rest");
+            System.out.println(split[0]+"-------"+split[1]);
+            String urls= port+"/rest"+split[1];
             lists += urls +",";
         }
         String substring = lists.substring(0, lists.length() - 1);
