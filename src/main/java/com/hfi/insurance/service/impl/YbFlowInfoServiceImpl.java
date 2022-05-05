@@ -186,8 +186,6 @@ public class YbFlowInfoServiceImpl extends ServiceImpl<YbFlowInfoMapper, YbFlowI
             queryWrapper.and(i -> i.likeRight("subject", req.getTemplateId())
                     .or().eq("template_id", req.getTemplateId()));
         }
-        queryWrapper.and(i -> i.likeRight("subject", req.getTemplateId())
-                .or().eq("template_id", req.getTemplateId()));
         if (StringUtils.isNotEmpty(req.getBeginInitiateTime())) {
             queryWrapper.ge("initiator_time", req.getBeginInitiateTime());
         }
