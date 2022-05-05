@@ -160,7 +160,7 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
         }
         GetSignedRecordBatchRes result = flowInfoService.getSignedRecord(institutionNumber, req);
         log.info("result = {}",JSONObject.toJSONString(result));
-        if ("PLPD".equals(req.getPlType())){
+        if ("PLPD".equals(req.getPlType()) && result.getFailSet().size()>0){
             Map<String, Set<String>> List=new HashMap<>();
             List.put("successSet",result.getSuccessSet());
             List.put("failSet",result.getFailSet());
