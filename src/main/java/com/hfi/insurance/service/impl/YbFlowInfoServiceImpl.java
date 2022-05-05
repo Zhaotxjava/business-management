@@ -182,17 +182,12 @@ public class YbFlowInfoServiceImpl extends ServiceImpl<YbFlowInfoMapper, YbFlowI
         }
         //
         if (StringUtils.isNotBlank(req.getTemplateId())) {
-            queryWrapper.likeRight("subject", req.getTemplateId());
+//            queryWrapper.likeRight("subject", req.getTemplateId());
+            queryWrapper.and(i -> i.likeRight("subject", req.getTemplateId())
+                    .or().eq("template_id", req.getTemplateId()));
         }
-//        if (StringUtils.isNotBlank(req.getSignStatus())) {
-//            queryWrapper.eq("sign_status", req.getSignStatus());
-//        }
-//        if (null != req.getSignFlowId()) {
-//            queryWrapper.eq("sign_flow_id", req.getSignFlowId());
-//        }
-//        if (null != req.getFlowStatus()) {
-//            queryWrapper.eq("flow_status", req.getFlowStatus());
-//        }
+        queryWrapper.and(i -> i.likeRight("subject", req.getTemplateId())
+                .or().eq("template_id", req.getTemplateId()));
         if (StringUtils.isNotEmpty(req.getBeginInitiateTime())) {
             queryWrapper.ge("initiator_time", req.getBeginInitiateTime());
         }
