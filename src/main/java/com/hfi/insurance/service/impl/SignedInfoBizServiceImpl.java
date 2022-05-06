@@ -186,7 +186,7 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
             ybCoursePl.setInstitutionName(testList(req.getNumbers()));
         }
         if (result.getFailSet().size()>0){
-            ybCoursePl.setRemarks("有"+result.getFailSet().size()+"家机构不存在完成部署的文件。"+testList2(result.getSuccessSet())+"存在完成部署的文件。");
+            ybCoursePl.setRemarks("有"+result.getFailSet().size()+"家机构不存在完成签署的文件。"+testList2(result.getSuccessSet())+"存在完成签署的文件。");
         }else {
             ybCoursePl.setRemarks("全部完成");
         }
