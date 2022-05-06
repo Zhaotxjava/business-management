@@ -194,7 +194,7 @@ public  class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfo
     @LogAnnotation
     public YbInstitutionInfo getInstitutionInfo(String number) {
         QueryWrapper<YbInstitutionInfo> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("institution_name", number);
+        queryWrapper.eq("number", number);
         return ybInstitutionInfoMapper.selectOne(queryWrapper);
     }
 
