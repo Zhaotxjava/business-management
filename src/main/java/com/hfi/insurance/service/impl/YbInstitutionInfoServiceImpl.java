@@ -926,6 +926,8 @@ public  class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfo
         return list;
     }
 
+
+
     @Override
     public ApiResponse getArecordList(ArecordQueReq arecordQueReq) {
         String batchno = arecordQueReq.getBatchNo();
@@ -942,8 +944,14 @@ public  class YbInstitutionInfoServiceImpl extends ServiceImpl<YbInstitutionInfo
                 String batchNo = x.getBatchNo();
                 String[] split = batchNo.split("-");
                 GetArecordReq getArecordReq = new GetArecordReq();
-                getArecordReq.setDocumentName(split[1]+split[2]);
-                getArecordReq.setRecordName(split[1]);
+                getArecordReq.setDocumentName(x.getBatchNo());
+                String names = "";
+                for (int i=1;i<split.length-1;i++){
+                    if(split[i]!=null){
+                        names += split[i]+"-";
+                    }
+                }
+                getArecordReq.setRecordName(names.substring(0, names.length() - 1));
                 getArecordReq.setCreationDate(DateUtil.dateNew(x.getUpdateTime()));
                 getArecordReq.setSignFlowId(x.getFlowId().toString());
                 getArecordReqList.add(getArecordReq);
