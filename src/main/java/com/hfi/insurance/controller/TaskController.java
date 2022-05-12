@@ -207,8 +207,8 @@ public class TaskController {
     }
 
     @SneakyThrows
-    @Scheduled(cron = "0 0/1 * * * * ")
-    @ApiOperation("定时任务，10分钟查询一次文件下载地址。")
+    @Scheduled(cron = "0 0/5 * * * * ")
+    @ApiOperation("定时任务，5分钟查询一次文件下载地址。")
     public  void   findProcessBatchDownload(){
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Calendar now = Calendar.getInstance();
@@ -229,6 +229,11 @@ public class TaskController {
                 });
                 if (!urlList.isEmpty()){
                     x.setUrlList(testList(urlList));
+                    x.setCourseStatus("1");
+                    x.setRemarks("全部完成");
+                }
+                if (processCount.toString().equals("0")){
+                    x.setRemarks("没有流程");
                     x.setCourseStatus("1");
                 }
                 x.setCourseCount(processCount.toString());

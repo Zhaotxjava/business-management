@@ -187,10 +187,7 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
         }
         if (result.getFailSet().size()>0){
             ybCoursePl.setRemarks("有"+result.getFailSet().size()+"家机构不存在完成签署的文件。"+testList2(result.getSuccessSet())+"存在完成签署的文件。");
-        }else {
-            ybCoursePl.setRemarks("全部完成");
         }
-
         ybCoursePl.setCourseStatus("0");
         ybCoursePl.setCreateTime(sdf3.parse(sdf3.format(new Date())));
         ybCoursePl.setAreaCode(institutionNumber);
