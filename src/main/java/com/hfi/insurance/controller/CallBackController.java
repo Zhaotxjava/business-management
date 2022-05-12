@@ -41,7 +41,7 @@ public class CallBackController {
 		String signFlowId = String.valueOf(req.getFlowId());
 
 		CallBackAccountInfo accountInfo = req.getAccountInfo();
-		String number;
+		String number = "";
 		if (accountInfo != null) {
 			number = accountInfo.getOrganizeNo();
 		}
