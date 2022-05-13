@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.hfi.insurance.enums.NotifyAction;
 import com.hfi.insurance.model.YbFlowInfo;
 import com.hfi.insurance.model.dto.FlowStatusNotifyReq;
+import com.hfi.insurance.model.dto.callback.CallBackAccountInfo;
 import com.hfi.insurance.service.IYbFlowInfoService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -38,7 +39,13 @@ public class CallBackController {
 		// 获取最新状态以及天印系统的签署流程id
 		Integer status = req.getStatus();
 		String signFlowId = String.valueOf(req.getFlowId());
-		String number = req.getAccountInfo().getOrganizeNo();
+
+		CallBackAccountInfo accountInfo = req.getAccountInfo();
+		String number = "";
+		if (accountInfo != null) {
+			number = accountInfo.getOrganizeNo();
+		}
+
 		String action = req.getAction();
 
 		// 定义受影响的行数
