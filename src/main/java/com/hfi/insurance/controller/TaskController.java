@@ -230,7 +230,10 @@ public class TaskController {
                 if (!urlList.isEmpty()){
                     x.setUrlList(testList(urlList));
                     x.setCourseStatus("1");
-                    x.setRemarks("全部完成");
+                    if(StringUtils.isEmpty(x.getRemarks())){
+                        x.setRemarks("全部完成");
+                    }
+
                 }
                 if (processCount.toString().equals("0")){
                     x.setRemarks("没有流程");
