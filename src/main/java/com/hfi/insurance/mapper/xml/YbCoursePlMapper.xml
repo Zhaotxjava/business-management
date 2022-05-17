@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hfi.insurance.mapper.YbCoursePlMapper">
+
+    <sql id="SignInfoWhere">
+        <where>
+            <if test="areaCode!=null  and areaCode!=''">
+                area_code = #{areaCode}
+            </if>
+             <if test="templateId!=null  and templateId!=''">
+               and mb_number = #{templateId}
+            </if>
+            <if test="orderId!=null  and orderId!=''">
+               and order_id = #{orderId}
+            </if>
+
+            <if test="minDate!=null">
+                and update_time >= #{minDate}
+            </if>
+
+            <if test="maxDate!=null">
+                and update_time &lt; #{maxDate}
+            </if>
+        </where>
+    </sql>
+    <insert id="insertybCoursePl">
+    INSERT INTO yb_course_pl VALUES (#{orderId},#{courseId},#{courseFileName},#{courseFileDate},#{mbNumber},#{agreeDate},#{number},#{institutionName},#{remarks},#{courseStatus},#{courseCount},#{createTime},#{updateTime},#{urlList},#{areaCode})
+    </insert>
+
+    <delete id="delectCoursePlList">
+     delete from  yb_course_pl  where   update_time &lt; #{minDate}
+    </delete>
+
+    <select id="selectybCoursePlList" resultType="com.hfi.insurance.model.YbCoursePl">
+        SELECT * FROM yb_course_pl WHERE  course_status =0  and create_time >= #{minDate} and create_time &lt; #{maxDate}
+    </select>
+
+    <select id="selectSignInfoList" resultType="com.hfi.insurance.model.YbCoursePl">
+        SELECT t.* FROM
+        (SELECT * FROM yb_course_pl
+        <include refid="SignInfoWhere"/>
+        order by update_time desc)t
+        limit #{pageNum},#{pageSize}
+
+    </select>
+    <select id="selectCounts" resultType="java.lang.Integer">
+        SELECT Count(*) FROM yb_course_pl
+        <include refid="SignInfoWhere"/>
+
+    </select>
+</mapper>

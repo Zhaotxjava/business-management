@@ -76,21 +76,22 @@ public class InstitutionInfoController {
                 flag = 3;
             }
         }
-        long timeStamp = System.currentTimeMillis();
-        String tokenStr = loginaccount + "&" + hospitalid + "&" + platid + "&" + timeStamp;
+//        long timeStamp = System.currentTimeMillis();
+//        String tokenStr = loginaccount + "&" + hospitalid + "&" + platid + "&" + timeStamp;
+        String tokenStr = loginaccount + "&" + hospitalid + "&" + platid;
         String token = DigestUtils.sha256Hex(tokenStr);
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("number", hospitalid);
         jsonObject.put("areaCode", platid);
         jsonObject.put("loginAccount", loginaccount);
         caffeineCache.put(token, jsonObject.toJSONString());
-        log.info("生成token={}，host={}，platid={}", token, request.getHeader("host"), platid);
+        log.info("生成token={}，host={}，platid={},host={}", token, request.getHeader("host"), platid,request.getHeader("host"));
 //        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
 //        HttpServletRequest request = requestAttributes.getRequest();
 //        HttpSession session =  request.getSession();
 //        session.setAttribute("areaCode",platid);
 //        session.setAttribute("number",hospitalid);
-        log.info("host={}", request.getHeader("host"));
+//        log.info("host={}", request.getHeader("host"));
         StringBuilder sb = new StringBuilder();
         sb.append("redirect:");
         if (StringUtils.isNotEmpty(ntv)) {
@@ -131,8 +132,9 @@ public class InstitutionInfoController {
             }
         }
 
-        long timeStamp = System.currentTimeMillis();
-        String tokenStr = loginaccount + "&" + hospitalid + "&" + platid + "&" + timeStamp;
+//        long timeStamp = System.currentTimeMillis();
+//        String tokenStr = loginaccount + "&" + hospitalid + "&" + platid + "&" + timeStamp;
+        String tokenStr = loginaccount + "&" + hospitalid + "&" + platid;
         String token = DigestUtils.sha256Hex(tokenStr);
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("number", hospitalid);
