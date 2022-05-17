@@ -9,22 +9,33 @@ import com.hfi.insurance.aspect.anno.LogAnnotation;
 import com.hfi.insurance.common.ApiResponse;
 import com.hfi.insurance.enums.Cons;
 import com.hfi.insurance.enums.ErrorCodeEnum;
+import com.hfi.insurance.mapper.YbCoursePlMapper;
 import com.hfi.insurance.mapper.YbFlowInfoMapper;
 import com.hfi.insurance.model.*;
 import com.hfi.insurance.model.dto.SignedStatusUpdateByDateReq;
 import com.hfi.insurance.model.sign.req.GetPageWithPermissionReq;
+import com.hfi.insurance.model.sign.res.DownloadDo;
 import com.hfi.insurance.model.sign.res.SingerInfoRes;
 import com.hfi.insurance.service.IYbInstitutionInfoService;
 import com.hfi.insurance.service.InstitutionInfoService;
+import com.hfi.insurance.service.OrganizationsService;
 import com.hfi.insurance.service.SignedService;
 import com.hfi.insurance.utils.PicUploadUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
@@ -32,7 +43,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.io.File;
+import java.io.FileInputStream;
 import java.lang.reflect.Array;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -47,8 +62,19 @@ import java.util.*;
 public class TaskController {
     @Autowired
     private SignedService signedService;
-    @Autowired
+
+    @Resource
     private YbFlowInfoMapper ybFlowInfoMapper;
+
+    @Resource
+    private OrganizationsService rganizationsService;
+
+    @Resource
+    private YbCoursePlMapper ybCoursePlMapper;
+
+
+    @Value("${esignpro.port}")
+    private String port;
 
     private static List<Integer> flowStatusList = new ArrayList<>();
 
@@ -178,6 +204,74 @@ public class TaskController {
                 PicUploadUtil.picCommitPath.remove(k);
             }
         });
+    }
+
+    @SneakyThrows
+    @Scheduled(cron = "0 0/5 * * * * ")
+    @ApiOperation("定时任务，5分钟查询一次文件下载地址。")
+    public  void   findProcessBatchDownload(){
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Calendar now = Calendar.getInstance();
+        now.setTime(new Date());
+        now.add(Calendar.DAY_OF_MONTH,-7);
+        Date time = now.getTime();
+        List<YbCoursePl> YbCoursePlList=ybCoursePlMapper.selectybCoursePlList(sdf.parse(sdf.format(new Date())),sdf.parse(sdf.format(time)));
+        if (!YbCoursePlList.isEmpty()){
+            YbCoursePlList.stream().forEach(x ->{
+                JSONObject processBatchDownload = rganizationsService.findProcessBatchDownload(x.getCourseId());
+                System.out.println(processBatchDownload);
+                Object processCount = processBatchDownload.get("processCount");
+                Object downloadDOList = processBatchDownload.get("downloadDOList");
+                List<DownloadDo> downloadDos = JSONObject.parseArray(JSONObject.toJSONString(downloadDOList), DownloadDo.class);
+                List<String> urlList=new ArrayList<>();
+                downloadDos.stream().forEach(y ->{
+                    urlList.add(y.getDownloadUrl());
+                });
+                if (!urlList.isEmpty()){
+                    x.setUrlList(testList(urlList));
+                    x.setCourseStatus("1");
+                    if(StringUtils.isEmpty(x.getRemarks())){
+                        x.setRemarks("全部完成");
+                    }
+
+                }
+                if (processCount.toString().equals("0")){
+                    x.setRemarks("没有流程");
+                    x.setCourseStatus("1");
+                }
+                x.setCourseCount(processCount.toString());
+                try {
+                    x.setUpdateTime(sdf.parse(sdf.format(new Date())));
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+                ybCoursePlMapper.updateById(x);
+            });
+        }
+
+    }
+    public  String  testList(List<String> list){
+        String  lists ="";
+        for (String s:list){
+            //http://192.20.97.42:8030/rest
+            String[] split = s.split("http://192.20.97.42:8030/rest");
+            System.out.println(split[0]+"-------"+split[1]);
+            String urls= port+"/rest"+split[1];
+            lists += urls +",";
+        }
+        String substring = lists.substring(0, lists.length() - 1);
+        return  substring;
+    }
+
+    @SneakyThrows
+    @Scheduled(cron = "0 0/10 * * * * ")
+    @ApiOperation("定时任务，10分钟删除超过七天无效数据")
+    public  void   findProcessBatchDownload2(){
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Calendar now = Calendar.getInstance();
+        now.setTime(new Date());
+        now.add(Calendar.DAY_OF_MONTH,-7);
+        ybCoursePlMapper.delectCoursePlList(sdf.parse(sdf.format(now.getTime())));
     }
 
 }

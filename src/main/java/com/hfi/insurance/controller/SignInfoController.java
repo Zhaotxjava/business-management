@@ -4,8 +4,10 @@ package com.hfi.insurance.controller;
 import com.alibaba.fastjson.JSONObject;
 import com.hfi.insurance.common.ApiResponse;
 import com.hfi.insurance.enums.ErrorCodeEnum;
+import com.hfi.insurance.model.sign.req.GetRecordInfoBatchReq;
 import com.hfi.insurance.model.sign.req.GetRecordInfoReq;
 import com.hfi.insurance.model.sign.req.GetSignUrlsReq;
+import com.hfi.insurance.service.OrganizationsService;
 import com.hfi.insurance.service.SignedInfoBizService;
 import com.hfi.insurance.service.SignedService;
 import io.swagger.annotations.Api;
@@ -43,6 +45,7 @@ public class SignInfoController {
     @Resource
     private SignedInfoBizService signedInfoBizService;
 
+
     @ApiOperation("获取签署流程记录")
     @PostMapping("/getSignInfoRecord")
     public ApiResponse getSignInfoRecord(@RequestBody GetRecordInfoReq req, HttpServletRequest request) {
@@ -51,6 +54,23 @@ public class SignInfoController {
             return new ApiResponse(ErrorCodeEnum.PARAM_ERROR.getCode(), ErrorCodeEnum.PARAM_ERROR.getMessage());
         }
         return signedInfoBizService.getSignedRecord(token, req);
+    }
+
+    @ApiOperation("批量签署获取签署流程记录")
+    @PostMapping("/getSignInfoRecordBatch")
+    public ApiResponse getSignInfoRecordBatch(@RequestBody GetRecordInfoBatchReq req, HttpServletRequest request) {
+        String token = request.getHeader("token");
+        //模板编号-统筹区编码-导出时间.zip
+        return signedInfoBizService.getSignedRecordBatch(token, req);
+    }
+
+
+    @ApiOperation("批量签署签署流程记录查询")
+    @PostMapping("/getSignInfoRecordBatchList")
+    public ApiResponse getSignInfoRecordBatchList(@RequestBody GetRecordInfoBatchReq req, HttpServletRequest request) {
+        String token = request.getHeader("token");
+        //模板编号-统筹区编码-导出时间.zip
+        return signedInfoBizService.getSignInfoRecordBatchList(token, req);
     }
 
     @GetMapping("getSignDetail/{signFlowId}")

@@ -8,34 +8,30 @@ import com.hfi.insurance.aspect.anno.LogAnnotation;
 import com.hfi.insurance.common.ApiResponse;
 import com.hfi.insurance.enums.Cons;
 import com.hfi.insurance.enums.ErrorCodeEnum;
+import com.hfi.insurance.mapper.YbCoursePlMapper;
+import com.hfi.insurance.model.YbCoursePl;
 import com.hfi.insurance.model.YbFlowInfo;
 import com.hfi.insurance.model.YbInstitutionInfo;
 import com.hfi.insurance.model.sign.FinishDocUrlBean;
-import com.hfi.insurance.model.sign.StandardSignDetailSignDoc;
-import com.hfi.insurance.model.sign.req.FlowDocBean;
+import com.hfi.insurance.model.sign.req.GetRecordInfoBatchReq;
 import com.hfi.insurance.model.sign.req.GetRecordInfoReq;
 import com.hfi.insurance.model.sign.req.GetSignUrlsReq;
+import com.hfi.insurance.model.sign.res.GetSignedRecordBatchRes;
 import com.hfi.insurance.model.sign.res.SignRecordsRes;
 import com.hfi.insurance.model.sign.res.SignUrlRes;
 import com.hfi.insurance.model.sign.res.SingerInfoRes;
-import com.hfi.insurance.model.sign.res.StandardSignDetailResult;
-import com.hfi.insurance.service.IYbFlowInfoService;
-import com.hfi.insurance.service.IYbInstitutionInfoService;
-import com.hfi.insurance.service.SignedInfoBizService;
-import com.hfi.insurance.service.SignedService;
+import com.hfi.insurance.service.*;
+import com.hfi.insurance.utils.GuuidUtil;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.omg.CORBA.Object;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -57,8 +53,14 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
     private IYbInstitutionInfoService institutionInfoService;
 
     @Resource
+    private YbCoursePlMapper ybCoursePlMapper;
+
+    @Resource
     private Cache<String, String> caffeineCache;
 
+
+    @Resource
+    private OrganizationsService rganizationsService;
 
     @Value("${esignpro.urls}")
     private String urls;
@@ -134,6 +136,89 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
         signRecordsResPage.setRecords(recordResList);
 
         return new ApiResponse(signRecordsResPage);
+    }
+
+
+    @SneakyThrows
+    @Override
+    @LogAnnotation
+    public ApiResponse getSignedRecordBatch(String token, GetRecordInfoBatchReq req) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+        SimpleDateFormat sdf3 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd");
+        //获取统筹区编码
+        String institutionNumber = req.getAreaCode();
+        if ("".equals(institutionNumber)){
+            return   ApiResponse.fail("234","统筹区编码,不能为空!");
+        }
+        //机构编号  机构名称  模板编号  三选一必填
+        if (StringUtils.isEmpty(req.getTemplateId()) && req.getNumbers().isEmpty()){
+            return ApiResponse.fail("234","模板编号、机构编号、机构名称必填其中一个!");
+        }
+        if (StringUtils.isEmpty(req.getBeginInitiateTime()) && StringUtils.isEmpty(req.getEndInitiateTime())){
+            return  ApiResponse.fail("234","条件时间必填!");
+        }
+        GetSignedRecordBatchRes result = flowInfoService.getSignedRecord(institutionNumber, req);
+        log.info("result = {}",JSONObject.toJSONString(result));
+        if ("PLPD".equals(req.getPlType()) && result.getFailSet().size()>0){
+            Map<String, Set<String>> List=new HashMap<>();
+            List.put("successSet",result.getSuccessSet());
+            List.put("failSet",result.getFailSet());
+            return new ApiResponse("404",null,List);
+        }
+        if (result.getSignFlowIdSet().isEmpty()){
+            return ApiResponse.fail("234","该筛选条件下没有流程，请重新选择筛选条件!");
+        }
+        //拼成文件名称 统筹区编码-导出时间.zip   生产id
+        String fileName = institutionNumber + "-" + sdf.format(new Date());
+        //存入数据库
+        YbCoursePl ybCoursePl = new YbCoursePl();
+        String id = String.valueOf(GuuidUtil.getUUID());
+        ybCoursePl.setOrderId(id);
+        ybCoursePl.setCourseId(id);
+        ybCoursePl.setCourseFileName(fileName);
+        ybCoursePl.setCourseFileDate(sdf3.parse(sdf3.format(new Date())));
+        ybCoursePl.setMbNumber(req.getTemplateId());
+        ybCoursePl.setAgreeDate(sdf2.format(sdf2.parse(req.getBeginInitiateTime()))+"~"+sdf2.format(sdf2.parse(req.getEndInitiateTime())));
+        if (req.getQueryType().equals("SINGLE_NUMBER") || req.getQueryType().equals("NUMBERS")){
+            ybCoursePl.setNumber(testList(req.getNumbers()));
+        }else if (req.getQueryType().equals("SINGLE_NAME") || req.getQueryType().equals("NAMES")){
+            ybCoursePl.setInstitutionName(testList(req.getNumbers()));
+        }
+        if (result.getFailSet().size()>0){
+            ybCoursePl.setRemarks("有"+result.getFailSet().size()+"家机构不存在完成签署的文件。"+testList2(result.getSuccessSet())+"存在完成签署的文件。");
+        }
+        ybCoursePl.setCourseStatus("0");
+        ybCoursePl.setCreateTime(sdf3.parse(sdf3.format(new Date())));
+        ybCoursePl.setAreaCode(institutionNumber);
+        ybCoursePl.setUpdateTime(sdf3.parse(sdf3.format(new Date())));
+        ybCoursePlMapper.insertybCoursePl(ybCoursePl);
+        Set<String> signFlowIdSet = result.getSignFlowIdSet();
+        JSONObject jsonObject = rganizationsService.processBatchDownload(ybCoursePl.getCourseId(), ybCoursePl.getCourseFileName(),signFlowIdSet);
+        return new ApiResponse(jsonObject);
+    }
+
+
+    public  String  testList(List<String> list){
+        String  lists ="";
+        for (String s:list){
+            lists += s +",";
+        }
+        String substring = lists.substring(0, lists.length() - 1);
+
+        return  substring;
+    }
+
+    public  String  testList2(Set<String> list){
+        String  lists ="";
+        int i=0;
+        for (String s:list){
+            if(i<=100){
+                lists += s +",";
+            }
+            i++;
+        }
+        return  lists.substring(0, lists.length() - 1);
     }
 
     @Override
@@ -213,6 +298,26 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
         );
         log.info("获取签署流程文档下载更新后url" + urlsList);
         return new ApiResponse(urlsList);
+    }
+
+    @SneakyThrows
+    @Override
+    public ApiResponse getSignInfoRecordBatchList(String token, GetRecordInfoBatchReq req) {
+        //获取统筹区编码
+    /*    if (StringUtils.isEmpty(req.getAreaCode())){
+            return ApiResponse.fail("352","统筹区编码不能为空");
+        }*/
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Calendar now = Calendar.getInstance();
+        now.setTime(new Date());
+        now.add(Calendar.DAY_OF_MONTH,-7);
+        req.setPageNum((req.getPageNum() - 1) * req.getPageSize());
+        List<YbCoursePl> YbCoursePlList= ybCoursePlMapper.selectSignInfoList(req.getAreaCode(),req.getTemplateId(),sdf.parse(sdf.format(new Date())),sdf.parse(sdf.format(now.getTime())),req.getOrderId(),req.getPageNum(),req.getPageSize());
+       Integer count = ybCoursePlMapper.selectCounts(req.getAreaCode(),req.getTemplateId(),sdf.parse(sdf.format(new Date())),sdf.parse(sdf.format(now.getTime())),req.getOrderId());
+        Page<YbCoursePl> page = new Page<>();
+        page.setRecords(YbCoursePlList);
+        page.setTotal(count);
+        return ApiResponse.success(page);
     }
 
 }

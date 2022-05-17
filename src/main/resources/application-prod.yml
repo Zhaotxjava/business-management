@@ -80,3 +80,7 @@ uploadFile:
   password: yibao
   host: 192.50.10.39
   port: 21
+
+sign:
+  callBack:
+    url: http://192.50.10.38:8097/insurance_info/callBack/flowStatusNotify

@@ -21,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.BeanUtils;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -128,6 +129,22 @@ public class InstitutionController {
         return institutionInfoService.newUpdateInstitutionInfo(req);
     }
 
+    @PostMapping(value = "/plwjFileParser", produces = "text/html;charset=UTF-8")
+    @ApiOperation("解析文件")
+    public String plwjFileParser(@RequestParam("file") MultipartFile file) {
+        log.info("解析批量文件 开始：");
+        List<String> objects=new ArrayList<>();
+        try {
+             objects = ImportExcelUtil.readExcel2(file);
+            log.info("文件解析出参：{}", JSONObject.toJSONString(objects));
+        } catch (IOException e) {
+            e.printStackTrace();
+            return  JSONObject.toJSONString(ApiResponse.fail("247","文件解析失败!"));
+        }
+
+
+        return JSONObject.toJSONString(ApiResponse.success(objects));
+    }
 
     @PostMapping(value = "checkImportInstitution", produces = "text/html;charset=UTF-8")
     @ApiOperation("批量导入机构，并检查合法性")

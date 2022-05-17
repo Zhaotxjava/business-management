@@ -21,6 +21,7 @@ esignpro:
   url: http://192.20.97.42:8086
   projectId: 1001001
   secret: cfc6c99a34962a8aa62fc794d838e520
+  port:  http://192.20.97.42:8086
 
 spring:
   datasource:
@@ -65,7 +66,7 @@ logging:
   level:
     com:
       hfi:
-        insurance: info
+        insurance: debug
 #  file:
 #    path: logs
 
@@ -81,3 +82,7 @@ uploadFile:
   password: img123_hfi_health
   host: 192.20.97.35
   port: 21
+
+sign:
+  callBack:
+    url: http://192.20.97.35:18080/insurance_info/callBack/flowStatusNotify

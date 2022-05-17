@@ -1,6 +1,8 @@
 package com.hfi.insurance.service;
 
+import com.hfi.insurance.aspect.anno.LogAnnotation;
 import com.hfi.insurance.common.ApiResponse;
+import com.hfi.insurance.model.sign.req.GetRecordInfoBatchReq;
 import com.hfi.insurance.model.sign.req.GetRecordInfoReq;
 import com.hfi.insurance.model.sign.req.GetSignUrlsReq;
 
@@ -13,6 +15,8 @@ public interface SignedInfoBizService {
 
     ApiResponse getSignedRecord(String token,GetRecordInfoReq req);
 
+    ApiResponse getSignedRecordBatch(String token, GetRecordInfoBatchReq req);
+
     ApiResponse getSignUrls(GetSignUrlsReq req);
 
     ApiResponse getSignUrls(GetSignUrlsReq req,String token);
@@ -20,4 +24,6 @@ public interface SignedInfoBizService {
     ApiResponse getPreviewUrl(String fileKey,String docId);
 
     ApiResponse getSignFlowDocUrls(String signFlowId);
+
+    ApiResponse getSignInfoRecordBatchList(String token, GetRecordInfoBatchReq req);
 }
