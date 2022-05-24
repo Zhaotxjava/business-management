@@ -39,7 +39,7 @@ public class OrganizationsServiceImpl implements OrganizationsService {
                 return object.getJSONObject("data");
             } else {
                 //{"errCode":5006002,"msg":"客户端ip地址非法","errShow":true}
-                return object;
+                return object.getJSONObject("errCode");
             }
         } else {
             object.put("errCode", "9999");
@@ -309,7 +309,6 @@ public class OrganizationsServiceImpl implements OrganizationsService {
         convertHead(headMap, jsonObject.toJSONString());
         String result = HttpUtil.doPost(url + "/esignpro/rest/process/findProcessBatchDownload", headMap, jsonObject.toJSONString());
         log.info("根据流程id【{}】查询查看压缩包接口响应{}", bizNo, result);
-
         return convertResult(result);
     }
 

@@ -206,6 +206,11 @@ public class TaskController {
         });
     }
 
+    public static void main(String[] args) {
+
+        System.out.println("".isEmpty());
+
+    }
     @SneakyThrows
     @Scheduled(cron = "0 0/1 * * * * ")
     @ApiOperation("定时任务，5分钟查询一次文件下载地址。")
@@ -225,23 +230,22 @@ public class TaskController {
                 List<DownloadDo> downloadDos = JSONObject.parseArray(JSONObject.toJSONString(downloadDOList), DownloadDo.class);
                 List<String> urlList=new ArrayList<>();
                     //判断下载地址是否为空
-                    if (downloadDos.size()>0){
+                    if (!downloadDos.isEmpty() && downloadDos != null){
                         //获取下载地址 status=0：任务状态是正在执行 status=1：任务状态是执行成功 status=2：任务状态是执行失败 status=3：任务状态是已过期
-                    downloadDos.stream().forEach(y ->{
+                        downloadDos.stream().forEach(y ->{
                         if (y.getStatus().equals("1")){
                             urlList.add(y.getDownloadUrl());
                         }else if (y.getStatus().equals("2")){
                             x.setCourseStatus("2");
                         }
                     });
-                    if (!urlList.isEmpty() && urlList.size()>0){
+                    if (!urlList.isEmpty()){
                         x.setUrlList(testList(urlList));
                         if(StringUtils.isEmpty(x.getRemarks())){
-                            x.setCourseStatus("1");
                             x.setRemarks("全部完成");
                         }
-                    }
-                    if (processCount.toString().equals("0")){
+                        x.setCourseStatus("1");
+                    }else {
                         x.setCourseStatus("1");
                         x.setRemarks("没有流程");
                     }
