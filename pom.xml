@@ -19,7 +19,7 @@
         <springfox.swagger.version>2.9.2</springfox.swagger.version>
         <swagger.version>1.5.24</swagger.version>
         <swagger.bootstrap.ui.version>1.9.6</swagger.bootstrap.ui.version>
-        <log4j.version>2.17.0</log4j.version>
+        <log4j.version>2.17.1</log4j.version>
     </properties>
 
     <dependencyManagement>
@@ -182,7 +182,7 @@
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
-            <version>1.2.76</version>
+            <version>1.2.83</version>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
