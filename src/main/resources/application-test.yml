@@ -21,7 +21,7 @@ esignpro:
   url: http://192.20.97.42:8086
   projectId: 1001001
   secret: cfc6c99a34962a8aa62fc794d838e520
-  port:  http://192.20.97.42:8086
+  port: http://192.20.97.42:8086
   port2: http://192.20.97.42:8030/rest
 
 spring:
