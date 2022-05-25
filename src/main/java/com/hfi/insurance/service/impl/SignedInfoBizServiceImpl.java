@@ -60,6 +60,8 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
 
     @Value("${esignpro.port}")
     private String port;
+    @Value("${esignpro.port2}")
+    private String port2;
 
 
     @Resource
@@ -204,8 +206,7 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
     public  String  testList3(List<String> list){
         String  lists ="";
         for (String s:list){
-            String[] split = s.split("http://192.20.97.42:8030/rest");
-            System.out.println(split[0]+"-------"+split[1]);
+            String[] split = s.split(port2);
             String urls= port+"/rest"+split[1];
             lists += urls +",";
         }

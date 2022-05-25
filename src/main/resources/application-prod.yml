@@ -22,6 +22,7 @@ esignpro:
   projectId: 1001001
   secret: ac1bffd524b2b42cee6929d58c77b8d1
   port: http://172.16.29.54:8088
+  port2: http://192.50.10.43:8030/rest
 
 spring:
   datasource:
