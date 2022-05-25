@@ -64,6 +64,13 @@ public class SignInfoController {
         return signedInfoBizService.getSignedRecordBatch(token, req);
     }
 
+    @ApiOperation("刷新下载任务状态")
+    @PostMapping("/findProcessBatchDownload")
+    public ApiResponse findProcessBatchDownload(@RequestBody GetRecordInfoBatchReq req, HttpServletRequest request) {
+        String token = request.getHeader("token");
+        //模板编号-统筹区编码-导出时间.zip
+        return signedInfoBizService.findProcessBatchDownload(token, req);
+    }
 
     @ApiOperation("批量签署签署流程记录查询")
     @PostMapping("/getSignInfoRecordBatchList")

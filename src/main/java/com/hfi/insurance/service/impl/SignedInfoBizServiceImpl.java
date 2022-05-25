@@ -16,20 +16,20 @@ import com.hfi.insurance.model.sign.FinishDocUrlBean;
 import com.hfi.insurance.model.sign.req.GetRecordInfoBatchReq;
 import com.hfi.insurance.model.sign.req.GetRecordInfoReq;
 import com.hfi.insurance.model.sign.req.GetSignUrlsReq;
-import com.hfi.insurance.model.sign.res.GetSignedRecordBatchRes;
-import com.hfi.insurance.model.sign.res.SignRecordsRes;
-import com.hfi.insurance.model.sign.res.SignUrlRes;
-import com.hfi.insurance.model.sign.res.SingerInfoRes;
+import com.hfi.insurance.model.sign.res.*;
 import com.hfi.insurance.service.*;
 import com.hfi.insurance.utils.GuuidUtil;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.velocity.util.ArrayListWrapper;
+import org.aspectj.org.eclipse.jdt.core.IField;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -313,11 +313,64 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
         now.add(Calendar.DAY_OF_MONTH,-7);
         req.setPageNum((req.getPageNum() - 1) * req.getPageSize());
         List<YbCoursePl> YbCoursePlList= ybCoursePlMapper.selectSignInfoList(req.getAreaCode(),req.getTemplateId(),sdf.parse(sdf.format(new Date())),sdf.parse(sdf.format(now.getTime())),req.getOrderId(),req.getPageNum(),req.getPageSize());
-       Integer count = ybCoursePlMapper.selectCounts(req.getAreaCode(),req.getTemplateId(),sdf.parse(sdf.format(new Date())),sdf.parse(sdf.format(now.getTime())),req.getOrderId());
+        Integer count = ybCoursePlMapper.selectCounts(req.getAreaCode(),req.getTemplateId(),sdf.parse(sdf.format(new Date())),sdf.parse(sdf.format(now.getTime())),req.getOrderId());
         Page<YbCoursePl> page = new Page<>();
         page.setRecords(YbCoursePlList);
         page.setTotal(count);
         return ApiResponse.success(page);
     }
 
+
+    @Override
+    public ApiResponse findProcessBatchDownload(String token, GetRecordInfoBatchReq req) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        YbCoursePl ybCoursePl = ybCoursePlMapper.selectById(req.getOrderId());
+        if (ybCoursePl.equals("")){
+            return ApiResponse.fail("156","无有效数据");
+        }
+
+        JSONObject processBatchDownload = rganizationsService.findProcessBatchDownload(req.getOrderId());
+        log.info("手动获取下载地址，CourseId=【{}】。接口响应=【{}】",ybCoursePl.getCourseId(),processBatchDownload.getJSONObject("data"));
+        if (processBatchDownload.getString("errCode").equals("-1")){
+            return ApiResponse.fail("234","任务还在下载队列中!");
+        }
+        Object processCount = processBatchDownload.getJSONObject("data").get("processCount");
+        Object downloadDOList = processBatchDownload.getJSONObject("data").get("downloadDOList");
+        List<DownloadDo> downloadDos = JSONObject.parseArray(JSONObject.toJSONString(downloadDOList), DownloadDo.class);
+        List<String> urlList=new ArrayList<>();
+        //判断下载地址是否为空
+        List<YbCoursePl> ybCoursePlList=new ArrayList<>();
+        if (!downloadDos.isEmpty() && downloadDos !=null){
+            //获取下载地址 status=0：任务状态是正在执行 status=1：任务状态是执行成功 status=2：任务状态是执行失败 status=3：任务状态是已过期
+            downloadDos.stream().forEach(y ->{
+                if (y.getStatus().equals("1")){
+                    urlList.add(y.getDownloadUrl());
+                }else if (y.getStatus().equals("2")){
+                    ybCoursePl.setCourseStatus("2");
+                }
+            });
+            if (!urlList.isEmpty() && urlList !=null){
+                ybCoursePl.setUrlList(testList(urlList));
+                if(StringUtils.isEmpty(ybCoursePl.getRemarks())){
+                    ybCoursePl.setRemarks("全部完成");
+                }
+                ybCoursePl.setCourseStatus("1");
+            }else {
+                ybCoursePl.setCourseStatus("1");
+                ybCoursePl.setRemarks("没有流程");
+            }
+            ybCoursePl.setCourseCount(processCount.toString());
+            try {
+                ybCoursePl.setUpdateTime(sdf.parse(sdf.format(new Date())));
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            ybCoursePlMapper.updateById(ybCoursePl);
+        }
+        ybCoursePlList.add(ybCoursePl);
+        Page<YbCoursePl> page = new Page<>();
+        page.setRecords(ybCoursePlList);
+        page.setTotal(ybCoursePlList.size());
+        return ApiResponse.success(page);
+    }
 }
