@@ -206,6 +206,11 @@ public class TaskController {
         });
     }
 
+    public static void main(String[] args) {
+
+        System.out.println("".isEmpty());
+
+    }
     @SneakyThrows
     @Scheduled(cron = "0 0/5 * * * * ")
     @ApiOperation("定时任务，5分钟查询一次文件下载地址。")
@@ -219,33 +224,41 @@ public class TaskController {
         if (!YbCoursePlList.isEmpty()){
             YbCoursePlList.stream().forEach(x ->{
                 JSONObject processBatchDownload = rganizationsService.findProcessBatchDownload(x.getCourseId());
-                System.out.println(processBatchDownload);
-                Object processCount = processBatchDownload.get("processCount");
-                Object downloadDOList = processBatchDownload.get("downloadDOList");
-                List<DownloadDo> downloadDos = JSONObject.parseArray(JSONObject.toJSONString(downloadDOList), DownloadDo.class);
-                List<String> urlList=new ArrayList<>();
-                downloadDos.stream().forEach(y ->{
-                    urlList.add(y.getDownloadUrl());
-                });
-                if (!urlList.isEmpty()){
-                    x.setUrlList(testList(urlList));
-                    x.setCourseStatus("1");
-                    if(StringUtils.isEmpty(x.getRemarks())){
-                        x.setRemarks("全部完成");
+                if (processBatchDownload.getString("errCode").equals("0")){
+                    Object processCount = processBatchDownload.getJSONObject("data").get("processCount");
+                    Object downloadDOList = processBatchDownload.getJSONObject("data").get("downloadDOList");
+                    List<DownloadDo> downloadDos = JSONObject.parseArray(JSONObject.toJSONString(downloadDOList), DownloadDo.class);
+                    List<String> urlList=new ArrayList<>();
+                    //判断下载地址是否为空
+                    if (!downloadDos.isEmpty() && downloadDos != null){
+                        //获取下载地址 status=0：任务状态是正在执行 status=1：任务状态是执行成功 status=2：任务状态是执行失败 status=3：任务状态是已过期
+                        downloadDos.stream().forEach(y ->{
+                            if (y.getStatus().equals("1")){
+                                urlList.add(y.getDownloadUrl());
+                            }else if (y.getStatus().equals("2")){
+                                x.setCourseStatus("2");
+                            }
+                        });
+                        if (!urlList.isEmpty()){
+                            x.setUrlList(testList(urlList));
+                            if(StringUtils.isEmpty(x.getRemarks())){
+                                x.setRemarks("全部完成");
+                            }
+                            x.setCourseStatus("1");
+                        }else {
+                            x.setCourseStatus("1");
+                            x.setRemarks("没有流程");
+                        }
+                        x.setCourseCount(processCount.toString());
+                        try {
+                            x.setUpdateTime(sdf.parse(sdf.format(new Date())));
+                        } catch (ParseException e) {
+                            e.printStackTrace();
+                        }
+                        ybCoursePlMapper.updateById(x);
+                        log.info("定时任务获取下载地址，CourseId=【{}】。接口响应=【{}】",x.getCourseId(),processBatchDownload.getJSONObject("data"));
                     }
-
                 }
-                if (processCount.toString().equals("0")){
-                    x.setRemarks("没有流程");
-                    x.setCourseStatus("1");
-                }
-                x.setCourseCount(processCount.toString());
-                try {
-                    x.setUpdateTime(sdf.parse(sdf.format(new Date())));
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
-                ybCoursePlMapper.updateById(x);
             });
         }
 
@@ -253,7 +266,6 @@ public class TaskController {
     public  String  testList(List<String> list){
         String  lists ="";
         for (String s:list){
-            //http://192.20.97.42:8030/rest
             String[] split = s.split("http://192.20.97.42:8030/rest");
             System.out.println(split[0]+"-------"+split[1]);
             String urls= port+"/rest"+split[1];
