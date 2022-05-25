@@ -58,6 +58,9 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
     @Resource
     private Cache<String, String> caffeineCache;
 
+    @Value("${esignpro.port}")
+    private String port;
+
 
     @Resource
     private OrganizationsService rganizationsService;
@@ -196,6 +199,18 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
         Set<String> signFlowIdSet = result.getSignFlowIdSet();
         JSONObject jsonObject = rganizationsService.processBatchDownload(ybCoursePl.getCourseId(), ybCoursePl.getCourseFileName(),signFlowIdSet);
         return new ApiResponse(jsonObject);
+    }
+
+    public  String  testList3(List<String> list){
+        String  lists ="";
+        for (String s:list){
+            String[] split = s.split("http://192.20.97.42:8030/rest");
+            System.out.println(split[0]+"-------"+split[1]);
+            String urls= port+"/rest"+split[1];
+            lists += urls +",";
+        }
+        String substring = lists.substring(0, lists.length() - 1);
+        return  substring;
     }
 
 
@@ -350,7 +365,7 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
                 }
             });
             if (!urlList.isEmpty() && urlList !=null){
-                ybCoursePl.setUrlList(testList(urlList));
+                ybCoursePl.setUrlList(testList3(urlList));
                 if(StringUtils.isEmpty(ybCoursePl.getRemarks())){
                     ybCoursePl.setRemarks("全部完成");
                 }
