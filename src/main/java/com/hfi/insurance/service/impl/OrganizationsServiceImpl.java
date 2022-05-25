@@ -39,7 +39,25 @@ public class OrganizationsServiceImpl implements OrganizationsService {
                 return object.getJSONObject("data");
             } else {
                 //{"errCode":5006002,"msg":"客户端ip地址非法","errShow":true}
-                return object.getJSONObject("errCode");
+                return object;
+            }
+        } else {
+            object.put("errCode", "9999");
+            object.put("msg", "接口响应异常");
+            return object;
+        }
+    }
+
+    private JSONObject convertResult2(String result) {
+        JSONObject object = new JSONObject();
+        if (StringUtils.isNotEmpty(result)) {
+            object = JSONObject.parseObject(result);
+            if ("0".equals(object.getString("errCode"))) {
+                //{"errCode":0,"msg":"success","errShow":true,"data":{"accountId":"8a59fe62-d596-4e53-a56d-22fc732c7642","uniqueId":"220181197708241552","esignAccountId":"54e4e31fbe0a415fba0acf7c39827d75"}}
+                return object;
+            } else {
+                //{"errCode":5006002,"msg":"客户端ip地址非法","errShow":true}
+                return object;
             }
         } else {
             object.put("errCode", "9999");
@@ -309,7 +327,7 @@ public class OrganizationsServiceImpl implements OrganizationsService {
         convertHead(headMap, jsonObject.toJSONString());
         String result = HttpUtil.doPost(url + "/esignpro/rest/process/findProcessBatchDownload", headMap, jsonObject.toJSONString());
         log.info("根据流程id【{}】查询查看压缩包接口响应{}", bizNo, result);
-        return convertResult(result);
+        return convertResult2(result);
     }
 
 

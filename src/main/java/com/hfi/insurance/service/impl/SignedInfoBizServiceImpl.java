@@ -330,12 +330,12 @@ public class SignedInfoBizServiceImpl implements SignedInfoBizService {
         }
 
         JSONObject processBatchDownload = rganizationsService.findProcessBatchDownload(req.getOrderId());
-        log.info("手动获取下载地址，CourseId=【{}】。接口响应=【{}】",ybCoursePl.getCourseId(),processBatchDownload);
-        if (processBatchDownload.equals("-1")){
-          return ApiResponse.fail("234","任务还在下载队列中!");
+        log.info("手动获取下载地址，CourseId=【{}】。接口响应=【{}】",ybCoursePl.getCourseId(),processBatchDownload.getJSONObject("data"));
+        if (processBatchDownload.getString("errCode").equals("-1")){
+            return ApiResponse.fail("234","任务还在下载队列中!");
         }
-        Object processCount = processBatchDownload.get("processCount");
-        Object downloadDOList = processBatchDownload.get("downloadDOList");
+        Object processCount = processBatchDownload.getJSONObject("data").get("processCount");
+        Object downloadDOList = processBatchDownload.getJSONObject("data").get("downloadDOList");
         List<DownloadDo> downloadDos = JSONObject.parseArray(JSONObject.toJSONString(downloadDOList), DownloadDo.class);
         List<String> urlList=new ArrayList<>();
         //判断下载地址是否为空
