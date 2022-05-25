@@ -616,6 +616,7 @@ public class SignedBizServiceImpl implements SignedBizService {
         }
         String innerOrgansSealsStr = innerOrgansSeals.getString("seals");
         List<Seal> sealList = JSON.parseArray(innerOrgansSealsStr, Seal.class);
+        //获取type 1-公章 的
         Map<Integer, String> sealTypeAndSealIdMap = sealList.stream().collect(Collectors.toMap(Seal::getSubSealTypeId, Seal::getSealId));
         JSONObject sealInfos = signedService.getSealInfos(sealTypeAndSealIdMap.get(1));
         log.info("印章管理员信息：{}", sealInfos);
@@ -624,6 +625,7 @@ public class SignedBizServiceImpl implements SignedBizService {
         }
         String sealUsers = sealInfos.getString("sealUsers");
         List<SealUser> sealUserList = JSON.parseArray(sealUsers, SealUser.class);
+        //找到第一个印章管理员信息
         SealUser sealUser = CollectionUtils.firstElement(sealUserList);
         if (sealUser != null) {
             partyA.setAccountId(sealUser.getAccountId());
