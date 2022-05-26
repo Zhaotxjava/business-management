@@ -1,5 +1,6 @@
 package com.hfi.insurance.model.sign;
 
+import com.alibaba.fastjson.annotation.JSONField;
 import lombok.Data;
 
 /**
@@ -9,6 +10,12 @@ import lombok.Data;
  */
 @Data
 public class SealUser {
+
     private String accountId;
+
     private String accountName;
+
+    @JSONField(name = "default")
+    private boolean defaults;
+
 }
