@@ -624,9 +624,16 @@ public class SignedBizServiceImpl implements SignedBizService {
             throw new BizServiceException(innerOrgansSeals.getString("msg"));
         }
         String sealUsers = sealInfos.getString("sealUsers");
+        log.info("--------sealUsers={}",sealUsers);
         List<SealUser> sealUserList = JSON.parseArray(sealUsers, SealUser.class);
         //找到第一个印章管理员信息
-        SealUser sealUser = CollectionUtils.firstElement(sealUserList);
+        SealUser sealUser = new SealUser();
+        sealUserList.stream().forEach(x ->{
+             if (x.isDefaults()){
+                 sealUser.setAccountId(x.getAccountId());
+                 sealUser.setAccountName(x.getAccountName());
+             }
+        });
         if (sealUser != null) {
             partyA.setAccountId(sealUser.getAccountId());
             partyA.setAccountName(sealUser.getAccountName());
