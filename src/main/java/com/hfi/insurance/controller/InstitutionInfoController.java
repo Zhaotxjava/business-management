@@ -107,7 +107,7 @@ public class InstitutionInfoController {
 //            sb.append("&hospitalid=").append(hospitalid);
 //        }
 //        sb.append("&hospitalid=").append(hospitalid);
-
+        log.info("home return url = {}",sb.toString());
         return sb.toString();
 
     }
@@ -151,7 +151,7 @@ public class InstitutionInfoController {
                 .append("&areaCode=").append(platid)
                 .append("&hospitalid=").append(hospitalid);
 
-
+        log.info("home return url = {}",sb.toString());
         return sb.toString();
 //        return "redirect:" + redirectYbUrl + "?flag=" + flag + "&token=" + token + "&areaCode=" + platid+"&number="+hospitalid;
 
