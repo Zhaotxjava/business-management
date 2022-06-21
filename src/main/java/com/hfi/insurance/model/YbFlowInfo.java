@@ -142,4 +142,6 @@ public class YbFlowInfo implements Serializable {
      */
     private String batchNo;
 
+    private  String templateId;
+
 }

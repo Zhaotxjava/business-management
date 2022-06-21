@@ -18,4 +18,6 @@ public interface YbOrgTdMapper extends BaseMapper<YbOrgTd> {
     List<YbOrgTd> getorgTdbxList(InstitutionInfoQueryReq institutionInfoQueryReq);
 
     Integer selectorgTdbxCount(InstitutionInfoQueryReq institutionInfoQueryReq);
+
+    YbOrgTd selectByIdYbOrgTd(String number);
 }

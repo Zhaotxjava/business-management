@@ -48,6 +48,24 @@ public class OrganizationsServiceImpl implements OrganizationsService {
         }
     }
 
+    private JSONObject convertResult2(String result) {
+        JSONObject object = new JSONObject();
+        if (StringUtils.isNotEmpty(result)) {
+            object = JSONObject.parseObject(result);
+            if ("0".equals(object.getString("errCode"))) {
+                //{"errCode":0,"msg":"success","errShow":true,"data":{"accountId":"8a59fe62-d596-4e53-a56d-22fc732c7642","uniqueId":"220181197708241552","esignAccountId":"54e4e31fbe0a415fba0acf7c39827d75"}}
+                return object;
+            } else {
+                //{"errCode":5006002,"msg":"客户端ip地址非法","errShow":true}
+                return object;
+            }
+        } else {
+            object.put("errCode", "9999");
+            object.put("msg", "接口响应异常");
+            return object;
+        }
+    }
+
     @Override
     public JSONObject createAccounts(String name, String idCode, String mobile,String moblieType) {
         log.info("创建外部用户类型="+name+moblieType);
@@ -287,4 +305,30 @@ public class OrganizationsServiceImpl implements OrganizationsService {
         String result = HttpUtil.doPost(url + "/V1/organizations/outerOrgans/queryByOrgname?pageIndex=" + pageIndex + "&pageSize=30", headMap, jsonObject.toJSONString());
         return result;
     }
+
+    @Override
+    public JSONObject processBatchDownload(String bizNo, String fileName, Set<String> processIds) {
+        Map<String, String> headMap = new HashMap<>();
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("bizNo", bizNo);
+        jsonObject.put("fileName", fileName);
+        jsonObject.put("processIds", processIds);
+        convertHead(headMap, jsonObject.toJSONString());
+        String result = HttpUtil.doPost(url + "/esignpro/rest/process/processBatchDownload", headMap, jsonObject.toJSONString());
+        log.info("发送文件下载接口流程id={}文件名称={}，文件id={}", bizNo, bizNo,processIds);
+        return convertResult(result);
+    }
+
+    @Override
+    public JSONObject findProcessBatchDownload(String bizNo) {
+        Map<String, String> headMap = new HashMap<>();
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("bizNo", bizNo);
+        convertHead(headMap, jsonObject.toJSONString());
+        String result = HttpUtil.doPost(url + "/esignpro/rest/process/findProcessBatchDownload", headMap, jsonObject.toJSONString());
+        log.info("根据流程id【{}】查询查看压缩包接口响应{}", bizNo, result);
+        return convertResult2(result);
+    }
+
+
 }

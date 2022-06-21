@@ -1,6 +1,7 @@
 package com.hfi.insurance.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.hfi.insurance.aspect.anno.LogAnnotation;
 import com.hfi.insurance.common.ApiResponse;
 import com.hfi.insurance.model.YbInstitutionInfo;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -34,6 +35,10 @@ public interface IYbInstitutionInfoService extends IService<YbInstitutionInfo> {
     Page<InstitutionInfoRes> getOrgTdListForCreateFlow(OrgTdQueryReq req);
 
     YbInstitutionInfo getInstitutionInfo(String number);
+
+    List<YbInstitutionInfo> getInstitutionInfoByName(String name);
+
+    List<YbInstitutionInfo> getInstitutionInfoByName(List<String> names);
 
     ApiResponse updateInstitutionInfo(InstitutionInfoAddReq req);
 

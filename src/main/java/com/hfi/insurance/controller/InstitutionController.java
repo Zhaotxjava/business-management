@@ -4,16 +4,14 @@ import com.alibaba.fastjson.JSONObject;
 import com.hfi.insurance.common.ApiResponse;
 import com.hfi.insurance.common.Constants;
 import com.hfi.insurance.enums.ErrorCodeEnum;
-import com.hfi.insurance.model.ExcelSheetPO;
-import com.hfi.insurance.model.YbInstitutionInfo;
-import com.hfi.insurance.model.YbInstitutionInfoChange;
+import com.hfi.insurance.model.*;
 import com.hfi.insurance.model.dto.ArecordQueReq;
 import com.hfi.insurance.model.dto.InstitutionInfoAddReq;
 import com.hfi.insurance.model.dto.InstitutionInfoQueryReq;
 import com.hfi.insurance.model.dto.YbInstitutionInfoChangeReq;
-import com.hfi.insurance.model.CheckImportInstitutionInfo;
 import com.hfi.insurance.model.dto.res.CheckImportInstitutionRes;
 import com.hfi.insurance.service.IYbInstitutionInfoService;
+import com.hfi.insurance.service.IYbOrgTdService;
 import com.hfi.insurance.service.SignedService;
 import com.hfi.insurance.utils.ImportExcelUtil;
 import io.swagger.annotations.Api;
@@ -21,7 +19,9 @@ import io.swagger.annotations.ApiOperation;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.BeanUtils;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -48,6 +48,9 @@ public class InstitutionController {
     private IYbInstitutionInfoService institutionInfoService;
     @Resource
     private SignedService signedService;
+
+    @Resource
+    private IYbOrgTdService  iYbOrgTdService;
 
 
     @PostMapping("getInstitutionInfoList")
@@ -126,6 +129,22 @@ public class InstitutionController {
         return institutionInfoService.newUpdateInstitutionInfo(req);
     }
 
+    @PostMapping(value = "/plwjFileParser", produces = "text/html;charset=UTF-8")
+    @ApiOperation("解析文件")
+    public String plwjFileParser(@RequestParam("file") MultipartFile file) {
+        log.info("解析批量文件 开始：");
+        List<String> objects=new ArrayList<>();
+        try {
+             objects = ImportExcelUtil.readExcel2(file);
+            log.info("文件解析出参：{}", JSONObject.toJSONString(objects));
+        } catch (IOException e) {
+            e.printStackTrace();
+            return  JSONObject.toJSONString(ApiResponse.fail("247","文件解析失败!"));
+        }
+
+
+        return JSONObject.toJSONString(ApiResponse.success(objects));
+    }
 
     @PostMapping(value = "checkImportInstitution", produces = "text/html;charset=UTF-8")
     @ApiOperation("批量导入机构，并检查合法性")
@@ -311,5 +330,63 @@ public class InstitutionController {
 
         institutionInfoService.exportExcel3(arecordQueReq, response);
     }
+
+
+
+    @PostMapping("/getInstitutionsInformation")
+    @ApiOperation("根据机构编号获取机构信息")
+    public ApiResponse getInstitutionsInformation(@RequestBody YbInstitutionInfoChangeReq ybInstitutionInfoChangeReq) {
+
+        return iYbOrgTdService.getInstitutionsInformation(ybInstitutionInfoChangeReq.getNumber());
+    }
+
+    @PostMapping("/addInstitutionsInformation")
+    @ApiOperation("机构信息维护新增")
+    public ApiResponse addInstitutionsInformation(@RequestBody Management  management) {
+        if(StringUtils.isEmpty(management.getNumber())){
+            return  ApiResponse.fail("503","机构编码不能为空");
+        }else if(StringUtils.isEmpty(management.getInstitutionName())){
+
+            return  ApiResponse.fail("503","机构名称不能为空");
+        }else if (StringUtils.isEmpty(management.getYbInstitutionCoding())){
+
+            return  ApiResponse.fail("503","请选择所属统筹区编码");
+        }else if (StringUtils.isEmpty(management.getYbInstitutionState())){
+
+            return  ApiResponse.fail("503","请选择机构服务状态");
+        }else if (StringUtils.isEmpty(management.getYbInstitutionType())){
+
+            return  ApiResponse.fail("503","请选择定点机构类型");
+        }
+      return  iYbOrgTdService.addInstitutionsInformation(management);
+    }
+
+
+
+    @PostMapping("/updateInstitutionsInformation")
+    @ApiOperation("机构信息维护新增")
+    public ApiResponse updateInstitutionsInformation(@RequestBody Management  management) {
+        if(StringUtils.isEmpty(management.getNumber())){
+            return  ApiResponse.fail("503","机构编码不能为空");
+        }else if(StringUtils.isEmpty(management.getInstitutionName())){
+
+            return  ApiResponse.fail("503","机构名称不能为空");
+        }else if (StringUtils.isEmpty(management.getYbInstitutionCoding())){
+
+            return  ApiResponse.fail("503","请选择所属统筹区编码");
+        }else if (StringUtils.isEmpty(management.getYbInstitutionState())){
+
+            return  ApiResponse.fail("503","请选择机构服务状态");
+        }else if (StringUtils.isEmpty(management.getYbInstitutionType())){
+
+            return  ApiResponse.fail("503","请选择定点机构类型");
+        }
+        return  iYbOrgTdService.updateInstitutionsInformation(management);
+    }
+
+
+
+
+
 
 }

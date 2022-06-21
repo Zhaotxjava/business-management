@@ -2,6 +2,7 @@ package com.hfi.insurance.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.hfi.insurance.common.ApiResponse;
+import com.hfi.insurance.model.Management;
 import com.hfi.insurance.model.YbOrgTd;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.hfi.insurance.model.dto.OrgTdQueryReq;
@@ -23,4 +24,10 @@ public interface IYbOrgTdService extends IService<YbOrgTd> {
     List<YbOrgTd> getYbOrgTdList(List<String> number);
 
     YbOrgTd getYbOrgTdByNumber(String number);
+
+    ApiResponse getInstitutionsInformation(String number);
+
+    ApiResponse addInstitutionsInformation(Management management);
+
+    ApiResponse updateInstitutionsInformation(Management management);
 }

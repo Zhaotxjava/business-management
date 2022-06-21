@@ -64,6 +64,14 @@ public class ApiResponse<T>  {
         return response;
     }
 
+    public static ApiResponse fail(String code,String message,Object data){
+        ApiResponse response = new ApiResponse();
+        response.setCode(code);
+        response.setMessage(message);
+        response.setData(data);
+        return response;
+    }
+
     public static ApiResponse fail(ErrorCodeEnum e){
         ApiResponse response = new ApiResponse();
         response.setCode(e.getCode());
