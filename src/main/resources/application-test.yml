@@ -4,31 +4,12 @@ server:
 swagger:
   enable: true
 
-redirect:
-  url: http://192.20.97.35:18080/e-contract/
-  ybUrl: http://172.16.29.54:18080/e-contract/
-
-file:
-  path: /opt/app/insurance-info-server/service/医保定点机构列表20210607.xlsx
-  pathCsv: /opt/app/insurance-info-server/service/医保定点机构列表20210607.csv
-  down:
-    url: /opt/app/insurance-info-server/service/demo
-  pic:
-    uploadPathImg: /opt/app/insurance-info-server/pic
-#天印系统接口配置
-esignpro:
-  urls: http://172.16.29.54:8088
-  url: http://192.20.97.42:8086
-  projectId: 1001001
-  secret: cfc6c99a34962a8aa62fc794d838e520
-  port: http://192.20.97.42:8086
-  port2: http://192.20.97.42:8030/rest
-
 spring:
   datasource:
-    username: user_insurance_info
-    password: test_insurance
-    url: jdbc:mysql://192.20.97.37:3306/db_insurance_info?useUnicode\=true&characterEncoding\=utf-8&allowMultiQueries\=true
+    username: root
+    password: root
+    #url: jdbc:mysql://192.168.31.139:3306/business_management?useUnicode\=true&characterEncoding\=utf-8&allowMultiQueries\=true
+    url: jdbc:mysql://192.168.31.139:3306/business_management?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=UTF-8&useSSL=false&allowMultiQueries\=true
     driver-class-name: com.mysql.jdbc.Driver
     hikari:
       connection-timeout: 10000
@@ -62,28 +43,9 @@ spring:
       max-request-size: 100MB
 
 logging:
-  application-name: insurance-info-server
+  application-name: business-management
   dir: logs
   level:
     com:
       hfi:
         insurance: debug
-#  file:
-#    path: logs
-
-mybatis-plus:
-  mapper-locations: classpath*:com/hfi/insurance/mapper/**/*.xml
-
-
-############# upload file
-uploadFile:
-  path: https://jsbceshi.hfi-health.com:18188/appsImg/
-  dir: /home/imgTestZmz
-  userName: imgTestZmz
-  password: img123_hfi_health
-  host: 192.20.97.35
-  port: 21
-
-sign:
-  callBack:
-    url: http://192.20.97.35:18080/insurance_info/callBack/flowStatusNotify

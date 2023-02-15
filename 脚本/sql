@@ -1,0 +1,10 @@
+CREATE TABLE `user` (
+  `id` int(16) NOT NULL AUTO_INCREMENT,
+  `user_name` varchar(34) COLLATE utf8_turkish_ci DEFAULT NULL COMMENT '用户姓名',
+  `company_name` varchar(64) COLLATE utf8_turkish_ci DEFAULT NULL COMMENT '公司名称',
+  `department_name` varchar(64) COLLATE utf8_turkish_ci DEFAULT NULL COMMENT '部门名称',
+  `phone` varchar(64) COLLATE utf8_turkish_ci DEFAULT NULL COMMENT '手机号',
+  `mailbox` varchar(64) COLLATE utf8_turkish_ci DEFAULT NULL COMMENT '邮箱',
+  `Notes` varchar(255) COLLATE utf8_turkish_ci DEFAULT NULL COMMENT '留言',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_turkish_ci;

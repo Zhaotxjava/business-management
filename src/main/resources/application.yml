@@ -1,10 +1,10 @@
 server:
-  port: 8090
+  port: 8098
   servlet:
-    context-path: /insurance_info
+    context-path: /business_management
 spring:
   application:
-    name: insurance_info
+    name: business_management
   profiles:
     active: test
 #  thymeleaf:
